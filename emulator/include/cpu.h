@@ -9,7 +9,7 @@
 
 #define FLAG_ZERO     1
 #define FLAG_CARRY    2
-#define FLAG_OVERFLOW 4 // FLAG_CARRY ^  бит знака
+#define FLAG_OVERFLOW 4 // FLAG_CARRY | бит знака
 
 
 #define REG_FLAG 17

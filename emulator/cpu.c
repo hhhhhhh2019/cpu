@@ -130,7 +130,7 @@ unsigned long core_alu(Core* core, unsigned long a, unsigned long b, enum ALU_OP
 		core->registers[REG_FLAG] |= FLAG_ZERO;
 	if (a < b)
 		core->registers[REG_FLAG] |= FLAG_CARRY;
-	core->registers[REG_FLAG] |= ((core->registers[REG_FLAG] & FLAG_CARRY) << 1) ^ (sub >> 61) & 0b100;
+	core->registers[REG_FLAG] |= ((core->registers[REG_FLAG] & FLAG_CARRY) << 1) | (sub >> 61) & 0b100;
 
 	if (op == ALU_ADD)
 		return sum;
@@ -324,106 +324,111 @@ void core_step(Core* core) {
 			core->registers[REG_PC] = num1;
 	}
 
-	else if (instr == 0x1c) { // pushl r
+	else if (instr == 0x1c) { // jno num64
+		if ((core->registers[REG_FLAG] & FLAG_OVERFLOW) == 0)
+			core->registers[REG_PC] = num1;
+	}
+
+	else if (instr == 0x1d) { // pushl r
 		*(unsigned long*)(ram + core->registers[REG_SP]) = core->registers[r1];
 		core->registers[REG_SP] -= 8;
 	}
 
-	else if (instr == 0x1d) { // pushi r
+	else if (instr == 0x1e) { // pushi r
 		*(unsigned int*)(ram + core->registers[REG_SP]) = core->registers[r1];
 		core->registers[REG_SP] -= 4;
 	}
 
-	else if (instr == 0x1e) { // pushs r
+	else if (instr == 0x1f) { // pushs r
 		*(unsigned short*)(ram + core->registers[REG_SP]) = core->registers[r1];
 		core->registers[REG_SP] -= 2;
 	}
 
-	else if (instr == 0x1f) { // pushb r
+	else if (instr == 0x20) { // pushb r
 		*(unsigned char*)(ram + core->registers[REG_SP]) = core->registers[r1];
 		core->registers[REG_SP] -= 1;
 	}
 
-	else if (instr == 0x20) { // popl r
+	else if (instr == 0x21) { // popl r
 		core->registers[REG_SP] += 8;
 		core->registers[r1] = *(unsigned long*)(ram + core->registers[REG_SP]);
 	}
 
-	else if (instr == 0x21) { // popi r
+	else if (instr == 0x22) { // popi r
 		core->registers[REG_SP] += 4;
 		core->registers[r1] = *(unsigned long*)(ram + core->registers[REG_SP]) & 0xffffffff;
 	}
 
-	else if (instr == 0x22) { // popl r
+	else if (instr == 0x23) { // popl r
 		core->registers[REG_SP] += 2;
 		core->registers[r1] = *(unsigned long*)(ram + core->registers[REG_SP]) & 0xffff;
 	}
 
-	else if (instr == 0x23) { // popl r
+	else if (instr == 0x24) { // popl r
 		core->registers[REG_SP] += 1;
 		core->registers[r1] = *(unsigned long*)(ram + core->registers[REG_SP]) & 0xff;
 	}
 
-	else if (instr == 0x24) { // call r
+	else if (instr == 0x25) { // call r
 		*(unsigned long*)(ram + core->registers[REG_SP]) = core->registers[REG_PC];
 		core->registers[REG_SP] -= 8;
 
 		core->registers[REG_PC] = core->registers[r1];
 	}
 
-	else if (instr == 0x25) { // int num8
+	else if (instr == 0x26) { // int num8
 		core_int(core, num3);
 	}
 
-	else if (instr == 0x26) { // iret
+	else if (instr == 0x27) { // iret
 		core->is_interrupt = 0;
 	}
 
-	else if (instr == 0x27) { // and r r r
+	else if (instr == 0x28) { // and r r r
 		core->registers[r1] = core->registers[r2] & core->registers[r3];
 	}
 
-	else if (instr == 0x28) { // or r r r
+	else if (instr == 0x29) { // or r r r
 		core->registers[r1] = core->registers[r2] | core->registers[r3];
 	}
 
-	else if (instr == 0x29) { // xor r r r
+	else if (instr == 0x2a) { // xor r r r
 		core->registers[r1] = core->registers[r2] ^ core->registers[r3];
 	}
 
-	else if (instr == 0x2a) { // not r r
+	else if (instr == 0x2b) { // not r r
 		core->registers[r1] = ~core->registers[r2];
 	}
 
-	else if (instr == 0x2b) { // shl r r r
+	else if (instr == 0x2c) { // shl r r r
 		core->registers[r1] = core->registers[r2] << core->registers[r3];
 	}
 
-	else if (instr == 0x2c) { // shr r r r
+	else if (instr == 0x2d) { // shr r r r
 		core->registers[r1] = core->registers[r2] >> core->registers[r3];
 	}
 
-	else if (instr == 0x2d) { // and r r num64
+	else if (instr == 0x2e) { // and r r num64
 		core->registers[r1] = core->registers[r2] & num1;
 	}
 
-	else if (instr == 0x2e) { // or r r num64
+	else if (instr == 0x2f) { // or r r num64
 		core->registers[r1] = core->registers[r2] | num1;
 	}
 
-	else if (instr == 0x2f) { // xor r r num64
+	else if (instr == 0x30) { // xor r r num64
 		core->registers[r1] = core->registers[r2] ^ num1;
 	}
 
-	else if (instr == 0x30) { // shl r r num64
+	else if (instr == 0x31) { // shl r r num64
 		core->registers[r1] = core->registers[r2] << num1;
 	}
 
-	else if (instr == 0x31) { // shr r r num64
+	else if (instr == 0x32) { // shr r r num64
 		core->registers[r1] = core->registers[r2] >> num1;
 	}
 
-	else if (instr == 0x32) { // chst r
+	else if (instr == 0x33) { // chst r
 		if (core->registers == core->registersk) {
 			core->state = core->registers[r1];
 		} else {
@@ -431,7 +436,7 @@ void core_step(Core* core) {
 		}
 	}
 
-	else if (instr == 0x33) { // lost r
+	else if (instr == 0x34) { // lost r
 		if (core->registers == core->registersk) {
 			core->registers[r1] = core->state;
 		} else {
@@ -439,7 +444,7 @@ void core_step(Core* core) {
 		}
 	}
 
-	else if (instr == 0x34) { // stolk r r
+	else if (instr == 0x35) { // stolk r r
 		if (core->registers == core->registersk) {
 			mmu_write(&motherboard->mmu,
 			          (core->state & STATE_PAGING) != 0, core->registers[REG_TP],
@@ -449,7 +454,7 @@ void core_step(Core* core) {
 		}
 	}
 
-	else if (instr == 0x35) { // loal r r num64
+	else if (instr == 0x36) { // loal r r num64
 		if (core->registers == core->registersk) {
 			char rules;
 			core->registersn[r1] = mmu_read(&motherboard->mmu,
@@ -460,7 +465,7 @@ void core_step(Core* core) {
 		}
 	}
 
-	else if (instr == 0x36) { // chtp r
+	else if (instr == 0x37) { // chtp r
 		if (core->registers == core->registersk) {
 			core->registersk[r1] = core->registersn[REG_TP];
 		} else {
@@ -468,7 +473,7 @@ void core_step(Core* core) {
 		}
 	}
 
-	else if (instr == 0x37) { // lotp r
+	else if (instr == 0x38) { // lotp r
 		if (core->registers == core->registersk) {
 			core->registersn[REG_TP] = core->registersk[r1];
 		} else {
@@ -476,7 +481,7 @@ void core_step(Core* core) {
 		}
 	}
 
-	else if (instr == 0x38) { // chflag r
+	else if (instr == 0x39) { // chflag r
 		if (core->registers == core->registersk) {
 			core->registersk[r1] = core->registersn[REG_FLAG];
 		} else {
@@ -484,7 +489,7 @@ void core_step(Core* core) {
 		}
 	}
 
-	else if (instr == 0x39) { // loflag r
+	else if (instr == 0x3a) { // loflag r
 		if (core->registers == core->registersk) {
 			core->registersn[REG_FLAG] = core->registersk[r1];
 		} else {
