@@ -70,12 +70,13 @@ int main(int argc, char** argv) {
 
 	ram_init(&motherboard.ram, &motherboard);
 	mmu_init(&motherboard.mmu, &motherboard);
-	cpu_init(&motherboard.cpu, &motherboard, motherboard.cpu.cores_count, (unsigned long[]){100});
+	cpu_init(&motherboard.cpu, &motherboard, motherboard.cpu.cores_count, 100);
 
 	
 	memcpy(motherboard.ram.ram + BIOS_ADDRESS, bios, bios_size);
 
 	motherboard.cpu.cores[0].registersk[REG_PC] = BIOS_ADDRESS;
+	motherboard.cpu.cores[0].registersk[REG_SP] = BIOS_ADDRESS;
 	motherboard.cpu.cores[0].state = STATE_ENABLE;
 
 	while ((motherboard.cpu.cores[0].state & STATE_ENABLE) != 0) {

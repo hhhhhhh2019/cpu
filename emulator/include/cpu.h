@@ -51,7 +51,7 @@ typedef struct CPU {
 } CPU;
 
 
-void cpu_init(CPU*, void* motherboard, char cores_count, unsigned long* hz);
+void cpu_init(CPU*, void* motherboard, char cores_count, unsigned long hz);
 
 void print_registers(Core*, int id);
 

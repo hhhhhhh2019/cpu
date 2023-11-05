@@ -72,17 +72,22 @@ char instr_size[] = {
 
 
 
-void cpu_init(CPU* cpu, void *motherboard, char cores_count, unsigned long *hz) {
+void cpu_init(CPU* cpu, void *motherboard, char cores_count, unsigned long hz) {
 	cpu->motherboard = motherboard;
 
 	cpu->cores_count = cores_count;
 	cpu->cores = malloc(sizeof(Core) * cores_count);
 
 	for (int i = 0; i < cores_count; i++) {
-		cpu->cores[i].hz = hz[i];
+		cpu->cores[i].hz = hz;
 		cpu->cores[i].motherboard = motherboard;
 		cpu->cores[i].state = 0;
 		cpu->cores[i].is_interrupt = 0;
+
+		for (int j = 0; j < 18; j++) {
+			cpu->cores[i].registersk[j] = 0;
+			cpu->cores[i].registersn[j] = 0;
+		}
 	}
 }
 
@@ -326,48 +331,48 @@ void core_step(Core* core) {
 	}
 
 	else if (instr == 0x1c) { // pushl r
-		*(unsigned long*)(ram + core->registers[REG_SP]) = core->registers[r1];
 		core->registers[REG_SP] -= 8;
+		*(unsigned long*)(ram + core->registers[REG_SP]) = core->registers[r1];
 	}
 
 	else if (instr == 0x1d) { // pushi r
-		*(unsigned int*)(ram + core->registers[REG_SP]) = core->registers[r1];
 		core->registers[REG_SP] -= 4;
+		*(unsigned int*)(ram + core->registers[REG_SP]) = core->registers[r1];
 	}
 
 	else if (instr == 0x1e) { // pushs r
-		*(unsigned short*)(ram + core->registers[REG_SP]) = core->registers[r1];
 		core->registers[REG_SP] -= 2;
+		*(unsigned short*)(ram + core->registers[REG_SP]) = core->registers[r1];
 	}
 
 	else if (instr == 0x1f) { // pushb r
-		*(unsigned char*)(ram + core->registers[REG_SP]) = core->registers[r1];
 		core->registers[REG_SP] -= 1;
+		*(unsigned char*)(ram + core->registers[REG_SP]) = core->registers[r1];
 	}
 
 	else if (instr == 0x20) { // popl r
-		core->registers[REG_SP] += 8;
 		core->registers[r1] = *(unsigned long*)(ram + core->registers[REG_SP]);
+		core->registers[REG_SP] += 8;
 	}
 
 	else if (instr == 0x21) { // popi r
-		core->registers[REG_SP] += 4;
 		core->registers[r1] = *(unsigned long*)(ram + core->registers[REG_SP]) & 0xffffffff;
+		core->registers[REG_SP] += 4;
 	}
 
 	else if (instr == 0x22) { // popl r
-		core->registers[REG_SP] += 2;
 		core->registers[r1] = *(unsigned long*)(ram + core->registers[REG_SP]) & 0xffff;
+		core->registers[REG_SP] += 2;
 	}
 
 	else if (instr == 0x23) { // popl r
-		core->registers[REG_SP] += 1;
 		core->registers[r1] = *(unsigned long*)(ram + core->registers[REG_SP]) & 0xff;
+		core->registers[REG_SP] += 1;
 	}
 
 	else if (instr == 0x24) { // call r
-		*(unsigned long*)(ram + core->registers[REG_SP]) = core->registers[REG_PC];
 		core->registers[REG_SP] -= 8;
+		*(unsigned long*)(ram + core->registers[REG_SP]) = core->registers[REG_PC];
 
 		core->registers[REG_PC] = core->registers[r1];
 	}
