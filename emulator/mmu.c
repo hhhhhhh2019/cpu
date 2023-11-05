@@ -39,25 +39,18 @@ unsigned long mmu_read(MMU* mmu, char vaddr, unsigned long tp, unsigned long add
 		addr = mmu_v2p(mmu, addr, tp, rules);
 	}
 
-
-	unsigned long ram_addr = addr;
-
-
 	unsigned long mask = 0;
 	for (int i = 0; i < size; i++)
 		mask |= 255 << (i * 8);
 
 	for (int i = 0; i < mmu->mmio_count; i++) {
-		if (ram_addr > mmu->mmio[i].start_addr + mmu->mmio[i].size)
-			ram_addr -= mmu->mmio[i].start_addr + mmu->mmio[i].size;
-
 		if (addr < mmu->mmio[i].start_addr || addr >= mmu->mmio[i].start_addr + mmu->mmio[i].size)
 			continue;
 
 		return cpu2lt64(*((unsigned long*)(mmu->mmio[i].data + addr - mmu->mmio[i].start_addr)) & mask);
 	}
 
-	return cpu2lt64(*((unsigned long*)(((Motherboard*)mmu->motherboard)->ram.ram + ram_addr)) & mask);
+	return cpu2lt64(*((unsigned long*)(((Motherboard*)mmu->motherboard)->ram.ram + addr)) & mask);
 }
 
 
@@ -67,18 +60,11 @@ void mmu_write(MMU* mmu, char vaddr, unsigned long tp, unsigned long addr, unsig
 		addr = mmu_v2p(mmu, addr, tp, &rules);
 	}
 
-
-	unsigned long ram_addr = addr;
-
-
 	unsigned long mask = 0;
 	for (int i = 0; i < size; i++)
 		mask |= 255 << (i * 8);
 
 	for (int i = 0; i < mmu->mmio_count; i++) {
-		if (ram_addr > mmu->mmio[i].start_addr + mmu->mmio[i].size)
-			ram_addr -= mmu->mmio[i].start_addr + mmu->mmio[i].size;
-
 		if (addr < mmu->mmio[i].start_addr || addr >= mmu->mmio[i].start_addr + mmu->mmio[i].size)
 			continue;
 
@@ -89,5 +75,5 @@ void mmu_write(MMU* mmu, char vaddr, unsigned long tp, unsigned long addr, unsig
 	}
 	
 	for (int j = 0; j < size; j++)
-		((Motherboard*)mmu->motherboard)->ram.ram[ram_addr + j] = value >> (j * 8) & 0xff;
+		((Motherboard*)mmu->motherboard)->ram.ram[addr + j] = value >> (j * 8) & 0xff;
 }

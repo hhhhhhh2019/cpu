@@ -72,9 +72,8 @@ int main(int argc, char** argv) {
 	mmu_init(&motherboard.mmu, &motherboard);
 	cpu_init(&motherboard.cpu, &motherboard, motherboard.cpu.cores_count, (unsigned long[]){100});
 
-
-	for (int i = 0; i < bios_size; i++)
-		mmu_write(&motherboard.mmu, 0, 0, BIOS_ADDRESS + i, 1, bios[i]);
+	
+	memcpy(motherboard.ram.ram + BIOS_ADDRESS, bios, bios_size);
 
 	motherboard.cpu.cores[0].registersk[REG_PC] = BIOS_ADDRESS;
 	motherboard.cpu.cores[0].state = STATE_ENABLE;
