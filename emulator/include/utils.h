@@ -55,7 +55,21 @@ static inline unsigned long cpu2lt64(unsigned long n) {
 		(n & 0xff00000000000000 >> 56);
 }
 
-#endif
+#endif // __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
+
+
+
+typedef struct Queue {
+	unsigned long max_queue_size;
+	int* queue;
+	unsigned long head;
+	unsigned long tail;
+} Queue;
+
+void queue_init(Queue*, unsigned long size);
+void queue_push(Queue*, int value);
+int  queue_pop(Queue*);
+char queue_can_pop(Queue*);
 
 
 #endif

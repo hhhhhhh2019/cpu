@@ -2,6 +2,9 @@
 #define CPU_H
 
 
+#include <apic.h>
+
+
 #define STATE_ENABLE      1
 #define STATE_INTERRUPTS  2
 #define STATE_PAGING      4
@@ -48,6 +51,8 @@ typedef struct CPU {
 
 	unsigned char cores_count;
 	Core* cores;
+
+	APIC apic;
 } CPU;
 
 
@@ -56,6 +61,7 @@ void cpu_init(CPU*, void* motherboard, char cores_count, unsigned long hz);
 void print_registers(Core*, int id);
 
 void core_step(Core*);
+void core_int(Core*, unsigned char);
 
 
 #endif

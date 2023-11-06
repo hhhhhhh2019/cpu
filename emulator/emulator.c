@@ -1,4 +1,4 @@
-#include "mmu.h"
+#include "apic.h"
 #include <motherboard.h>
 #include <utils.h>
 
@@ -9,6 +9,8 @@
 
 
 #define BIOS_ADDRESS 0x10000
+
+#define max(a,b) (a > b ? a : b)
 
 
 Motherboard motherboard;
@@ -72,16 +74,42 @@ int main(int argc, char** argv) {
 	mmu_init(&motherboard.mmu, &motherboard);
 	cpu_init(&motherboard.cpu, &motherboard, motherboard.cpu.cores_count, 100);
 
-	
+
 	memcpy(motherboard.ram.ram + BIOS_ADDRESS, bios, bios_size);
+
+
+	char cpu_enabled = 1;
+
+
+	unsigned long max_hz = 0;
+
+	for (int i = 0; i < motherboard.cpu.cores_count; i++)
+		max_hz = max(max_hz, motherboard.cpu.cores[i].hz);
+
+	max_hz = max(max_hz, motherboard.cpu.apic.hz);
+
 
 	motherboard.cpu.cores[0].registersk[REG_PC] = BIOS_ADDRESS;
 	motherboard.cpu.cores[0].registersk[REG_SP] = BIOS_ADDRESS;
 	motherboard.cpu.cores[0].state = STATE_ENABLE;
 
-	while ((motherboard.cpu.cores[0].state & STATE_ENABLE) != 0) {
-		core_step(&motherboard.cpu.cores[0]);
-		print_registers(&motherboard.cpu.cores[0], 0);
+
+	for (int tick = 0; cpu_enabled; tick++) {
+		cpu_enabled = 0;
+
+		for (int i = 0; i < motherboard.cpu.cores_count; i++) {
+			cpu_enabled |= motherboard.cpu.cores[i].state & STATE_ENABLE;
+
+			if (tick % (max_hz / motherboard.cpu.cores[i].hz) != 0)
+				continue;
+
+			print_registers(&motherboard.cpu.cores[0], 0);
+			core_step(&motherboard.cpu.cores[0]);
+		}
+
+
+		if (tick % (max_hz / motherboard.cpu.apic.hz) == 0)
+			apic_step(&motherboard.cpu.apic);
 	}
 }
 

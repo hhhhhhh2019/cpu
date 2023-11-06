@@ -1,4 +1,3 @@
-#include "mmu.h"
 #include <cpu.h>
 #include <motherboard.h>
 #include <utils.h>
@@ -32,11 +31,11 @@ char instr_size[] = {
 	10, // smul r r num64
 	10, // sdiv r r num64
 	10, // cmp r r num64
-	9,  // je num64
-	9,  // jne num64
-	9,  // jl num64
-	9,  // jb num64
-	9,  // jo num64
+	10,  // adde r r num64
+	10,  // addne r r num64
+	10,  // addl r r num64
+	10,  // addb r r num64
+	10,  // addo r r num64
 	2,  // pushl r
 	2,  // pushi r
 	2,  // pushs r
@@ -68,6 +67,7 @@ char instr_size[] = {
 	2,  // lotp r
 	2,  // chflag r
 	2,  // loflag r
+	3,  // cint num8 num8
 };
 
 
@@ -83,12 +83,15 @@ void cpu_init(CPU* cpu, void *motherboard, char cores_count, unsigned long hz) {
 		cpu->cores[i].motherboard = motherboard;
 		cpu->cores[i].state = 0;
 		cpu->cores[i].is_interrupt = 0;
+		cpu->cores[i].registers = cpu->cores[i].registersk;
 
 		for (int j = 0; j < 18; j++) {
 			cpu->cores[i].registersk[j] = 0;
 			cpu->cores[i].registersn[j] = 0;
 		}
 	}
+
+	apic_init(&cpu->apic, motherboard, hz, cores_count);
 }
 
 
@@ -155,11 +158,20 @@ unsigned long core_alu(Core* core, unsigned long a, unsigned long b, enum ALU_OP
 
 
 void core_int(Core* core, unsigned char id) {
-	
+	if (core->is_interrupt == 1)
+		return;
+
+	char* ram = ((Motherboard*)core->motherboard)->ram.ram;
+
+	core->is_interrupt = 1;
+	core->registersk[REG_PC] = cpu2lt64(*(unsigned long*)(ram + id * 8));
 }
 
 
 void core_step(Core* core) {
+	if ((core->state & STATE_ENABLE) == 0)
+		return;
+
 	core->registersk[0] = 0;
 	core->registersn[0] = 0;
 
@@ -177,9 +189,10 @@ void core_step(Core* core) {
 	char r2 = ram[core->registers[REG_PC] + 1] & 0x0f;
 	char r3 = (ram[core->registers[REG_PC] + 2] & 0xf0) >> 4;
 
-	unsigned long num1 = *(unsigned long*)(ram + core->registers[REG_PC] + 2); // 1,2,3,4,5,6,7,8,10,11,12,13,14,15,16
-	unsigned long num2 = *(unsigned long*)(ram + core->registers[REG_PC] + 1); // 17,18,19,1a
-	unsigned char num3 = ram[core->registers[REG_PC] + 1]; // 25
+	unsigned long num1 = *(unsigned long*)(ram + core->registers[REG_PC] + 2);
+	unsigned long num2 = *(unsigned long*)(ram + core->registers[REG_PC] + 1);
+	unsigned char num3 = ram[core->registers[REG_PC] + 1];
+	unsigned char num4 = ram[core->registers[REG_PC] + 2];
 
 
 	core->registers[REG_PC] += instr_size[instr];
@@ -300,34 +313,34 @@ void core_step(Core* core) {
 		core_alu(core, core->registers[r1], num1, ALU_ADD);
 	}
 
-	else if (instr == 0x16) { // je num64
+	else if (instr == 0x16) { // adde r r num64
 		if ((core->registers[REG_FLAG] & FLAG_ZERO) != 0)
-			core->registers[REG_PC] = num1;
+			core->registers[r1] = core_alu(core, core->registers[r2], num1, ALU_ADD);
 	}
 
-	else if (instr == 0x17) { // jne num64
+	else if (instr == 0x17) { // addne r r num64
 		if ((core->registers[REG_FLAG] & FLAG_ZERO) == 0)
-			core->registers[REG_PC] = num1;
+			core->registers[r1] = core_alu(core, core->registers[r2], num1, ALU_ADD);
 	}
 
-	else if (instr == 0x18) { // jl num64
+	else if (instr == 0x18) { // addl r r num64
 		if ((core->registers[REG_FLAG] & FLAG_CARRY) != 0)
-			core->registers[REG_PC] = num1;
+			core->registers[r1] = core_alu(core, core->registers[r2], num1, ALU_ADD);
 	}
 
-	else if (instr == 0x19) { // jg num64
+	else if (instr == 0x19) { // addg r r num64
 		if ((core->registers[REG_FLAG] & FLAG_ZERO) == 0 && (core->registers[REG_FLAG] & FLAG_CARRY) == 0)
-			core->registers[REG_PC] = num1;
+			core->registers[r1] = core_alu(core, core->registers[r2], num1, ALU_ADD);
 	}
 
-	else if (instr == 0x1a) { // jo num64
+	else if (instr == 0x1a) { // addo r r num64
 		if ((core->registers[REG_FLAG] & FLAG_OVERFLOW) != 0)
-			core->registers[REG_PC] = num1;
+			core->registers[r1] = core_alu(core, core->registers[r2], num1, ALU_ADD);
 	}
 
-	else if (instr == 0x1b) { // jno num64
+	else if (instr == 0x1b) { // addno r r num64
 		if ((core->registers[REG_FLAG] & FLAG_OVERFLOW) == 0)
-			core->registers[REG_PC] = num1;
+			core->registers[r1] = core_alu(core, core->registers[r2], num1, ALU_ADD);
 	}
 
 	else if (instr == 0x1c) { // pushl r
@@ -378,7 +391,7 @@ void core_step(Core* core) {
 	}
 
 	else if (instr == 0x25) { // int num8
-		core_int(core, num3);
+		apic_push(&motherboard->cpu.apic, num3);
 	}
 
 	else if (instr == 0x26) { // iret
@@ -493,6 +506,14 @@ void core_step(Core* core) {
 	else if (instr == 0x39) { // loflag r
 		if (core->registers == core->registersk) {
 			core->registersn[REG_FLAG] = core->registersk[r1];
+		} else {
+			// panic
+		}
+	}
+
+	else if (instr == 0x3a) { // cint num8 num8
+		if (core->registers == core->registersk) {
+			apic_push_core(&motherboard->cpu.apic, num3, num4);
 		} else {
 			// panic
 		}
