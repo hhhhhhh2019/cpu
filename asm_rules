@@ -1,0 +1,116 @@
+#terminals
+
+HEX_NUMBER (0x|0X)[0-9a-fA-f]+
+BIN_NUMBER (0b|0B)[0-1]+
+DEC_NUMBER [0-9]+
+NEWLINE \n
+COMMA \,
+COLON \:
+STRING ".*?"(?<!\\")
+CHARACTER '.'
+REGISTER (r0|r1|r2|r3|r4|r5|r6|r7|r8|r9|r10|r11|r12|r13|r14|r15|pc|sp)
+CURRENTADDR \$
+
+DB db
+DS ds
+DI di
+DL di
+TIMES times
+
+ADDE adde
+ADDNE addne
+ADDL addl
+ADDG addg
+ADDO addo
+ADDNO addno
+
+ADD add
+SUB sub
+MUL mul
+DIV div
+SMUL smul
+SDIV sdiv
+CMP cmp
+
+STOL stol
+STOI stoi
+STOS stos
+STOB stob
+
+LOAL loal
+LOAI loai
+LOAS loas
+LOAB loab
+
+PUSHL pushl
+PUSHI pushi
+PUSHS pushs
+PUSHB pushb
+
+POPL popl
+POPI popi
+POPS pops
+POPB popb
+
+CALL call
+RET ret
+INT int
+IRET iret
+CINT cint
+
+AND and
+OR or
+XOR xor
+NOT not
+SHL shl
+SHR shr
+
+CHST chst
+LOST lost
+STOLK stolk
+LOALK loalk
+CHTP chtp
+LOTP lotp
+CHFLAG chflag
+LOFLAG loflag
+
+PLUS \+
+MINUS \-
+MULTIPLE \*
+DIVIDE \/
+BR_OPEN \(
+BR_CLOSE \)
+
+UNDEFINED [a-zA-z][0-9a-zA-Z]*
+
+
+#nonterminals
+
+S S1 S | NEWLINE S |
+S1 Data | Instr | Label
+
+Label UNDEFINED COLON NEWLINE
+
+Data Times DataType Data1 NEWLINE
+Times TIMES Number |
+DataType DL | DI | DS | DB
+Data1 E Data11 | STRING Data11
+Data11 COMMA Data1 |
+
+
+Instr Instr_name I1 NEWLINE
+I1 REGISTER I11 | E I11
+I11 COMMA I1 |
+
+Instr_name ADD | SUB | MUL | DIV | SMUL | SDIV | CMP | ADDE | ADDG | ADDO | ADDL | ADDNE | ADDNO | PUSHL | PUSHI | PUSHS | PUSHB | POPL | POPI | POPS | POPB | LOAL | LOAI | LOAS | LOAB | STOL | STOI | STOS | STOB | CALL | RET | INT | IRET | CINT | AND | OR | XOR | NOT | SHL | SHR | CHST | LOST | STOLK | LOALK | CHTP | LOTP | CHFLAG | LOFLAG
+
+
+E T E1
+E1 PLUS T E1 | MINUS T E1 |
+T F T1
+T1 MULTIPLE F E1 | DIVIDE F E1 |
+
+
+Number DEC_NUMBER | HEX_NUMBER | BIN_NUMBER | CHARACTER | UNDEFINED | CURRENTADDR
+F F1 | PLUS F1 | MINUS F1
+F1 Number | BR_OPEN E BR_CLOSE
