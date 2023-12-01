@@ -84,6 +84,11 @@ Type_regex_t types_regex[] = {
 	{BR_OPEN,     "^\\("},
 	{BR_CLOSE,    "^\\)"},
 
+	{AMPERSAND,   "^\\&"},
+	{CARET,       "^\\^"},
+	{PIPE,        "^\\|"},
+	{TILDA,       "^\\~"},
+
 	{COMMA,       "^,"},
 	{COLON,       "^:"},
 

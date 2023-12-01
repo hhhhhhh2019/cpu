@@ -16,5 +16,5 @@ make_emulator:
 clean:
 	make -C as clean
 	make -C emulator clean
-	make -C cc clean
+	#make -C cc clean
 	-rm bios -r

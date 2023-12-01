@@ -97,6 +97,14 @@ long get_number(Parser_state* state, Node* node, Node* parent, long last_addr) {
 		return get_number(state, node->childs[1], parent, last_addr) * get_number(state, node->childs[0], parent, last_addr);
 	if (node->value.type == DIVIDE)
 		return get_number(state, node->childs[1], parent, last_addr) / get_number(state, node->childs[0], parent, last_addr);
+	if (node->value.type == AMPERSAND)
+		return get_number(state, node->childs[1], parent, last_addr) & get_number(state, node->childs[0], parent, last_addr);
+	if (node->value.type == PIPE)
+		return get_number(state, node->childs[1], parent, last_addr) | get_number(state, node->childs[0], parent, last_addr);
+	if (node->value.type == CARET)
+		return get_number(state, node->childs[1], parent, last_addr) ^ get_number(state, node->childs[0], parent, last_addr);
+	if (node->value.type == TILDA)
+		return ~get_number(state, node->childs[0], parent, last_addr);
 
 	return 0;
 }
