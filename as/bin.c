@@ -8,6 +8,9 @@
 
 
 
+long last_addr;
+
+
 void bin_parse_instr(Bin_result* result, Parser_state* state, Node* node) {
 	char* buffer = malloc(node->size);
 	char buffer_offset = 1;
@@ -34,7 +37,7 @@ void bin_parse_instr(Bin_result* result, Parser_state* state, Node* node) {
 		} else {
 			reg_id = 0;
 
-			long number = get_number(state, arg, instr);
+			long number = get_number(state, arg, instr, last_addr);
 			char size = 8;
 
 			if (buffer[0] == 0x25 || buffer[0] == 0x3a)
@@ -61,7 +64,7 @@ void bin_parse_data(Bin_result* result, Parser_state* state, Node* node) {
 	int count = 1;
 
 	if (node->childs_count == 3)
-		count = get_number(state, node->childs[node->childs_count-1]->childs[0], node);
+		count = get_number(state, node->childs[node->childs_count-1]->childs[0], node, last_addr);
 
 	int one_size = 0;
 
@@ -80,7 +83,7 @@ void bin_parse_data(Bin_result* result, Parser_state* state, Node* node) {
 	Node* elem = node->childs[0];
 
 	while (1) {
-		long number = get_number(state, elem->childs[elem->childs_count-1], node);
+		long number = get_number(state, elem->childs[elem->childs_count-1], node, last_addr);
 
 		for (int j = 0; j < one_size; j++) {
 			for (int i = 0; i < count; i++)
@@ -107,6 +110,7 @@ void bin_parse_node(Bin_result* result, Parser_state* state, Node* node) {
 		bin_parse_instr(result, state, node);
 	else if (node->value.type == Data)
 		bin_parse_data(result, state, node);
+	last_addr = node->offset;
 }
 
 
@@ -115,6 +119,9 @@ Bin_result bin_parse(Parser_state* state) {
 		malloc(0),
 		0
 	};
+
+
+	last_addr = 0;
 
 
 	Node* node = state->sresult.root;

@@ -87,8 +87,8 @@ Type_regex_t types_regex[] = {
 	{COMMA,       "^,"},
 	{COLON,       "^:"},
 
-	{CURRENTADDR, "^\\$"},
 	{LASTADDR,    "^\\$\\$"},
+	{CURRENTADDR, "^\\$"},
 
 	{OFFSET,      "\\.offset"},
 

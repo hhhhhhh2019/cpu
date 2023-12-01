@@ -1,3 +1,4 @@
+#include "lexer.h"
 #include <utils.h>
 #include <as.h>
 
@@ -58,7 +59,7 @@ long get_long_size(long num) {
 
 
 
-long get_number(Parser_state* state, Node* node, Node* parent) {
+long get_number(Parser_state* state, Node* node, Node* parent, long last_addr) {
 	if (node->value.type == DEC_NUMBER)
 		return dec2long(node->value.value);
 	if (node->value.type == BIN_NUMBER)
@@ -84,14 +85,18 @@ long get_number(Parser_state* state, Node* node, Node* parent) {
 		return parent->offset;
 	}
 
+	if (node->value.type == LASTADDR) {
+		return last_addr;
+	}
+
 	if (node->value.type == PLUS)
-		return get_number(state, node->childs[1], parent) + get_number(state, node->childs[0], parent);
+		return get_number(state, node->childs[1], parent, last_addr) + get_number(state, node->childs[0], parent, last_addr);
 	if (node->value.type == MINUS)
-		return get_number(state, node->childs[1], parent) - get_number(state, node->childs[0], parent);
+		return get_number(state, node->childs[1], parent, last_addr) - get_number(state, node->childs[0], parent, last_addr);
 	if (node->value.type == MULTIPLE)
-		return get_number(state, node->childs[1], parent) * get_number(state, node->childs[0], parent);
+		return get_number(state, node->childs[1], parent, last_addr) * get_number(state, node->childs[0], parent, last_addr);
 	if (node->value.type == DIVIDE)
-		return get_number(state, node->childs[1], parent) / get_number(state, node->childs[0], parent);
+		return get_number(state, node->childs[1], parent, last_addr) / get_number(state, node->childs[0], parent, last_addr);
 
 	return 0;
 }

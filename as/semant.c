@@ -1,4 +1,5 @@
 #include "lexer.h"
+#include "synt.h"
 #include <as.h>
 #include <utils.h>
 
@@ -116,7 +117,7 @@ void check_data(Parser_state* state, Node* node) {
 	int count = 1;
 
 	if (node->childs_count == 3)
-		count = get_number(state, node->childs[node->childs_count-1]->childs[0], node);
+		count = get_number(state, node->childs[node->childs_count-1]->childs[0], node, 0);
 
 	int one_size = 0;
 
@@ -226,7 +227,7 @@ void check_instruction(Parser_state* state, Node* node) {
 
 
 void check_offset(Parser_state* state, Node* node) {
-	offset = get_number(state, node, node->childs[0]);
+	offset = get_number(state, node->childs[0], node, 0);
 }
 
 

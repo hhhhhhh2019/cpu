@@ -1,6 +1,6 @@
 .offset 0x10000
 
-add pc, pc, $
+add pc, pc, start - $
 
 start:
 	add r1, r0, 2

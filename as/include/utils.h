@@ -36,7 +36,7 @@ long bin2long(char*);
 
 long get_long_size(long);
 
-long get_number(struct Parser_state*, Node*, Node*);
+long get_number(struct Parser_state*, Node*, Node*, long);
 char get_reg_number(char*);
 
 
