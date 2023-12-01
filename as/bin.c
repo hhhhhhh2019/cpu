@@ -35,7 +35,6 @@ void bin_parse_instr(Bin_result* result, Parser_state* state, Node* node) {
 			reg_id = 0;
 
 			long number = get_number(state, arg, instr);
-			printf(":%ld\n", number);
 			char size = 8;
 
 			if (buffer[0] == 0x25 || buffer[0] == 0x3a)

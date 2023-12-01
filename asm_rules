@@ -89,12 +89,12 @@ OFFSET \.offset
 
 #nonterminals
 
-S S1 S | NEWLINE S |
+S S1 NEWLINE S | NEWLINE S |
 S1 Data | Instr | Label | Offset
 
-Label UNDEFINED COLON NEWLINE
+Label UNDEFINED COLON
 
-Data Times DataType Data1 NEWLINE
+Data Times DataType Data1
 Times TIMES E |
 DataType DL | DI | DS | DB
 Data1 E Data11 | STRING Data11
@@ -102,7 +102,7 @@ Data11 COMMA Data1 |
 
 Offset OFFSET Number
 
-Instr Instr_name I1 NEWLINE
+Instr Instr_name I1
 I1 REGISTER I11 | E I11
 I11 COMMA I1 |
 

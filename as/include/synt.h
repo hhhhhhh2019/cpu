@@ -5,7 +5,7 @@
 #include <lexer.h>
 
 
-extern int table[90][90];
+extern int table[93][93];
 extern enum Token_type** todo;
 
 extern char** token_type_names;

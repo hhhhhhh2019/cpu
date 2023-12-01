@@ -88,6 +88,9 @@ Type_regex_t types_regex[] = {
 	{COLON,       "^:"},
 
 	{CURRENTADDR, "^\\$"},
+	{LASTADDR,    "^\\$\\$"},
+
+	{OFFSET,      "\\.offset"},
 
 	{UNDEFINED,   "^[a-zA-Z\\.]+[a-zA-Z0-9\\.]*"},
 };

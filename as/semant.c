@@ -1,3 +1,4 @@
+#include "lexer.h"
 #include <as.h>
 #include <utils.h>
 
@@ -87,7 +88,7 @@ unsigned int instr_count = sizeof(instr_args) / sizeof(Instruction_descr);
 
 
 
-char check_label(Parser_state* state, Node* node) {
+void check_label(Parser_state* state, Node* node) {
 	char* name = node->childs[1]->value.value;
 
 	for (int i = 0; i < state->seresult.labels_count; i++) {
@@ -97,7 +98,6 @@ char check_label(Parser_state* state, Node* node) {
 			    node->childs[1]->value.line,
 			    node->childs[1]->value.col);
 			state->ok = 0;
-			return 0;
 		}
 	}
 
@@ -107,12 +107,10 @@ char check_label(Parser_state* state, Node* node) {
 		name,
 		offset
 	};
-
-	return 1;
 }
 
 
-char check_data(Parser_state* state, Node* node) {
+void check_data(Parser_state* state, Node* node) {
 	node->offset = offset;
 
 	int count = 1;
@@ -147,12 +145,10 @@ char check_data(Parser_state* state, Node* node) {
 	node->size *= count;
 
 	offset += node->size;
-
-	return 1;
 }
 
 
-char check_instruction(Parser_state* state, Node* node) {
+void check_instruction(Parser_state* state, Node* node) {
 	node->offset = offset;
 
 	enum Token_type type = node->childs[1]->value.type;
@@ -212,13 +208,11 @@ char check_instruction(Parser_state* state, Node* node) {
 		free(suitable);
 		free(suitable_buffer);
 		state->ok = 0;
-		return 0;
 	}
 
 	if (arg_id >= instr_args[suitable[0]].args_count) {
 		fprintf(stderr, "Instr args error!\n");
 		state->ok = 0;
-		return 0;
 	}
 
 	instr->code = instr_args[suitable[0]].code;
@@ -228,19 +222,23 @@ char check_instruction(Parser_state* state, Node* node) {
 
 	free(suitable);
 	free(suitable_buffer);
-
-	return 1;
 }
 
 
-char check_node(Parser_state* state, Node* node) {
+void check_offset(Parser_state* state, Node* node) {
+	offset = get_number(state, node, node->childs[0]);
+}
+
+
+void check_node(Parser_state* state, Node* node) {
 	if (node->value.type == Label)
-		return check_label(state, node);
-
-	if (node->value.type == Data)
-		return check_data(state, node);
-
-	return check_instruction(state, node);
+		check_label(state, node);
+	else if (node->value.type == Data)
+		check_data(state, node);
+	else if (node->value.type == Offset)
+		check_offset(state, node);
+	else
+		check_instruction(state, node);
 }
 
 
@@ -259,8 +257,7 @@ void semant_parse(Parser_state* state) {
 				continue;
 			}
 
-			if (!check_node(state, node->childs[0]))
-				state->ok = 0;
+			check_node(state, node->childs[0]);
 
 			break;
 		}
@@ -268,9 +265,7 @@ void semant_parse(Parser_state* state) {
 		if (node->childs_count == 0)
 			break;
 
-
-		if (!check_node(state, node->childs[1]))
-			state->ok = 0;
+		check_node(state, node->childs[1]);
 
 		node = node->childs[0];
 	}
