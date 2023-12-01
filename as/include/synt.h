@@ -25,6 +25,10 @@ typedef struct Node {
 	struct Node** childs;
 
 	int id;
+
+	long size;
+	long offset;
+	long code;
 } Node;
 
 

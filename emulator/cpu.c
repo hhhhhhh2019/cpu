@@ -8,7 +8,6 @@
 
 
 char instr_size[] = {
-	2,  // mov r r
 	10, // stol r r num64
 	10, // stoi r r num64
 	10, // stos r r num64
@@ -23,7 +22,7 @@ char instr_size[] = {
 	3,  // div r r r
 	3,  // smul r r r
 	3,  // sdiv r r r
-	3,  // cmp r r r
+	2,  // cmp r r
 	10, // add r r num64
 	10, // sub r r num64
 	10, // mul r r num64
@@ -130,9 +129,13 @@ unsigned long core_alu(Core* core, unsigned long a, unsigned long b, enum ALU_OP
 	unsigned long sum = a + b;
 	unsigned long sub = a - b;
 	unsigned long mul = a * b;
-	unsigned long div = a / b;
+	unsigned long div = 0;
+	if (b != 0)
+		div = a / b;
 	long smul = a * b;
-	long sdiv = a / b;
+	long sdiv = 0;
+	if (b != 0)
+		div = a / b;
 
 	if (a == b)
 		core->registers[REG_FLAG] |= FLAG_ZERO;
@@ -183,11 +186,11 @@ void core_step(Core* core) {
 	Motherboard* motherboard = ((Motherboard*)core->motherboard);
 	char* ram = motherboard->ram.ram;
 
-	char instr = ram[core->registers[REG_PC]];
+	unsigned char instr = ram[core->registers[REG_PC]];
 
-	char r1 = (ram[core->registers[REG_PC] + 1] & 0xf0) >> 4;
-	char r2 = ram[core->registers[REG_PC] + 1] & 0x0f;
-	char r3 = (ram[core->registers[REG_PC] + 2] & 0xf0) >> 4;
+	unsigned char r1 = (ram[core->registers[REG_PC] + 1] & 0xf0) >> 4;
+	unsigned char r2 = ram[core->registers[REG_PC] + 1] & 0x0f;
+	unsigned char r3 = (ram[core->registers[REG_PC] + 2] & 0xf0) >> 4;
 
 	unsigned long num1 = *(unsigned long*)(ram + core->registers[REG_PC] + 2);
 	unsigned long num2 = *(unsigned long*)(ram + core->registers[REG_PC] + 1);
@@ -195,14 +198,14 @@ void core_step(Core* core) {
 	unsigned char num4 = ram[core->registers[REG_PC] + 2];
 
 
-	core->registers[REG_PC] += instr_size[instr];
-
-
 	LOG("%x\n", instr);
 	LOG("r1: %d  r2: %d  r3: %d\n", r1,r2,r3);
 	LOG("num1: %lx\n", num1);
 	LOG("num2: %lx\n", num2);
 	LOG("num3: %x\n", num3);
+
+	
+	long prev_pc_state = core->registers[REG_PC];
 
 
 	if (instr == 0x00) { // stol r r num64
@@ -310,7 +313,7 @@ void core_step(Core* core) {
 	}
 
 	else if (instr == 0x15) { // cmp r num64
-		core_alu(core, core->registers[r1], num1, ALU_ADD);
+		core_alu(core, core->registers[r1], num1, ALU_SUB);
 	}
 
 	else if (instr == 0x16) { // adde r r num64
@@ -518,4 +521,8 @@ void core_step(Core* core) {
 			// panic
 		}
 	}
+
+
+	if (core->registers[REG_PC] == prev_pc_state)
+		core->registers[REG_PC] += instr_size[instr];
 }

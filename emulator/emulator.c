@@ -105,6 +105,8 @@ int main(int argc, char** argv) {
 
 			print_registers(&motherboard.cpu.cores[0], 0);
 			core_step(&motherboard.cpu.cores[0]);
+
+			getc(stdin);
 		}
 
 

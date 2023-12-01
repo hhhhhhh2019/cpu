@@ -1,6 +1,6 @@
-#include "synt.h"
 #include <as.h>
 #include <utils.h>
+#include <bin.h>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -9,7 +9,7 @@
 #include <errno.h>
 
 
-char* input_filename = "../bios.S";
+char* input_filename = NULL;
 char* output_filename = "a.out";
 
 
@@ -21,6 +21,10 @@ int main(int argc, char** argv) {
 		if (strcmp(argv[i], "--help") == 0 || strcmp(argv[i], "-h") == 0) {
 			print_help();
 			return 0;
+		}
+
+		else if (strcmp(argv[i], "--output") == 0 || strcmp(argv[i], "-o") == 0) {
+			output_filename = argv[++i];
 		}
 
 		else {
@@ -45,10 +49,41 @@ int main(int argc, char** argv) {
 
 	synt_parse(&state);
 
+	if (state.ok == 0)
+		return 1;
 
-	for (int i = 0; i < 1; i++)
-		collapse_node(state.sresult.root);
-	create_dot_from_node(state.sresult.root);
+	collapse_node(state.sresult.root);
+
+
+	semant_parse(&state);
+
+	if (state.ok == 0)
+		return 1;
+
+
+	//create_dot_from_node(state.sresult.root);
+
+
+	Bin_result bin = bin_parse(&state);
+
+
+	if (state.ok == 0)
+		return 1;
+
+
+	FILE* f = fopen(output_filename, "wb");
+
+	if (f == NULL) {
+		perror("fopen");
+		return 1;
+	}
+
+	fwrite(bin.data, bin.data_size, 1, f);
+
+	fclose(f);
+
+
+	free(bin.data);
 
 
 	free_state(state);
@@ -77,6 +112,8 @@ void free_state(Parser_state state) {
 	free(state.lresult.tokens);
 
 	free_node(state.sresult.root);
+
+	free(state.seresult.labels);
 }
 
 

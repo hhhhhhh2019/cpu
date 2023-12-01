@@ -205,7 +205,7 @@ char collapse_node(Node* node) {
 	}
 
 
-	if (node->childs_count == 1 && node->value.type != I1) {
+	if (node->childs_count == 1 && node->value.type != I1 && node->value.type != Data1 && node->value.type != S) {
 		Node* child = node->childs[0];
 
 		free(node->childs);

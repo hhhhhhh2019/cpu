@@ -62,7 +62,7 @@ void mmu_write(MMU* mmu, char vaddr, unsigned long tp, unsigned long addr, unsig
 
 	unsigned long mask = 0;
 	for (int i = 0; i < size; i++)
-		mask |= 255 << (i * 8);
+		mask |= 255l << (i * 8l);
 
 	for (int i = 0; i < mmu->mmio_count; i++) {
 		if (addr < mmu->mmio[i].start_addr || addr >= mmu->mmio[i].start_addr + mmu->mmio[i].size)

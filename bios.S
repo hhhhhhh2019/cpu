@@ -1,12 +1,14 @@
-add pc, r0, start
+add pc, pc, start - $
 
 start:
-	add r1, r0, 1 + 2
-	add r2, r0, 6 + 3 - 2 * (3 + 4 - 7)
+	add r1, r0, 2
+	add r2, r0, 3
 
 	cmp r1, r2
 
-	adde pc, equals - $
+	adde pc, pc, equals - $
+	addl pc, pc, less - $
+	addg pc, pc, more - $
 
 equals:
 	add r3, r0, 1
