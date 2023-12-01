@@ -223,7 +223,7 @@ char collapse_node(Node* node) {
 	}
 
 
-	if (node->value.type == E1 || node->value.type == T1) {
+	if (node->value.type == E1 || node->value.type == B1 || node->value.type == T1) {
 		Node* child = node->childs[node->childs_count-1];
 
 		node->value = child->value;
@@ -234,7 +234,7 @@ char collapse_node(Node* node) {
 	}
 
 
-	if (node->value.type == E || node->value.type == T) {
+	if (node->value.type == E || node->value.type == B || node->value.type == T) {
 		Node* child = node->childs[0];
 		Node* child2 = child->childs[0];
 

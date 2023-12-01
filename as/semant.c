@@ -112,8 +112,6 @@ void check_label(Parser_state* state, Node* node) {
 
 
 void check_data(Parser_state* state, Node* node) {
-	node->offset = offset;
-
 	int count = 1;
 
 	if (node->childs_count == 3)
@@ -150,8 +148,6 @@ void check_data(Parser_state* state, Node* node) {
 
 
 void check_instruction(Parser_state* state, Node* node) {
-	node->offset = offset;
-
 	enum Token_type type = node->childs[1]->value.type;
 
 	char* suitable = malloc(0);
@@ -232,6 +228,8 @@ void check_offset(Parser_state* state, Node* node) {
 
 
 void check_node(Parser_state* state, Node* node) {
+	node->offset = offset;
+
 	if (node->value.type == Label)
 		check_label(state, node);
 	else if (node->value.type == Data)
