@@ -57,7 +57,7 @@ void synt_parse(Parser_state* state) {
 		Token tok = state->lresult.tokens[token_id];
 		Node* node = (Node*)stack_long_pop(&nodes_stack);
 
-		// printf("%s %s\n", tok.value, token_type_names[tok.type]);
+		// printf("%s\n", token_type_names[tok.type]);
 
 		if (st == tok.type) {
 			node->value = tok;
@@ -68,7 +68,10 @@ void synt_parse(Parser_state* state) {
 		int todo_id = table[st][tok.type];
 
 		if (todo_id == -1) {
-			printf("Error\n");
+			printf("Error %s %lu:%lu\n",
+			    tok.filepath,
+			    tok.line,
+			    tok.col);
 			state->ok = 0;
 			return;
 		}
@@ -205,7 +208,7 @@ char collapse_node(Node* node) {
 	}
 
 
-	if (node->childs_count == 1 && node->value.type != I1 && node->value.type != Data1 && node->value.type != S) {
+	if (node->childs_count == 1 && node->value.type != I11 && node->value.type != Data1 && node->value.type != S && node->value.type != Instr) {
 		Node* child = node->childs[0];
 
 		free(node->childs);

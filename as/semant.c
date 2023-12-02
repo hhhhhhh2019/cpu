@@ -147,7 +147,29 @@ void check_data(Parser_state* state, Node* node) {
 }
 
 
+void check_instruction_no_args(Parser_state* state, Node* node) {
+	enum Token_type type = node->childs[0]->value.type;
+
+	for (int i = 0; i < instr_count; i++) {
+		if (instr_args[i].token != type)
+			continue;
+
+		node->code = instr_args[i].code;
+		node->size = 1;
+		node->offset = offset;
+		offset += 1;
+
+		break;
+	}
+}
+
+
 void check_instruction(Parser_state* state, Node* node) {
+	if (node->childs_count == 1) {
+		check_instruction_no_args(state, node);
+		return;
+	}
+
 	enum Token_type type = node->childs[1]->value.type;
 
 	char* suitable = malloc(0);
@@ -155,7 +177,6 @@ void check_instruction(Parser_state* state, Node* node) {
 
 	char* suitable_buffer = malloc(0);
 	unsigned int suitable_buffer_size = 0;
-
 
 	for (int i = 0; i < instr_count; i++) {
 		if (instr_args[i].token != type)

@@ -18,38 +18,40 @@ void bin_parse_instr(Bin_result* result, Parser_state* state, Node* node) {
 
 	Node* instr = node;
 
-	node = node->childs[0];
-	unsigned int arg_id = 0;
-
-	char reg_id = 0;
-
-	while (1) {
-		Node* arg = node->childs[node->childs_count-1];
-
-		if (arg->value.type == REGISTER) {
-			if (reg_id == 0)
-				buffer[buffer_offset++] = (get_reg_number(arg->value.value) & 15) << 4;
-			else
-				buffer[buffer_offset-1] |= get_reg_number(arg->value.value) & 15;
-
-			reg_id = (reg_id + 1) % 2;
-		} else {
-			reg_id = 0;
-
-			long number = get_number(state, arg, instr, last_addr);
-			char size = 8;
-
-			if (buffer[0] == 0x25 || buffer[0] == 0x3a)
-				size = 1;
-
-			for (int i = 0; i < size; i++)
-				buffer[buffer_offset++] = (number >> i * 8) & 0xff;
-		}
-
-		if (node->childs_count == 1)
-			break;
-
+	if (instr->childs_count != 1) {
 		node = node->childs[0];
+		unsigned int arg_id = 0;
+
+		char reg_id = 0;
+
+		while (1) {
+			Node* arg = node->childs[node->childs_count-1];
+
+			if (arg->value.type == REGISTER) {
+				if (reg_id == 0)
+					buffer[buffer_offset++] = (get_reg_number(arg->value.value) & 15) << 4;
+				else
+					buffer[buffer_offset-1] |= get_reg_number(arg->value.value) & 15;
+
+				reg_id = (reg_id + 1) % 2;
+			} else {
+				reg_id = 0;
+
+				long number = get_number(state, arg, instr, last_addr);
+				char size = 8;
+
+				if (buffer[0] == 0x25 || buffer[0] == 0x3a)
+					size = 1;
+
+				for (int i = 0; i < size; i++)
+					buffer[buffer_offset++] = (number >> i * 8) & 0xff;
+			}
+
+			if (node->childs_count == 1)
+				break;
+
+			node = node->childs[0];
+		}
 	}
 
 	result->data = realloc(result->data, result->data_size + instr->size);

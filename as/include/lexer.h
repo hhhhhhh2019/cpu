@@ -95,6 +95,7 @@ enum Token_type {
 	Instr,
 	I1,
 	I11,
+	I111,
 	Instr_name,
 	E,
 	E1,

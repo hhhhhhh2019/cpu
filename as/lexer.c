@@ -97,7 +97,7 @@ Type_regex_t types_regex[] = {
 
 	{OFFSET,      "\\.offset"},
 
-	{UNDEFINED,   "^[a-zA-Z\\.]+[a-zA-Z0-9\\.]*"},
+	{UNDEFINED,   "^[a-zA-Z_]+[a-zA-Z0-9_]*"},
 };
 
 unsigned int types_regex_count = sizeof(types_regex) / sizeof(Type_regex_t);
@@ -139,7 +139,7 @@ void lexer_parse(Parser_state* state) {
 	char* string = NULL;
 
 
-	while (loffset < state->filedata_size) {
+	while (loffset < state->filedata_size && state->ok) {
 		Token t;
 
 		char c = state->filedata[loffset++];
@@ -268,19 +268,34 @@ Token lexer_next_token(Parser_state* state) {
 
 	regmatch_t match;
 
+	int max_size = 0;
+	int max_id = 0;
+
 	for (int i = 0; i < types_regex_count; i++) {
 		if (regexec(&types_regex[i].regex, state->filedata + loffset, 1, &match, 0) != 0)
 			continue;
 
+		int size = match.rm_eo - match.rm_so;
+
+		if (size <= max_size)
+			continue;
+
+		max_size = size;
+
 		t.type = types_regex[i].type;
-		break;
 	}
 
-	t.value = calloc(match.rm_eo - match.rm_so + 1, 1);
-	memcpy(t.value, state->filedata + match.rm_so + loffset, match.rm_eo - match.rm_so);
+	if (max_size == 0) {
+		printf("Lexer Error\n");
+		state->ok = 0;
+		return (Token){0,NULL,0,0};
+	}
 
-	loffset += match.rm_eo - match.rm_so;
-	col += match.rm_eo - match.rm_so - 1;
+	t.value = calloc(max_size + 1, 1);
+	memcpy(t.value, state->filedata + loffset, max_size);
+
+	loffset += max_size;
+	col += max_size - 1;
 
 	return t;
 }

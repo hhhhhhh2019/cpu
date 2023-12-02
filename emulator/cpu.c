@@ -211,53 +211,53 @@ void core_step(Core* core) {
 	if (instr == 0x00) { // stol r r num64
 		mmu_write(&motherboard->mmu,
 		          (core->state & STATE_PAGING) != 0, core->registers[REG_TP],
-		          core->registers[r2] + num2, 8, core->registers[r1]);
+		          core->registers[r2] + num1, 8, core->registers[r1]);
 	}
 
 	else if (instr == 0x01) { // stoi r r num64
 		mmu_write(&motherboard->mmu,
 		          (core->state & STATE_PAGING) != 0, core->registers[REG_TP],
-		          core->registers[r2] + num2, 4, core->registers[r1]);
+		          core->registers[r2] + num1, 4, core->registers[r1]);
 	}
 
 	else if (instr == 0x02) { // stos r r num64
 		mmu_write(&motherboard->mmu,
 		          (core->state & STATE_PAGING) != 0, core->registers[REG_TP],
-		          core->registers[r2] + num2, 2, core->registers[r1]);
+		          core->registers[r2] + num1, 2, core->registers[r1]);
 	}
 
 	else if (instr == 0x03) { // stob r r num64
 		mmu_write(&motherboard->mmu,
 		          (core->state & STATE_PAGING) != 0, core->registers[REG_TP],
-		          core->registers[r2] + num2, 1, core->registers[r1]);
+		          core->registers[r2] + num1, 1, core->registers[r1]);
 	}
 
 	else if (instr == 0x04) { // loal r r num64
 		char rules;
 		core->registers[r1] = mmu_read(&motherboard->mmu,
 		         (core->state & STATE_PAGING) != 0, core->registers[REG_TP],
-		         core->registers[r2] + num2, 8, &rules);
+		         core->registers[r2] + num1, 8, &rules);
 	}
 
 	else if (instr == 0x05) { // loai r r num64
 		char rules;
 		core->registers[r1] = mmu_read(&motherboard->mmu,
 		         (core->state & STATE_PAGING) != 0, core->registers[REG_TP],
-		         core->registers[r2] + num2, 4, &rules);
+		         core->registers[r2] + num1, 4, &rules);
 	}
 
 	else if (instr == 0x06) { // loas r r num64
 		char rules;
 		core->registers[r1] = mmu_read(&motherboard->mmu,
 		         (core->state & STATE_PAGING) != 0, core->registers[REG_TP],
-		         core->registers[r2] + num2, 2, &rules);
+		         core->registers[r2] + num1, 2, &rules);
 	}
 
 	else if (instr == 0x07) { // loab r r num 64
 		char rules;
 		core->registers[r1] = mmu_read(&motherboard->mmu,
 		         (core->state & STATE_PAGING) != 0, core->registers[REG_TP],
-		         core->registers[r2] + num2, 1, &rules);
+		         core->registers[r2] + num1, 1, &rules);
 	}
 
 	else if (instr == 0x08) { // add r r r
@@ -395,6 +395,7 @@ void core_step(Core* core) {
 
 	else if (instr == 0x25) { // int num8
 		apic_push(&motherboard->cpu.apic, num3);
+		return;
 	}
 
 	else if (instr == 0x26) { // iret
@@ -471,7 +472,7 @@ void core_step(Core* core) {
 		}
 	}
 
-	else if (instr == 0x35) { // loal r r num64
+	else if (instr == 0x35) { // loalk r r num64
 		if (core->registers == core->registersk) {
 			char rules;
 			core->registersn[r1] = mmu_read(&motherboard->mmu,
