@@ -61,7 +61,7 @@ int main(int argc, char** argv) {
 		return 1;
 
 
-	//create_dot_from_node(state.sresult.root);
+	// create_dot_from_node(state.sresult.root);
 
 
 	Bin_result bin = bin_parse(&state);
