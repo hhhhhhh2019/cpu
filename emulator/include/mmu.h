@@ -27,8 +27,13 @@ typedef struct MMU {
 
 void mmu_init(MMU*, void* motherboard);
 
+void mmu_init_dev(MMU*);
+
 unsigned long mmu_read(MMU*, char vaddr, unsigned long tp, unsigned long addr, unsigned char size, char* rules);
 void mmu_write(MMU*, char vaddr, unsigned long tp, unsigned long addr, unsigned char size, unsigned long value);
+
+void mmu_add_mmio(MMU*, MMIO);
+void mmu_clear_mmio(MMU*);
 
 
 #endif

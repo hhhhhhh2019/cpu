@@ -121,7 +121,7 @@ void print_registers(Core* core, int id) {
 
 
 unsigned long core_alu(Core* core, unsigned long a, unsigned long b, enum ALU_OP op) {
-	core->registers[REG_FLAG] &= ~(FLAG_ZERO | FLAG_CARRY | FLAG_OVERFLOW);
+	core->registers[REG_FLAG] &= ~(FLAG_ZERO | FLAG_CARRY | FLAG_SIGN);
 
 	long sa = *(&a);
 	long sb = *(&b);
@@ -141,7 +141,7 @@ unsigned long core_alu(Core* core, unsigned long a, unsigned long b, enum ALU_OP
 		core->registers[REG_FLAG] |= FLAG_ZERO;
 	if (a < b)
 		core->registers[REG_FLAG] |= FLAG_CARRY;
-	core->registers[REG_FLAG] |= ((core->registers[REG_FLAG] & FLAG_CARRY) << 1) | (sub >> 61) & 0b100;
+	core->registers[REG_FLAG] |= ((sub >> 63) & 1) << FLAG_SIGN;
 
 	if (op == ALU_ADD)
 		return sum;
@@ -332,17 +332,19 @@ void core_step(Core* core) {
 	}
 
 	else if (instr == 0x19) { // addg r r num64
-		if ((core->registers[REG_FLAG] & FLAG_ZERO) == 0 && (core->registers[REG_FLAG] & FLAG_CARRY) == 0)
+		if ((core->registers[REG_FLAG] & FLAG_ZERO) == 0 &&
+		    (core->registers[REG_FLAG] & FLAG_CARRY) == 0)
 			core->registers[r1] = core_alu(core, core->registers[r2], num1, ALU_ADD);
 	}
 
-	else if (instr == 0x1a) { // addo r r num64
-		if ((core->registers[REG_FLAG] & FLAG_OVERFLOW) != 0)
+	else if (instr == 0x1a) { // addsl r r num64
+		if ((core->registers[REG_FLAG] & FLAG_SIGN) != 0)
 			core->registers[r1] = core_alu(core, core->registers[r2], num1, ALU_ADD);
 	}
 
-	else if (instr == 0x1b) { // addno r r num64
-		if ((core->registers[REG_FLAG] & FLAG_OVERFLOW) == 0)
+	else if (instr == 0x1b) { // addsg r r num64
+		if ((core->registers[REG_FLAG] & FLAG_ZERO) == 0 &&
+		    (core->registers[REG_FLAG] & FLAG_SIGN) == 0)
 			core->registers[r1] = core_alu(core, core->registers[r2], num1, ALU_ADD);
 	}
 

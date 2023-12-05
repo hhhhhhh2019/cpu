@@ -1,11 +1,22 @@
-#include "utils.h"
 #include <mmu.h>
 #include <motherboard.h>
+
+#include <stdlib.h>
 
 
 void mmu_init(MMU* mmu, void *motherboard) {
 	mmu->motherboard = motherboard;
 	mmu->busy = 0;
+
+	mmu->mmio_count = 0;
+	mmu->mmio = malloc(0);
+
+	mmu_init_dev(mmu);
+}
+
+
+void mmu_init_dev(MMU* mmu) {
+	
 }
 
 
@@ -76,4 +87,19 @@ void mmu_write(MMU* mmu, char vaddr, unsigned long tp, unsigned long addr, unsig
 	
 	for (int j = 0; j < size; j++)
 		((Motherboard*)mmu->motherboard)->ram.ram[addr + j] = value >> (j * 8) & 0xff;
+}
+
+
+void mmu_add_mmio(MMU* mmu, MMIO mmio) {
+	mmu->mmio = realloc(mmu->mmio, sizeof(MMIO) * (++mmu->mmio_count));
+	mmu->mmio[mmu->mmio_count-1] = mmio;
+}
+
+
+void mmu_clear_mmio(MMU* mmu) {
+	free(mmu->mmio);
+	mmu->mmio = malloc(0);
+	mmu->mmio_count = 0;
+
+	mmu_init_dev(mmu);
 }
