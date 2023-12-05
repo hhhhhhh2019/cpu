@@ -29,8 +29,8 @@ void prepeare_names() {
 	token_type_names[18] = "ADDNE\0";
 	token_type_names[19] = "ADDL\0";
 	token_type_names[20] = "ADDG\0";
-	token_type_names[21] = "ADDO\0";
-	token_type_names[22] = "ADDNO\0";
+	token_type_names[21] = "ADDSL\0";
+	token_type_names[22] = "ADDSG\0";
 	token_type_names[23] = "ADD\0";
 	token_type_names[24] = "SUB\0";
 	token_type_names[25] = "MUL\0";
@@ -329,7 +329,7 @@ void prepeare_todo() {
 	todo[31][1] = ADDG;
 	todo[32] = malloc(sizeof(enum Token_type) * 2);
 	todo[32][0] = 1;
-	todo[32][1] = ADDO;
+	todo[32][1] = ADDSL;
 	todo[33] = malloc(sizeof(enum Token_type) * 2);
 	todo[33][0] = 1;
 	todo[33][1] = ADDL;
@@ -338,7 +338,7 @@ void prepeare_todo() {
 	todo[34][1] = ADDNE;
 	todo[35] = malloc(sizeof(enum Token_type) * 2);
 	todo[35][0] = 1;
-	todo[35][1] = ADDNO;
+	todo[35][1] = ADDSG;
 	todo[36] = malloc(sizeof(enum Token_type) * 2);
 	todo[36][0] = 1;
 	todo[36][1] = PUSHL;

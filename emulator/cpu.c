@@ -141,7 +141,7 @@ unsigned long core_alu(Core* core, unsigned long a, unsigned long b, enum ALU_OP
 		core->registers[REG_FLAG] |= FLAG_ZERO;
 	if (a < b)
 		core->registers[REG_FLAG] |= FLAG_CARRY;
-	core->registers[REG_FLAG] |= ((sub >> 63) & 1) << FLAG_SIGN;
+	core->registers[REG_FLAG] |= ((sub >> 63) & 1) << 2;
 
 	if (op == ALU_ADD)
 		return sum;

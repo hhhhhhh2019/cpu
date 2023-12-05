@@ -1,14 +1,14 @@
 add pc, pc, start - $
 
 start:
-	add r1, r0, -1
-	add r2, r0, 1
+	add r1, r0, -2
+	add r2, r0, -1
 
 	cmp r1, r2
 
 	adde pc, pc, equals - $
-	addo pc, pc, less - $
-	addno pc, pc, more - $
+	addsl pc, pc, less - $
+	addsg pc, pc, more - $
 
 equals:
 	add r3, r0, 1

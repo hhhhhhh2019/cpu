@@ -43,8 +43,8 @@ Instruction_descr instr_args[] = {
 	{ADDNE,  0x17, 10, 3, (char[]){0, 0, 1}},
 	{ADDL,   0x18, 10, 3, (char[]){0, 0, 1}},
 	{ADDG,   0x19, 10, 3, (char[]){0, 0, 1}},
-	{ADDO,   0x1a, 10, 3, (char[]){0, 0, 1}},
-	{ADDNO,  0x1b, 10, 3, (char[]){0, 0, 1}},
+	{ADDSL,  0x1a, 10, 3, (char[]){0, 0, 1}},
+	{ADDSG,  0x1b, 10, 3, (char[]){0, 0, 1}},
 
 	{PUSHL,  0x1c,  2, 1, (char[]){0}},
 	{PUSHI,  0x1d,  2, 1, (char[]){0}},

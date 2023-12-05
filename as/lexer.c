@@ -35,8 +35,8 @@ Type_regex_t types_regex[] = {
 	{ADDNE,       "^addne"},
 	{ADDL,        "^addl"},
 	{ADDG,        "^addg"},
-	{ADDO,        "^addo"},
-	{ADDNO,       "^addno"},
+	{ADDSL,       "^addsl"},
+	{ADDSG,       "^addsg"},
 
 	{ADD,         "^add"},
 	{SUB,         "^sub"},
