@@ -4,8 +4,9 @@
 #include <stdlib.h>
 
 
-void mmu_init(MMU* mmu, void *motherboard) {
+void mmu_init(MMU* mmu, void *motherboard, unsigned long hz) {
 	mmu->motherboard = motherboard;
+	mmu->hz = hz;
 	mmu->busy = 0;
 
 	mmu->mmio_count = 0;
@@ -16,7 +17,37 @@ void mmu_init(MMU* mmu, void *motherboard) {
 
 
 void mmu_init_dev(MMU* mmu) {
-	
+	mmu_add_mmio(mmu, (MMIO){
+	    .start_addr = MMU_MMIO_OFFSET,
+	    .size = 11,
+	    .data = mmu->registers
+	});
+}
+
+
+void mmu_step(MMU* mmu) {
+	char cmd = *((char*)mmu->registers + 0);
+	int start_addr = *((int*)mmu->registers + 1);
+	int size = *((int*)mmu->registers + 5);
+	short id = *((short*)mmu->registers + 9);
+
+	mmu->registers[0] = 0;
+
+	Motherboard* motherboard = mmu->motherboard;
+
+	if (cmd == 1) { // reset
+		mmu_clear_mmio(mmu);
+	}
+
+	if (cmd == 2) {
+		if (id < motherboard->devices_count) {
+			mmu_add_mmio(mmu, (MMIO){
+			    .start_addr = start_addr,
+			    .size = size,
+			    .data = motherboard->devices[id] + sizeof(void*) + sizeof(unsigned long)
+			});
+		}
+	}
 }
 
 

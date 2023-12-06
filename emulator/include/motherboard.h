@@ -11,6 +11,9 @@ typedef struct Motherboard {
 	MMU mmu;
 	CPU cpu;
 	RAM ram;
+
+	void** devices;
+	unsigned int devices_count;
 } Motherboard;
 
 

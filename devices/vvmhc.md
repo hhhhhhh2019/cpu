@@ -1,10 +1,12 @@
 # VVMHC (virtual volatile memory host controller)
 
-TYPE ID - 1
+TYPE ID = 2
 
 # Регистры
 
 ## Таблица регистров
+
+размер - 32 байта
 
 |адрес|название|описание|
 |-:|:-:|-|

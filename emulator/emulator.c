@@ -71,7 +71,7 @@ int main(int argc, char** argv) {
 
 
 	ram_init(&motherboard.ram, &motherboard);
-	mmu_init(&motherboard.mmu, &motherboard);
+	mmu_init(&motherboard.mmu, &motherboard, 100);
 	cpu_init(&motherboard.cpu, &motherboard, motherboard.cpu.cores_count, 100);
 
 
@@ -109,6 +109,9 @@ int main(int argc, char** argv) {
 			getc(stdin);
 		}
 
+
+		if (tick % (max_hz / motherboard.mmu.hz) == 0)
+			mmu_step(&motherboard.mmu);
 
 		if (tick % (max_hz / motherboard.cpu.apic.hz) == 0)
 			apic_step(&motherboard.cpu.apic);

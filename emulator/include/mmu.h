@@ -8,6 +8,9 @@
 #define MMU_RULE_EXEC  8
 
 
+#define MMU_MMIO_OFFSET 0x100
+
+
 typedef struct MMIO {
 	unsigned long start_addr;
 	unsigned long size;
@@ -18,6 +21,10 @@ typedef struct MMIO {
 typedef struct MMU {
 	void* motherboard;
 
+	unsigned long hz; // частота обработки команд
+	
+	char registers[11];
+
 	unsigned long mmio_count;
 	MMIO* mmio;
 
@@ -25,7 +32,9 @@ typedef struct MMU {
 } MMU;
 
 
-void mmu_init(MMU*, void* motherboard);
+void mmu_init(MMU*, void* motherboard, unsigned long hz);
+
+void mmu_step(MMU*);
 
 void mmu_init_dev(MMU*);
 
