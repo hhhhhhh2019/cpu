@@ -1,6 +1,7 @@
-#include "apic.h"
 #include <motherboard.h>
 #include <utils.h>
+
+#include <sysinfo.h>
 
 #include <stdlib.h>
 #include <string.h>
@@ -78,6 +79,13 @@ int main(int argc, char** argv) {
 	memcpy(motherboard.ram.ram + BIOS_ADDRESS, bios, bios_size);
 
 
+	motherboard.devices = realloc(motherboard.devices, sizeof(void*) * (++motherboard.devices_count));
+	motherboard.devices[motherboard.devices_count-1] = malloc(sizeof(Sysinfo));
+
+	sysinfo_init(motherboard.devices[motherboard.devices_count-1], &motherboard, 100);
+
+
+
 	char cpu_enabled = 1;
 
 
@@ -86,6 +94,12 @@ int main(int argc, char** argv) {
 	for (int i = 0; i < motherboard.cpu.cores_count; i++)
 		max_hz = max(max_hz, motherboard.cpu.cores[i].hz);
 
+	for (int i = 0; i < motherboard.devices_count; i++) {
+		void* d = motherboard.devices[i];
+
+		max_hz = max(max_hz, *(unsigned long*)(d + sizeof(void*) + sizeof(int) * 2)); // умножаю на 2, потому что выравнивание
+	}
+
 	max_hz = max(max_hz, motherboard.cpu.apic.hz);
 
 
@@ -93,9 +107,11 @@ int main(int argc, char** argv) {
 	motherboard.cpu.cores[0].registersk[REG_SP] = BIOS_ADDRESS;
 	motherboard.cpu.cores[0].state = STATE_ENABLE;
 
-
-	for (int tick = 0; cpu_enabled; tick++) {
+	for (unsigned long tick = 0; cpu_enabled; tick++) {
 		cpu_enabled = 0;
+
+		getc(stdin);
+		printf("step tick: %lu\n", tick);
 
 		for (int i = 0; i < motherboard.cpu.cores_count; i++) {
 			cpu_enabled |= motherboard.cpu.cores[i].state & STATE_ENABLE;
@@ -105,10 +121,16 @@ int main(int argc, char** argv) {
 
 			print_registers(&motherboard.cpu.cores[0], 0);
 			core_step(&motherboard.cpu.cores[0]);
-
-			getc(stdin);
 		}
 
+		for (int i = 0; i < motherboard.devices_count; i++) {
+			unsigned long hz = *(unsigned long*)(
+			    motherboard.devices[i] + sizeof(void*) + sizeof(int) * 2
+			);
+
+			if (tick % (max_hz / hz) == 0)
+				device_step(motherboard.devices[i]);
+		}
 
 		if (tick % (max_hz / motherboard.mmu.hz) == 0)
 			mmu_step(&motherboard.mmu);
@@ -121,4 +143,12 @@ int main(int argc, char** argv) {
 
 void print_help() {
 	
+}
+
+
+void device_step(void* device) {
+	unsigned int type = *(unsigned int*)(device + sizeof(void*));
+
+	if (type == SYSINFO_TYPE_ID)
+		sysinfo_step(device);
 }

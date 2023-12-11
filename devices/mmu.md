@@ -1,5 +1,7 @@
 # MMU (memory management unit)
 
+адрес MMIO для MMU = 0x100
+
 # Регистры
 
 ## Таблица регистров

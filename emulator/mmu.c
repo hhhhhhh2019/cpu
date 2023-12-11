@@ -26,10 +26,10 @@ void mmu_init_dev(MMU* mmu) {
 
 
 void mmu_step(MMU* mmu) {
-	char cmd = *((char*)mmu->registers + 0);
-	int start_addr = *((int*)mmu->registers + 1);
-	int size = *((int*)mmu->registers + 5);
-	short id = *((short*)mmu->registers + 9);
+	unsigned char cmd = *(unsigned char*)(mmu->registers + 0);
+	unsigned int start_addr = *(unsigned int*)(mmu->registers + 1);
+	unsigned int size = *(unsigned int*)(mmu->registers + 5);
+	unsigned short id = *(unsigned short*)(mmu->registers + 9);
 
 	mmu->registers[0] = 0;
 
@@ -39,12 +39,12 @@ void mmu_step(MMU* mmu) {
 		mmu_clear_mmio(mmu);
 	}
 
-	if (cmd == 2) {
+	if (cmd == 2) { // add
 		if (id < motherboard->devices_count) {
 			mmu_add_mmio(mmu, (MMIO){
 			    .start_addr = start_addr,
 			    .size = size,
-			    .data = motherboard->devices[id] + sizeof(void*) + sizeof(unsigned long)
+			    .data = motherboard->devices[id] + sizeof(void*) + sizeof(int) * 2 + sizeof(unsigned long)
 			});
 		}
 	}

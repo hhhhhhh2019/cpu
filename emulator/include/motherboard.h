@@ -17,4 +17,7 @@ typedef struct Motherboard {
 } Motherboard;
 
 
+void device_step(void*);
+
+
 #endif

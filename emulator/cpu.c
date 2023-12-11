@@ -102,18 +102,18 @@ void print_registers(Core* core, int id) {
 
 	LOG("+--- Core %02d --- %d ---------------------------------------------------------------------+\n", id, mode);
 
-	LOG("| st: %016lx ", core->state);
+	LOG("│ st: %016lx ", core->state);
 	for (int j = 0; j < 64; j++)
 		LOG("%c", (core->state >> (63 - j) & 1) + '0');
-	LOG(" |\n");
+	LOG(" │\n");
 
 	for (int i = 1; i < 18; i++) {
-		LOG("| %02d: %016lx ", i, core->registers[i]);
+		LOG("│ %02d: %016lx ", i, core->registers[i]);
 
 		for (int j = 0; j < 64; j++)
 			LOG("%c", (core->registers[i] >> (63 - j) & 1) + '0');
 
-		LOG(" |\n");
+		LOG(" │\n");
 	}
 
 	LOG("+---------------------------------------------------------------------------------------+\n");
