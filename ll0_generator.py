@@ -22,7 +22,8 @@ args = aparser.parse_args()
 
 
 terminals = {
-    "EOI": ""
+    "EOI": "",
+    "UNDEFINED": "",
 }
 nonterminals = {}
 
@@ -53,6 +54,8 @@ with open(args.filename) as f:
             for i in ''.join(val[1:]):
                 if i == '"':
                     regex += r"\""
+                elif i == "\\":
+                    regex += r"\\"
                 else:
                     regex += i
 
@@ -207,9 +210,9 @@ for i in nonterminals:
 
 
 #for i in table:
-#    print(i, end=":\t")
+#    print(i, end=":")
 #
-#    print('\t'.join([str(table[i][j]) for j in table[i]]))
+#    print(''.join([str(table[i][j]) for j in table[i]]))
 #
 #    print("")
 #
@@ -240,21 +243,21 @@ if args.type == "python":
     id = 1
 
     for i in terminals:
-        output_data += f"\t{i} = {id}\n"
+        output_data += f"{i} = {id}\n"
         id += 1
 
     for i in nonterminals:
-        output_data += f"\t{i} = {id}\n"
+        output_data += f"{i} = {id}\n"
         id += 1
 
 
     output_data += "\nregexes = {\n"
 
     for i in terminals:
-        if i == "EOI":
+        if i == "EOI" or i == "UNDEFINED":
             continue
 
-        output_data += f"\tTokenType.{i}: r\"{terminals[i]}\",\n"
+        output_data += f"TokenType.{i}: r\"{terminals[i]}\",\n"
 
     output_data += "}\n"
 
@@ -262,23 +265,23 @@ if args.type == "python":
     output_data += "\ntable = {\n"
 
     for i in table:
-        output_data += f"\tTokenType.{i}: " + "{\n"
+        output_data += f"TokenType.{i}: " + "{\n"
 
         for j in table[i]:
-            output_data += f"\t\tTokenType.{j}: {table[i][j]},\n"
+            output_data += f"TokenType.{j}: {table[i][j]},\n"
 
-        output_data += "\t},\n"
+        output_data += "},\n"
 
     output_data += "}\n\ntodo = [\n"
 
     for i in todo:
-        output_data += "\t[" + ",".join(["TokenType." + j for j in i]) + "],\n"
+        output_data += "[" + ",".join(["TokenType." + j for j in i]) + "],\n"
 
     output_data += "]"
 
 
 elif args.type == "c":
-    output_data += "enum Token_type {\n"
+    output_data += "#include <stdlib.h>\n#include <regex.h>\n\nenum Token_type {\n"
 
     for i in terminals:
         output_data += f"\t{i},\n"
@@ -289,24 +292,34 @@ elif args.type == "c":
     output_data += "};\n\n"
 
 
-    output_data += "// regex'ов нет, пока не нужны\n\n"
+
+    output_data += "typedef struct Type_regex {\n\tenum Token_type type;\n\tchar* regex_str;\n\tregex_t regex;\n} Type_regex;\n\n"
+    output_data += "Type_regex types_regex[] = {\n"
+
+    for i in terminals:
+        if i == "EOI" or i == "UNDEFINED":
+            continue
+
+        output_data += "\t{" + f"{i}, \"{terminals[i]}\"" + "},\n"
+
+    output_data += "};\n\n"
 
 
     output_data += "char** token_type_names;\n\nvoid prepeare_names() {\n"
 
     id = 0
 
-    output_data += f"\ttoken_type_names = malloc(sizeof(char*) * {len(terminals) + len(nonterminals)});\n"
+    output_data += f"token_type_names = malloc(sizeof(char*) * {len(terminals) + len(nonterminals)});\n"
 
     for i in terminals:
-        #output_data += f"\ttoken_type_names[{id}] = malloc({len(i) + 1});\n"
-        output_data += f"\ttoken_type_names[{id}] = \"{i}\\0\";\n"
+        #output_data += f"token_type_names[{id}] = malloc({len(i) + 1});\n"
+        output_data += f"token_type_names[{id}] = \"{i}\\0\";\n"
 
         id += 1
 
     for i in nonterminals:
-        #output_data += f"\ttoken_type_names[{id}] = malloc({len(i) + 1});\n"
-        output_data += f"\ttoken_type_names[{id}] = \"{i}\\0\";\n"
+        #output_data += f"token_type_names[{id}] = malloc({len(i) + 1});\n"
+        output_data += f"token_type_names[{id}] = \"{i}\\0\";\n"
 
         id += 1
 
@@ -316,7 +329,7 @@ elif args.type == "c":
     output_data += f"int table[{len(terminals) + len(nonterminals)}][{len(terminals) + len(nonterminals)}] = " + "{\n"
 
     for i in table:
-        output_data += "\t{"
+        output_data += "{"
 
         for j in table[i]:
             output_data += f"{table[i][j]}, "
@@ -330,15 +343,15 @@ elif args.type == "c":
 
     output_data += "void prepeare_todo() {\n"
 
-    output_data += f"\ttodo = malloc(sizeof(void*) * {len(todo)});\n"
+    output_data += f"todo = malloc(sizeof(void*) * {len(todo)});\n"
 
     for id, i in enumerate(todo):
-        output_data += f"\ttodo[{id}] = malloc(sizeof(enum Token_type) * {len(i) + 1});\n"
+        output_data += f"todo[{id}] = malloc(sizeof(enum Token_type) * {len(i) + 1});\n"
 
-        output_data += f"\ttodo[{id}][0] = {len(i)};\n"
+        output_data += f"todo[{id}][0] = {len(i)};\n"
 
         for id2, j in enumerate(i):
-            output_data += f"\ttodo[{id}][{id2+1}] = {j};\n"
+            output_data += f"todo[{id}][{id2+1}] = {j};\n"
 
     output_data += "}\n\n"
 
@@ -346,9 +359,9 @@ elif args.type == "c":
     output_data += "void free_todo() {\n"
 
     for id, i in enumerate(todo):
-        output_data += f"\tfree(todo[{id}]);\n"
+        output_data += f"free(todo[{id}]);\n"
 
-    output_data += "\tfree(todo);\n"
+    output_data += "free(todo);\n"
 
     output_data += "}\n"
 
@@ -356,9 +369,9 @@ elif args.type == "c":
     output_data += "void free_names() {\n"
 
     #for i in range(len(terminals) + len(nonterminals)):
-    #    output_data += f"\tfree(token_type_names[{i}]);\n"
+    #    output_data += f"free(token_type_names[{i}]);\n"
 
-    output_data += "\tfree(token_type_names);\n"
+    output_data += "free(token_type_names);\n"
 
     output_data += "}\n"
 

@@ -1,0 +1,236 @@
+#terminals
+
+HEX_NUMBER (0x|0X)[0-9a-fA-f]+
+BIN_NUMBER (0b|0B)[0-1]+
+DEC_NUMBER [0-9]+
+NEWLINE \n
+COMMA \,
+POINT \.
+COLON \:
+SEMICOLON \;
+STRING ".*?"(?<!\\")
+CHARACTER '.'
+
+LBR \(
+RBR \)
+LSBR \[
+RSBR \]
+LCBR \{
+RCBR \}
+
+INC \+\+
+DEC \-\-
+
+ARROW \->
+
+ASSIGN_PLUS \+=
+ASSIGN_MINUS \-=
+ASSIGN_STAR \*=
+ASSIGN_SLASH \/=
+ASSIGN_MOD \%=
+ASSIGN_LEFT_SHIFT <<=
+ASSIGN_RIGHT_SHIFT >>=
+ASSIGN_AND \&=
+ASSIGN_OR \|=
+ASSIGN_XOR \^=
+
+LEFT_SHIFT <<
+RIGHT_SHIFT >>
+
+PLUS \+
+MINUS \-
+STAR \*
+SLASH \/
+PERCENT \%
+
+DOUBLE_AMPERSAND \&\&
+DOUBLE_PIPE \|\|
+
+AMPERSAND \&
+PIPE \|
+TILDA \~
+CARET \^
+EXCLAMATION \!
+
+ASSIGN =
+EQUALS ==
+NOT_EQUALS \!=
+LESS <
+LESS_EQUALS <=
+MORE >
+MORE_EQUALS >=
+
+CHAR char
+SHORT short
+INT int
+LONG long
+VOID void
+FLOAT float
+DOUBLE double
+SIGNED signed
+UNSIGNED unsigned
+STRUCT struct
+ENUM enum
+UNION union
+EXTERN extern
+REGISTER register
+INLINE inline
+VOLATILE volatile
+STATIC static
+RESTRICT restrict
+
+AUTO auto
+
+SIZEOF sizeof
+ALIGNAS alignas
+ALIGNOF alignof
+
+CONST const
+CONSTEXPR constexpr
+
+DO do
+WHILE while
+BREAK break
+CONTINUE continue
+
+FOR for
+
+IF if
+ELSE else
+
+TYPEDEF typedef
+
+RETURN return
+
+SWITCH switch
+CASE case
+DEFAULT default
+
+GOTO goto
+
+
+#nonterminals
+
+Start Start1 Start |
+Start1  Struct_decl | Enum_decl | Union_decl | Start11
+
+# var or func decl
+Start11 Type UNDEFINED Start111
+Start111 Var1 | Func1
+
+
+Func1 LBR Func_args RBR Func11
+Func11 SEMICOLON | LCBR Func_body RCBR
+
+Func_args Func_arg |
+Func_arg Type UNDEFINED Func_arg1
+Func_arg1 COMMA Func_arg |
+
+
+Func_body Func_body1 Func_body |
+
+Func_body1 Expr | Cond | Var | LCBR Func_body RCBR
+
+
+Var Type UNDEFINED Var1
+Var1 SEMICOLON | ASSIGN Expr SEMICOLON
+
+
+Struct_decl Struct SEMICOLON
+
+Struct STRUCT Struct1
+
+Struct1 Struct11 | Struct_fileds
+Struct11 UNDEFINED Struct111
+Struct111 Struct_fileds |
+
+Struct_fileds LCBR Struct_fileds1 RCBR
+Struct_fileds1 Var Struct_fileds1 |
+
+
+Enum_decl Enum SEMICOLON
+
+Enum ENUM Enum1
+
+Enum1 Enum11 | Enum_fields
+Enum11 UNDEFINED Enum111
+Enum111 Enum_fields |
+
+Enum_fields LCBR Enum_fields1 RCBR
+Enum_fields1 UNDEFINED Enum_fields11 COMMA Enum_fields1 |
+Enum_fields11 ASSIGN Number |
+
+
+Union_decl Union SEMICOLON
+
+# Дальше всё также как у структур
+Union UNION Struct1
+
+
+Type Type_mod Type_name
+Type_mod | Type_mod1 Type_mod
+Type_mod1 SIGNED | UNSIGNED | EXTERN | REGISTER | STATIC | INLINE | VOLATILE | RESTRICT | AUTO
+Type_name CHAR | SHORT | INT | LONG | VOID | Struct | Enum | Union
+
+
+Number HEX_NUMBER | DEC_NUMBER | BIN_NUMBER | CHARACTER
+
+
+
+Cond If | While | For | Switch
+
+If IF LBR Expr RBR LCBR Func_body RCBR
+While WHILE LBR Expr RBR LCBR Func_body RCBR
+For
+Switch
+
+
+Expr A
+
+A Log_or A1
+A1 ASSIGN Log_or | ASSIGN_PLUS Log_or | ASSIGN_MINUS Log_or | ASSIGN_STAR Log_or | ASSIGN_SLASH Log_or | ASSIGN_MOD Log_or | ASSIGN_LEFT_SHIFT Log_or | ASSIGN_RIGHT_SHIFT Log_or | ASSIGN_AND Log_or | ASSIGN_OR Log_or | ASSIGN_XOR Log_or |
+
+Log_or Log_and Log_or1
+Log_or1 DOUBLE_PIPE Log_and |
+
+Log_and Or Log_and1
+Log_and1 DOUBLE_AMPERSAND Or |
+
+Or Xor Or1
+Or1 PIPE Xor |
+
+Xor And Xor1
+Xor1 CARET And |
+
+And C And1
+And1 AMPERSAND C |
+
+C B C1
+C1 EQUALS B | NOT_EQUALS B |
+
+B S B1
+B1 LESS S | LESS_EQUALS S | MORE S | MORE_EQUALS S |
+
+S H S1
+S1 LEFT_SHIFT H | RIGHT_SHIFT H |
+
+H J H1
+H1 PLUS J | MINUS J |
+
+J T J1
+J1 STAR T | SLASH T | PERCENT T |
+
+T F | F INC | F DEC | PLUS F | MINUS F | EXCLAMATION F | TILDA F | STAR F | AMPERSAND F | SIZEOF LBR Expr RBR
+
+F F1 | INC F1 | DEC F1 | Mem_access | Point_mem_access | LBR F11
+F1 Number | UNDEFINED Func_call
+
+F11 Type RBR Expr | Expr RBR
+
+Func_call | LBR Call_args RBR
+Call_args | Call_arg
+Call_arg Expr | Call_arg1
+Call_arg1 COMMA Call_arg |
+
+Mem_access F POINT UNDEFINED
+Point_mem_access F ARROW UNDEFINED
