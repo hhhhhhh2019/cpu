@@ -3,12 +3,11 @@
 HEX_NUMBER (0x|0X)[0-9a-fA-f]+
 BIN_NUMBER (0b|0B)[0-1]+
 DEC_NUMBER [0-9]+
-NEWLINE \n
 COMMA \,
 POINT \.
 COLON \:
 SEMICOLON \;
-STRING ".*?"(?<!\\")
+STRING "([^"\\]*\\.|[^"\\]+)*"
 CHARACTER '.'
 
 LBR \(
@@ -132,7 +131,7 @@ Func_body Func_body1 Func_body |
 Func_body1 Expr | Cond | Var | LCBR Func_body RCBR
 
 
-Var Type UNDEFINED Var1
+Var Type UNDEFINED Type_can_arr1 Var1
 Var1 SEMICOLON | ASSIGN Expr SEMICOLON
 
 
@@ -166,6 +165,8 @@ Union_decl Union SEMICOLON
 # Дальше всё также как у структур
 Union UNION Struct1
 
+Type_can_arr Type Type_can_arr1
+Type_can_arr1 LSBR Number RSBR Type_can_arr1 |
 
 Type Type_mod Type_name
 Type_mod | Type_mod1 Type_mod
@@ -177,12 +178,13 @@ Number HEX_NUMBER | DEC_NUMBER | BIN_NUMBER | CHARACTER
 
 
 
-Cond If | While | For | Switch
+Cond If | While | For | Switch | Return
 
 If IF LBR Expr RBR LCBR Func_body RCBR
 While WHILE LBR Expr RBR LCBR Func_body RCBR
 For
 Switch
+Return RETURN Expr
 
 
 Expr A
@@ -220,12 +222,16 @@ H1 PLUS J | MINUS J |
 J T J1
 J1 STAR T | SLASH T | PERCENT T |
 
-T F | F INC | F DEC | PLUS F | MINUS F | EXCLAMATION F | TILDA F | STAR F | AMPERSAND F | SIZEOF LBR Expr RBR
+T F | F INC | F DEC | PLUS F | MINUS F | EXCLAMATION F | TILDA F | STAR F | AMPERSAND F | SIZEOF LBR Expr RBR | Compound
 
 F F1 | INC F1 | DEC F1 | Mem_access | Point_mem_access | LBR F11
 F1 Number | UNDEFINED Func_call
 
-F11 Type RBR Expr | Expr RBR
+F11 Type RBR Compound | Expr RBR
+
+Compound LCBR Compound1 RCBR
+Compound1 Expr Compound11 |
+Compound11 COMMA Compound1 |
 
 Func_call | LBR Call_args RBR
 Call_args | Call_arg

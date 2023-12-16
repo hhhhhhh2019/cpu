@@ -304,6 +304,8 @@ elif args.type == "c":
 
     output_data += "};\n\n"
 
+    output_data += "unsigned long types_regex_count = sizeof(types_regex) / sizeof(Type_regex);\n\n"
+
 
     output_data += "char** token_type_names;\n\nvoid prepeare_names() {\n"
 
