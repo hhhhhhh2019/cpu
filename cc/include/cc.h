@@ -7,6 +7,7 @@
 
 enum Error_type {
 	CANT_OPEN_FILE,
+	SYNTAX_ERROR,
 };
 
 
@@ -41,6 +42,7 @@ void print_help();
 
 Compiler_state parse_file_prepoc(char*);
 void lexer(Compiler_state*);
+void synt(Compiler_state*);
 
 void add_error(Compiler_state*, Error);
 

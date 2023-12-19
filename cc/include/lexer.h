@@ -132,6 +132,7 @@ enum Token_type {
 	Number,
 	Cond,
 	If,
+	Else,
 	While,
 	For,
 	Switch,
@@ -162,6 +163,8 @@ enum Token_type {
 	T,
 	F,
 	F1,
+	F111,
+	F1111,
 	F11,
 	Compound,
 	Compound1,
@@ -197,6 +200,7 @@ extern char** token_type_names;
 
 
 char lexer_init();
+void prepeare_names();
 
 
 #endif

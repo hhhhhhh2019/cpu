@@ -1,5 +1,6 @@
 #include <cc.h>
 #include <lexer.h>
+#include <synt.h>
 
 #include <stdio.h>
 #include <string.h>
@@ -13,7 +14,8 @@ char* output_filename = "a.out";
 
 
 char* error_names_ru[] = {
-	[CANT_OPEN_FILE] = "Ошибка"
+	[CANT_OPEN_FILE] = "Ошибка",
+	[SYNTAX_ERROR] = "Синтаксическая ошибка"
 };
 
 char** error_names;
@@ -43,6 +45,8 @@ int main(int argc, char** argv) {
 	}
 
 	lexer_init();
+	prepeare_todo();
+	prepeare_names();
 
 	Compiler_state state = parse_file_prepoc(input_filename);
 
@@ -54,12 +58,18 @@ int main(int argc, char** argv) {
 
 
 	for (int i = 0; i < state.tokens_count; i++) {
-		printf("   %2lu:%2lu %2d %s\n",
+		printf("   %2lu:%2lu %3d %s\n",
 		   state.tokens[i].line,
 		   state.tokens[i].col,
 		   state.tokens[i].type,
 		   state.tokens[i].value);
 	}
+
+
+	synt(&state);
+
+	if (print_errors(&state))
+		free_and_exit(state, 1);
 
 
 	free_and_exit(state, 0);

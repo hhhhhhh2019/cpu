@@ -61,10 +61,17 @@ void lexer(Compiler_state* state) {
 
 			unsigned int size = strlen(undef_str);
 
+			if (size == 0) {
+				undef_line = line;
+				undef_col  = col;
+			}
+
 			undef_str = realloc(undef_str, size+2);
 
 			undef_str[size+0] = state->code[offset];
 			undef_str[size+1] = 0;
+
+			col++;
 
 			offset++;
 			continue;
@@ -88,6 +95,17 @@ void lexer(Compiler_state* state) {
 		state->tokens = realloc(state->tokens, sizeof(Token) * (++state->tokens_count));
 		state->tokens[state->tokens_count-1] = t;
 	}
+
+	Token eoi = {
+		.line = line,
+		.col = col,
+		.type = EOI,
+		.value = "$",
+		.filename = state->filename
+	};
+
+	state->tokens = realloc(state->tokens, sizeof(Token) * (++state->tokens_count));
+	state->tokens[state->tokens_count-1] = eoi;
 
 	free(undef_str);
 }
