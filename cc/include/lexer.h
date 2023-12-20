@@ -137,6 +137,7 @@ enum Token_type {
 	For,
 	Switch,
 	Return,
+	Cond_body,
 	Expr,
 	A,
 	A1,

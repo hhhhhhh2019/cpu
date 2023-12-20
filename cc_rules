@@ -180,12 +180,14 @@ Number HEX_NUMBER | DEC_NUMBER | BIN_NUMBER | CHARACTER
 
 Cond If | While | For | Switch | Return SEMICOLON | Else
 
-If IF LBR Expr RBR LCBR Func_body RCBR
-Else ELSE LCBR Func_body RCBR
-While WHILE LBR Expr RBR LCBR Func_body RCBR
+If IF LBR Expr RBR Cond_body
+Else ELSE Cond_body
+While WHILE LBR Expr RBR Cond_body
 For
 Switch
 Return RETURN Expr
+
+Cond_body LCBR Func_body RCBR | Func_body1
 
 
 Expr A

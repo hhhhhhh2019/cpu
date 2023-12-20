@@ -16,7 +16,7 @@ typedef struct {
 } Node;
 
 
-extern int table[170][170];
+extern int table[171][171];
 extern enum Token_type** todo;
 void prepeare_todo();
 
