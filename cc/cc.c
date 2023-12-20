@@ -57,19 +57,21 @@ int main(int argc, char** argv) {
 	lexer(&state);
 
 
-	for (int i = 0; i < state.tokens_count; i++) {
+	/* for (int i = 0; i < state.tokens_count; i++) {
 		printf("   %2lu:%2lu %3d %s\n",
 		   state.tokens[i].line,
 		   state.tokens[i].col,
 		   state.tokens[i].type,
 		   state.tokens[i].value);
-	}
+	} */
 
 
 	synt(&state);
 
 	if (print_errors(&state))
 		free_and_exit(state, 1);
+
+	create_dot_from_node(state.AST);
 
 
 	free_and_exit(state, 0);

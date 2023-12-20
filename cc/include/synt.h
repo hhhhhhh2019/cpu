@@ -6,19 +6,30 @@
 #include <utils.h>
 
 
-Stack(int)
+struct Node;
 
-
-typedef struct {
+typedef struct Node {
 	Token value;
 	unsigned int childs_count;
-	void** childs;
+	struct Node** childs;
+
+	struct Node* parent;
+
+	int id;
 } Node;
 
+
+
+Stack(int)
+
+Stack(long)
 
 extern int table[171][171];
 extern enum Token_type** todo;
 void prepeare_todo();
+
+
+void create_dot_from_node(Node*);
 
 
 #endif

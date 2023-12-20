@@ -2,6 +2,7 @@
 #define CC_H
 
 
+#include <synt.h>
 #include <lexer.h>
 
 
@@ -31,6 +32,8 @@ typedef struct {
 
 	unsigned long real_tokens_count;
 	Token* real_tokens; // для отчистки, value всегда динамически выделен
+
+	Node* AST;
 
 	char* filepath;
 	char* filename;
