@@ -2,7 +2,7 @@
 #define RAM_H
 
 
-typedef struct RAM {
+typedef struct {
 	void* motherboard;
 
 	unsigned long ram_size;

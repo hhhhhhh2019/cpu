@@ -45,6 +45,21 @@ void lexer(Compiler_state* state) {
 
 	while (offset < state->code_size) {
 		if (isspace(state->code[offset])) {
+			if (strlen(undef_str) != 0) {
+				Token nt = {
+					.line = undef_line,
+					.col = undef_col,
+					.type = UNDEFINED,
+					.value = undef_str,
+					.filename = state->filename
+				};
+
+				undef_str = calloc(1,1);
+
+				state->tokens = realloc(state->tokens, sizeof(Token) * (++state->tokens_count));
+				state->tokens[state->tokens_count-1] = nt;
+			}
+
 			col++;
 			if (state->code[offset] == '\n') {
 				line++;
@@ -96,6 +111,21 @@ void lexer(Compiler_state* state) {
 		state->tokens[state->tokens_count-1] = t;
 	}
 
+	if (strlen(undef_str) != 0) {
+		Token nt = {
+			.line = undef_line,
+			.col = undef_col,
+			.type = UNDEFINED,
+			.value = undef_str,
+			.filename = state->filename
+		};
+
+		undef_str = calloc(1,1);
+
+		state->tokens = realloc(state->tokens, sizeof(Token) * (++state->tokens_count));
+		state->tokens[state->tokens_count-1] = nt;
+	}
+
 	Token eoi = {
 		.line = line,
 		.col = col,
@@ -104,8 +134,8 @@ void lexer(Compiler_state* state) {
 		.filename = state->filename
 	};
 
-	state->tokens = realloc(state->tokens, sizeof(Token) * (++state->tokens_count));
-	state->tokens[state->tokens_count-1] = eoi;
+	//state->tokens = realloc(state->tokens, sizeof(Token) * (++state->tokens_count));
+	//state->tokens[state->tokens_count-1] = eoi;
 
 	free(undef_str);
 }

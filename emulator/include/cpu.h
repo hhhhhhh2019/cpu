@@ -31,7 +31,7 @@ enum ALU_OP {
 };
 
 
-typedef struct Core {
+typedef struct {
 	void* motherboard;
 
 	unsigned long hz;
@@ -46,7 +46,7 @@ typedef struct Core {
 } Core;
 
 
-typedef struct CPU {
+typedef struct {
 	void* motherboard;
 
 	unsigned char cores_count;

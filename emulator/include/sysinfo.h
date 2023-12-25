@@ -9,7 +9,7 @@
 #define SYSINFO_CMD_GET_DEVICE_TYPE 3
 
 
-typedef struct Sysinfo {
+typedef struct {
 	void* motherboard;
 	unsigned int type_id;
 	unsigned long hz;

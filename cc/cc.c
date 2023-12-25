@@ -9,7 +9,7 @@
 #include <libgen.h>
 
 
-char* input_filename = NULL;
+char* input_filename = "../code.c";//NULL;
 char* output_filename = "a.out";
 
 

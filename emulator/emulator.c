@@ -2,6 +2,7 @@
 #include <utils.h>
 
 #include <sysinfo.h>
+#include <vvmhc.h>
 
 #include <stdlib.h>
 #include <string.h>
@@ -84,6 +85,11 @@ int main(int argc, char** argv) {
 
 	sysinfo_init(motherboard.devices[motherboard.devices_count-1], &motherboard, 100);
 
+
+	motherboard.devices = realloc(motherboard.devices, sizeof(void*) * (++motherboard.devices_count));
+	motherboard.devices[motherboard.devices_count-1] = malloc(sizeof(VVMHC));
+
+	vvmhc_init(motherboard.devices[motherboard.devices_count-1], &motherboard, 100);
 
 
 	char cpu_enabled = 1;

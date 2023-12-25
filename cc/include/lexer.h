@@ -176,6 +176,9 @@ enum Token_type {
 	Call_arg1,
 	Mem_access,
 	Point_mem_access,
+
+	// AST specific
+	Group,
 };
 
 

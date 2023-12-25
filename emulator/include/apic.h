@@ -5,7 +5,7 @@
 #include <utils.h>
 
 
-typedef struct APIC {
+typedef struct {
 	void* motherboard;
 
 	unsigned long hz;

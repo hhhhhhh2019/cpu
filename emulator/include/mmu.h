@@ -11,14 +11,14 @@
 #define MMU_MMIO_OFFSET 0x100
 
 
-typedef struct MMIO {
+typedef struct {
 	unsigned long start_addr;
 	unsigned long size;
 	char* data;
 } MMIO;
 
 
-typedef struct MMU {
+typedef struct {
 	void* motherboard;
 
 	unsigned long hz; // частота обработки команд

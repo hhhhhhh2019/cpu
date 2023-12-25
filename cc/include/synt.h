@@ -5,6 +5,8 @@
 #include <lexer.h>
 #include <utils.h>
 
+#include <stdlib.h>
+
 
 struct Node;
 
@@ -20,9 +22,27 @@ typedef struct Node {
 
 
 
-Stack(int)
+static inline Node* empty_node() {
+	Node* node = calloc(sizeof(Node),1);
+	node->childs = malloc(0);
 
-Stack(long)
+	return node;
+}
+
+
+static inline void node_add_child(Node* node, Node* child) {
+	if (child == NULL)
+		return;
+
+	node->childs = realloc(node->childs, sizeof(Node) * (++node->childs_count));
+	node->childs[node->childs_count-1] = child;
+	child->parent = node;
+}
+
+
+Stack(int);
+
+Stack(long);
 
 extern int table[171][171];
 extern enum Token_type** todo;

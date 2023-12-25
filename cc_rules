@@ -59,23 +59,23 @@ LESS_EQUALS <=
 MORE >
 MORE_EQUALS >=
 
-CHAR char
-SHORT short
-INT int
-LONG long
-VOID void
-FLOAT float
-DOUBLE double
-SIGNED signed
+CHAR     char
+SHORT    short
+INT      int
+LONG     long
+VOID     void
+FLOAT    float
+DOUBLE   double
+SIGNED   signed
 UNSIGNED unsigned
-STRUCT struct
-ENUM enum
-UNION union
-EXTERN extern
+STRUCT   struct
+ENUM     enum
+UNION    union
+EXTERN   extern
 REGISTER register
-INLINE inline
+INLINE   inline
 VOLATILE volatile
-STATIC static
+STATIC   static
 RESTRICT restrict
 
 AUTO auto

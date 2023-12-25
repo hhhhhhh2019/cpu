@@ -5,7 +5,7 @@
 #define Stack(T) typedef struct { \
 	T* values; \
 	unsigned long values_count; \
-} Stack_##T;
+} Stack_##T
 
 
 #define stack_push(stack, val) \

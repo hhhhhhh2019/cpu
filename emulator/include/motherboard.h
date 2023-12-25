@@ -7,7 +7,7 @@
 #include <ram.h>
 
 
-typedef struct Motherboard {
+typedef struct {
 	MMU mmu;
 	CPU cpu;
 	RAM ram;
