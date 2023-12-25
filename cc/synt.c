@@ -10,105 +10,6 @@
 static unsigned int offset;
 
 
-/*void synt(Compiler_state* state) {
-	offset = 0;
-
-	Stack_int stack = {
-		.values = malloc(0),
-		.values_count = 0
-	};
-
-	stack_push(stack, Start);
-
-
-	Stack_long nodes_stack = {
-		.values = malloc(0),
-		.values_count = 0
-	};
-
-	Node* root = malloc(sizeof(Node));
-	state->AST = root;
-	root->value = (Token){
-		.type = S,
-		.value = NULL,
-		.line = 0,
-		.col = 0,
-		.filename = NULL
-	};
-	root->childs = malloc(0);
-	root->childs_count = 0;
-	root->parent = NULL;
-
-	stack_push(nodes_stack, (long)root);
-
-
-	while (stack.values_count != 0) {
-		Token token = state->tokens[offset];
-		Node* node = (Node*)stack_pop(nodes_stack);
-
-
-		* getc(stdin);
-
-		printf("-------\n");
-
-		printf("%s %s\n", token.value, token_type_names[token.type]);
-
-		for (int i = 0; i < stack.values_count; i++) {
-			printf("%s ", token_type_names[stack.values[i]]);
-		}
-
-		printf("\n"); *
-
-		enum Token_type curr_state = stack_pop(stack);
-
-		if (token.type == curr_state) {
-			offset++;
-			continue;
-		}
-
-		int todo_id = table[curr_state][token.type];
-
-		// printf("%d\n", todo_id);
-
-		if (todo_id == -1) {
-			Error error = {
-				.type = SYNTAX_ERROR,
-				.text = malloc(1000)
-			};
-			sprintf(error.text, "Ошибка на позиции %lu:%lu", token.line, token.col);
-			add_error(state, error);
-			continue;
-		}
-
-		enum Token_type* new_tokens = todo[todo_id];
-
-		for (int i = 0; i < new_tokens[0]; i++) {
-			stack_push(stack, new_tokens[1 + i]);
-
-			Node* new_node = malloc(sizeof(Node));
-			new_node->value = (Token){
-				.type = todo[todo_id][i+1],
-				.value = NULL,
-				.line = 0,
-				.col = 0,
-				.filename = NULL
-			};
-			new_node->parent = node;
-			new_node->childs = malloc(0);
-			new_node->childs_count = 0;
-
-			node->childs = realloc(node->childs, sizeof(void*) * (++node->childs_count));
-			node->childs[node->childs_count-1] = new_node;
-
-			stack_push(nodes_stack, (long)new_node);
-		}
-	}
-
-	free(stack.values);
-	free(nodes_stack.values);
-}*/
-
-
 
 static Node* parse_var(Compiler_state*);
 static Node* parse_type(Compiler_state*);
@@ -116,6 +17,30 @@ static Node* parse_enum(Compiler_state*);
 static Node* parse_union(Compiler_state*);
 static Node* parse_struct(Compiler_state*);
 static Node* parse_expr  (Compiler_state*);
+static Node*   parse_expr1(Compiler_state*);
+static Node*  parse_expr1a(Compiler_state*);
+static Node*   parse_expr2(Compiler_state*);
+static Node*  parse_expr2a(Compiler_state*);
+static Node*   parse_expr3(Compiler_state*);
+static Node*  parse_expr3a(Compiler_state*);
+static Node*   parse_expr4(Compiler_state*);
+static Node*  parse_expr4a(Compiler_state*);
+static Node*   parse_expr5(Compiler_state*);
+static Node*  parse_expr5a(Compiler_state*);
+static Node*   parse_expr6(Compiler_state*);
+static Node*  parse_expr6a(Compiler_state*);
+static Node*   parse_expr7(Compiler_state*);
+static Node*  parse_expr7a(Compiler_state*);
+static Node*   parse_expr8(Compiler_state*);
+static Node*  parse_expr8a(Compiler_state*);
+static Node*   parse_expr9(Compiler_state*);
+static Node*  parse_expr9a(Compiler_state*);
+static Node*  parse_expr10(Compiler_state*);
+static Node* parse_expr10a(Compiler_state*);
+static Node*  parse_expr11(Compiler_state*);
+static Node* parse_expr11a(Compiler_state*);
+static Node*  parse_expr12(Compiler_state*);
+static Node*  parse_expr13(Compiler_state*);
 
 
 Token* match(Compiler_state* state, unsigned int count, enum Token_type* types) {
@@ -164,27 +89,575 @@ Token* require(Compiler_state* state, unsigned int count, enum Token_type* types
 }
 
 
-static Node* parse_expr1a(Compiler_state*);
 
+static Node* parse_expr13(Compiler_state* state) {
+	// TODO: make function readable
 
-static Node* parse_expr3(Compiler_state* state) {
-	Token* t = require(state, 1, (enum Token_type[]){
-	    DEC_NUMBER
+	Token* t1 = require(state, 8, (enum Token_type[]){
+	    UNDEFINED, DEC_NUMBER, BIN_NUMBER, HEX_NUMBER,
+	    FLOAT, DOUBLE, LCBR, LBR
 	}, 1);
 
-	if (t == NULL)
+	if (t1 == NULL)
 		return empty_node();
 
-	Node* a = empty_node();
-	a->value = *t;
 
-	return a;
+	if (t1->type == LBR) {
+		Node* node = parse_expr1(state);
+		require(state, 1, (enum Token_type[]){RBR}, 1);
+		return node;
+	}
+
+
+	if (t1->type == DEC_NUMBER || t1->type == BIN_NUMBER ||
+	    t1->type == HEX_NUMBER || t1->type == FLOAT || t1->type == DOUBLE) {
+		Node* a = empty_node();
+		a->value = *t1;
+		return a;
+	}
+
+
+	if (t1->type == LCBR) {
+		Node* a = parse_expr(state);
+
+		require(state, 1, (enum Token_type[]){RCBR}, 1);
+
+		return a;
+	}
+
+
+	Node* a = empty_node();
+	a->value = *t1;
+
+	Token* top = match(state, 6, (enum Token_type[]){
+	    INC, DEC, LBR, LSBR, POINT, ARROW
+	});
+
+	if (top == NULL)
+		return a;
+
+	offset++;
+
+	Node* op = empty_node();
+	op->value = *top;
+
+	if (top->type == INC || top->type == DEC) {
+		if (top->type == INC)
+			a->value.type = INC_POST;
+		else
+			a->value.type = DEC_POST;
+
+		node_add_child(op, a);
+
+		return op;
+	}
+
+
+	if (top->type == LBR) { // function call
+		free(op->childs);
+		free(op);
+
+		op = a;
+
+		a = parse_expr(state);
+
+		require(state, 1, (enum Token_type[]){RBR}, 1);
+
+		node_add_child(op, a);
+
+		return op;
+	}
+
+
+	if (top->type == POINT || top->type == ARROW) {
+		Token* t2 = require(state, 1, (enum Token_type[]){UNDEFINED}, 1);
+
+		if (t2 == NULL)
+			return op;
+
+		Node* b = empty_node();
+		b->value = *t2;
+
+		node_add_child(op, a);
+		node_add_child(op, b);
+
+		top = match(state, 2, (enum Token_type[]){POINT, ARROW});
+
+		while (top != NULL) {
+			offset++;
+
+			Node* op2 = empty_node();
+			op2->value = *top;
+
+			node_add_child(op2, op);
+
+			op = op2;
+
+			t2 = require(state, 1, (enum Token_type[]){UNDEFINED}, 1);
+
+			if (t2 == NULL)
+				return op;
+
+			Node* b = empty_node();
+			b->value = *t2;
+	
+			node_add_child(op, b);
+
+			top = match(state, 2, (enum Token_type[]){POINT, ARROW});
+		}
+
+		return op;
+	}
+
+
+	// a[expr][expr]...
+
+	op->value.type = ARRAY_INDEX;
+
+	node_add_child(op, a);
+	node_add_child(op, parse_expr1(state));
+
+	if (require(state, 1, (enum Token_type[]){RSBR}, 1) == NULL)
+		return op;
+
+	top = match(state, 1, (enum Token_type[]){LSBR});
+
+	while (top != NULL) {
+		offset++;
+
+		Node* op2 = empty_node();
+		op2->value = *top;
+		op2->value.type = ARRAY_INDEX;
+
+		node_add_child(op2, op);
+		node_add_child(op2, parse_expr1(state));
+
+		op = op2;
+
+		if (require(state, 1, (enum Token_type[]){RSBR}, 1) == NULL)
+			return op;
+	
+		top = match(state, 1, (enum Token_type[]){LSBR});
+	}
+
+	return op;
+}
+
+
+static Node* parse_expr12(Compiler_state* state) {
+	Token* top = match(state, 8, (enum Token_type[]){
+	    INC, DEC, PLUS, MINUS, STAR, AMPERSAND, SIZEOF, LBR
+	});
+
+	if (top == NULL)
+		return parse_expr13(state);
+
+	offset++;
+
+	if (top->type == LBR) { // type cast or (Expr)
+		Token* token1 = match(state, 18, (enum Token_type[]){
+		    VOID, CHAR, SHORT, INT, LONG, FLOAT, DOUBLE, ENUM, STRUCT, UNION,
+		    SIGNED, UNSIGNED, EXTERN, STATIC, INLINE, REGISTER, VOLATILE, RESTRICT, AUTO
+		});
+
+		if (token1 == NULL) {
+			offset--;
+			return parse_expr13(state);
+		}
+
+		Node* op = parse_type(state);
+
+		if (require(state, 1, (enum Token_type[]){RBR}, 1) == NULL)
+			return NULL;
+
+		node_add_child(op, parse_expr13(state));
+
+		return op;
+	}
+
+	Node* op = empty_node();
+	op->value = *top;
+
+	if (top->type == SIZEOF) {
+		if (require(state, 1, (enum Token_type[]){LBR}, 1) == NULL)
+			return NULL;
+
+		node_add_child(op, parse_expr13(state));
+
+		if (require(state, 1, (enum Token_type[]){RBR}, 1) == NULL)
+			return NULL;
+
+		return op;
+	}
+
+	node_add_child(op, parse_expr13(state));
+
+	return op;
+}
+
+
+static Node* parse_expr11a(Compiler_state* state) {
+	Token* top = match(state, 3, (enum Token_type[]){
+	    STAR, SLASH, PERCENT
+	});
+
+	if (top == NULL)
+		return NULL;
+
+	offset++;
+
+	Node* op = empty_node();
+	op->value = *top;
+
+	node_add_child(op, parse_expr12(state));
+
+	return op;
+}
+
+static Node* parse_expr11(Compiler_state* state) {
+	Node* a = parse_expr12(state);
+
+	Node* op = parse_expr11a(state);
+
+	if (op == NULL)
+		return a;
+
+	node_add_child(op, a);
+
+	Node* op2 = parse_expr11a(state);
+
+	while (op2 != NULL) {
+		node_add_child(op2, op);
+		op = op2;
+		op2 = parse_expr11a(state);
+	}
+
+	return op;
+}
+
+
+static Node* parse_expr10a(Compiler_state* state) {
+	Token* top = match(state, 2, (enum Token_type[]){
+	    PLUS, MINUS
+	});
+
+	if (top == NULL)
+		return NULL;
+
+	offset++;
+
+	Node* op = empty_node();
+	op->value = *top;
+
+	node_add_child(op, parse_expr11(state));
+
+	return op;
+}
+
+static Node* parse_expr10(Compiler_state* state) {
+	Node* a = parse_expr11(state);
+
+	Node* op = parse_expr10a(state);
+
+	if (op == NULL)
+		return a;
+
+	node_add_child(op, a);
+
+	Node* op2 = parse_expr10a(state);
+
+	while (op2 != NULL) {
+		node_add_child(op2, op);
+		op = op2;
+		op2 = parse_expr10a(state);
+	}
+
+	return op;
+}
+
+
+static Node* parse_expr9a(Compiler_state* state) {
+	Token* top = match(state, 2, (enum Token_type[]){
+	    LEFT_SHIFT, RIGHT_SHIFT
+	});
+
+	if (top == NULL)
+		return NULL;
+
+	offset++;
+
+	Node* op = empty_node();
+	op->value = *top;
+
+	node_add_child(op, parse_expr10(state));
+
+	return op;
+}
+
+static Node* parse_expr9(Compiler_state* state) {
+	Node* a = parse_expr10(state);
+
+	Node* op = parse_expr9a(state);
+
+	if (op == NULL)
+		return a;
+
+	node_add_child(op, a);
+
+	Node* op2 = parse_expr9a(state);
+
+	while (op2 != NULL) {
+		node_add_child(op2, op);
+		op = op2;
+		op2 = parse_expr9a(state);
+	}
+
+	return op;
+}
+
+
+static Node* parse_expr8a(Compiler_state* state) {
+	Token* top = match(state, 4, (enum Token_type[]){
+	    LESS, LESS_EQUALS, MORE, MORE_EQUALS
+	});
+
+	if (top == NULL)
+		return NULL;
+
+	offset++;
+
+	Node* op = empty_node();
+	op->value = *top;
+
+	node_add_child(op, parse_expr9(state));
+
+	return op;
+}
+
+static Node* parse_expr8(Compiler_state* state) {
+	Node* a = parse_expr9(state);
+
+	Node* op = parse_expr8a(state);
+
+	if (op == NULL)
+		return a;
+
+	node_add_child(op, a);
+
+	Node* op2 = parse_expr8a(state);
+
+	while (op2 != NULL) {
+		node_add_child(op2, op);
+		op = op2;
+		op2 = parse_expr8a(state);
+	}
+
+	return op;
+}
+
+static Node* parse_expr7a(Compiler_state* state) {
+	Token* top = match(state, 2, (enum Token_type[]){
+	    EQUALS, NOT_EQUALS
+	});
+
+	if (top == NULL)
+		return NULL;
+
+	offset++;
+
+	Node* op = empty_node();
+	op->value = *top;
+
+	node_add_child(op, parse_expr8(state));
+
+	return op;
+}
+
+static Node* parse_expr7(Compiler_state* state) {
+	Node* a = parse_expr8(state);
+
+	Node* op = parse_expr7a(state);
+
+	if (op == NULL)
+		return a;
+
+	node_add_child(op, a);
+
+	Node* op2 = parse_expr7a(state);
+
+	while (op2 != NULL) {
+		node_add_child(op2, op);
+		op = op2;
+		op2 = parse_expr7a(state);
+	}
+
+	return op;
+}
+
+
+static Node* parse_expr6a(Compiler_state* state) {
+	Token* top = match(state, 1, (enum Token_type[]){
+	    AMPERSAND
+	});
+
+	if (top == NULL)
+		return NULL;
+
+	offset++;
+
+	Node* op = empty_node();
+	op->value = *top;
+
+	node_add_child(op, parse_expr7(state));
+
+	return op;
+}
+
+static Node* parse_expr6(Compiler_state* state) {
+	Node* a = parse_expr7(state);
+
+	Node* op = parse_expr6a(state);
+
+	if (op == NULL)
+		return a;
+
+	node_add_child(op, a);
+
+	Node* op2 = parse_expr6a(state);
+
+	while (op2 != NULL) {
+		node_add_child(op2, op);
+		op = op2;
+		op2 = parse_expr6a(state);
+	}
+
+	return op;
+}
+
+
+static Node* parse_expr5a(Compiler_state* state) {
+	Token* top = match(state, 1, (enum Token_type[]){
+	    CARET
+	});
+
+	if (top == NULL)
+		return NULL;
+
+	offset++;
+
+	Node* op = empty_node();
+	op->value = *top;
+
+	node_add_child(op, parse_expr6(state));
+
+	return op;
+}
+
+static Node* parse_expr5(Compiler_state* state) {
+	Node* a = parse_expr6(state);
+
+	Node* op = parse_expr5a(state);
+
+	if (op == NULL)
+		return a;
+
+	node_add_child(op, a);
+
+	Node* op2 = parse_expr5a(state);
+
+	while (op2 != NULL) {
+		node_add_child(op2, op);
+		op = op2;
+		op2 = parse_expr5a(state);
+	}
+
+	return op;
+}
+
+
+static Node* parse_expr4a(Compiler_state* state) {
+	Token* top = match(state, 1, (enum Token_type[]){
+	    PIPE
+	});
+
+	if (top == NULL)
+		return NULL;
+
+	offset++;
+
+	Node* op = empty_node();
+	op->value = *top;
+
+	node_add_child(op, parse_expr5(state));
+
+	return op;
+}
+
+static Node* parse_expr4(Compiler_state* state) {
+	Node* a = parse_expr5(state);
+
+	Node* op = parse_expr4a(state);
+
+	if (op == NULL)
+		return a;
+
+	node_add_child(op, a);
+
+	Node* op2 = parse_expr4a(state);
+
+	while (op2 != NULL) {
+		node_add_child(op2, op);
+		op = op2;
+		op2 = parse_expr4a(state);
+	}
+
+	return op;
+}
+
+
+static Node* parse_expr3a(Compiler_state* state) {
+	Token* top = match(state, 1, (enum Token_type[]){
+	    DOUBLE_AMPERSAND
+	});
+
+	if (top == NULL)
+		return NULL;
+
+	offset++;
+
+	Node* op = empty_node();
+	op->value = *top;
+
+	node_add_child(op, parse_expr4(state));
+
+	return op;
+}
+
+static Node* parse_expr3(Compiler_state* state) {
+	Node* a = parse_expr4(state);
+
+	Node* op = parse_expr3a(state);
+
+	if (op == NULL)
+		return a;
+
+	node_add_child(op, a);
+
+	Node* op2 = parse_expr3a(state);
+
+	while (op2 != NULL) {
+		node_add_child(op2, op);
+		op = op2;
+		op2 = parse_expr3a(state);
+	}
+
+	return op;
 }
 
 
 static Node* parse_expr2a(Compiler_state* state) {
 	Token* top = match(state, 1, (enum Token_type[]){
-	    STAR
+	    DOUBLE_PIPE
 	});
 
 	if (top == NULL)
@@ -197,16 +670,8 @@ static Node* parse_expr2a(Compiler_state* state) {
 
 	node_add_child(op, parse_expr3(state));
 
-	Node* op2 = parse_expr2a(state);
-
-	if (op2 != NULL) {
-		node_add_child(op2, op);
-		return op2;
-	}
-
 	return op;
 }
-
 
 static Node* parse_expr2(Compiler_state* state) {
 	Node* a = parse_expr3(state);
@@ -218,16 +683,23 @@ static Node* parse_expr2(Compiler_state* state) {
 
 	node_add_child(op, a);
 
+	Node* op2 = parse_expr2a(state);
+
+	while (op2 != NULL) {
+		node_add_child(op2, op);
+		op = op2;
+		op2 = parse_expr2a(state);
+	}
+
 	return op;
 }
 
 
 static Node* parse_expr1a(Compiler_state* state) {
-	Token* top = match(state, 1, (enum Token_type[]){
-	    PLUS
-	    // ASSIGN, ASSIGN_PLUS, ASSIGN_MINUS, ASSIGN_STAR,
-	    // ASSIGN_SLASH, ASSIGN_MOD, ASSIGN_LEFT_SHIFT,
-	    // ASSIGN_RIGHT_SHIFT, ASSIGN_AND, ASSIGN_OR, ASSIGN_XOR
+	Token* top = match(state, 11, (enum Token_type[]){
+	    ASSIGN, ASSIGN_PLUS, ASSIGN_MINUS, ASSIGN_STAR,
+	    ASSIGN_SLASH, ASSIGN_MOD, ASSIGN_LEFT_SHIFT,
+	    ASSIGN_RIGHT_SHIFT, ASSIGN_AND, ASSIGN_OR, ASSIGN_XOR
 	});
 
 	if (top == NULL)
@@ -242,7 +714,6 @@ static Node* parse_expr1a(Compiler_state* state) {
 
 	return op;
 }
-
 
 static Node* parse_expr1(Compiler_state* state) {
 	Node* a = parse_expr2(state);

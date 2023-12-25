@@ -179,6 +179,9 @@ enum Token_type {
 
 	// AST specific
 	Group,
+	INC_POST,
+	DEC_POST,
+	ARRAY_INDEX,
 };
 
 

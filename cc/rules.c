@@ -98,7 +98,7 @@ unsigned long types_regex_count = sizeof(types_regex) / sizeof(Type_regex);
 char** token_type_names;
 
 void prepeare_names() {
-token_type_names = malloc(sizeof(char*) * 172);
+token_type_names = malloc(sizeof(char*) * 175);
 token_type_names[0] = "EOI\0";
 token_type_names[1] = "UNDEFINED\0";
 token_type_names[2] = "HEX_NUMBER\0";
@@ -271,6 +271,9 @@ token_type_names[168] = "Call_arg1\0";
 token_type_names[169] = "Mem_access\0";
 token_type_names[170] = "Point_mem_access\0";
 token_type_names[171] = "Group\0";
+token_type_names[172] = "INC_POST\0";
+token_type_names[173] = "DEC_POST\0";
+token_type_names[174] = "ARRAY_INDEX\0";
 }
 
 int table[171][171] = {
