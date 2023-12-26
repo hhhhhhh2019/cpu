@@ -741,6 +741,9 @@ static Node* parse_expr(Compiler_state* state) {
 	Node* root = empty_node();
 	root->value.type = Group;
 
+	if (match(state, 2, (enum Token_type[]){RBR, RCBR}) != NULL)
+		return root;
+
 	while (1) {
 		Node* node = parse_expr1(state);
 
@@ -752,12 +755,12 @@ static Node* parse_expr(Compiler_state* state) {
 		offset++;
 	}
 
-	if (root->childs_count == 1) {
+	/* if (root->childs_count == 1) {
 		root = root->childs[0];
 		free(root->parent->childs);
 		free(root->parent);
 		root->parent = NULL;
-	}
+	} */
 
 	return root;
 }
@@ -857,6 +860,21 @@ static Node* parse_var(Compiler_state* state) {
 	if (name == NULL)
 		return root;
 
+	while (match(state, 1, (enum Token_type[]){LSBR}) != NULL) {
+		offset++;
+
+		Node* arr = empty_node();
+		arr->value.type = ARRAY_INDEX;
+
+		if (match(state, 1, (enum Token_type[]){RSBR}) == NULL)
+			node_add_child(arr, parse_expr1(state));
+
+		node_add_child(arr, type);
+		type = arr;
+
+		require(state, 1, (enum Token_type[]){RSBR}, 1);
+	}
+
 	root->value = *name;
 	root->value.type = Var;
 
@@ -868,6 +886,7 @@ static Node* parse_var(Compiler_state* state) {
 
 static Node* parse_type(Compiler_state* state) {
 	Node* root = empty_node();
+	root->value.type = Type;
 
 	Node* node = root;
 
@@ -886,7 +905,6 @@ static Node* parse_type(Compiler_state* state) {
 		mod->value = *token1;
 
 		node_add_child(node, mod);
-
 		node = mod;
 
 		token1 = require(state, 18, (enum Token_type[]){
@@ -914,12 +932,24 @@ static Node* parse_type(Compiler_state* state) {
 		type->value = *token1;
 	}
 
+	Token* mod2 = match(state, 2, (enum Token_type[]){STAR, LSBR});
+
+	while (mod2 != NULL) {
+		offset++;
+
+		Node* mod = empty_node();
+		mod->value = *mod2;
+
+		if (mod2->type == LSBR)
+			require(state, 1, (enum Token_type[]){RSBR}, 1);
+
+		node_add_child(node, mod);
+		node = mod;
+
+		mod2 = match(state, 2, (enum Token_type[]){STAR, LSBR});
+	}
+
 	node_add_child(node, type);
-
-	root = root->childs[0];
-
-	free(root->parent->childs);
-	free(root->parent);
 
 	return root;
 }
@@ -948,6 +978,21 @@ static Node* start1(Compiler_state* state) {
 	if (name == NULL)
 		return root;
 
+	while (match(state, 1, (enum Token_type[]){LSBR}) != NULL) {
+		offset++;
+
+		Node* arr = empty_node();
+		arr->value.type = ARRAY_INDEX;
+
+		if (match(state, 1, (enum Token_type[]){RSBR}) == NULL)
+			node_add_child(arr, parse_expr1(state));
+
+		node_add_child(arr, type);
+		type = arr;
+
+		require(state, 1, (enum Token_type[]){RSBR}, 1);
+	}
+
 	root->value = *name;
 
 	Token* token1 = require(state, 3, (enum Token_type[]){
@@ -965,7 +1010,7 @@ static Node* start1(Compiler_state* state) {
 
 	else if (token1->type == ASSIGN) { // переменная с нач. значением
 		root->value.type = Var;
-		node_add_child(root, parse_expr(state));
+		node_add_child(root, parse_expr1(state));
 
 		require(state, 1, (enum Token_type[]){SEMICOLON}, 1);
 	}
