@@ -11,6 +11,8 @@ static unsigned int offset;
 
 
 
+static Node* parse_func_body(Compiler_state*);
+static Node* parse_func_body1(Compiler_state*);
 static Node* parse_var(Compiler_state*);
 static Node* parse_type(Compiler_state*);
 static Node* parse_enum(Compiler_state*);
@@ -143,9 +145,9 @@ static Node* parse_expr13(Compiler_state* state) {
 
 	if (top->type == INC || top->type == DEC) {
 		if (top->type == INC)
-			a->value.type = INC_POST;
+			op->value.type = INC_POST;
 		else
-			a->value.type = DEC_POST;
+			op->value.type = DEC_POST;
 
 		node_add_child(op, a);
 
@@ -955,6 +957,170 @@ static Node* parse_type(Compiler_state* state) {
 }
 
 
+static Node* parse_if(Compiler_state* state) {
+	Node* root = empty_node();
+
+	Token* t1 = require(state, 1, (enum Token_type[]){IF}, 1);
+
+	if (t1 == NULL)
+		return root;
+
+	root->value = *t1;
+
+	if (require(state, 1, (enum Token_type[]){LBR}, 1) == NULL)
+		return root;
+
+	node_add_child(root, parse_expr1(state));
+
+	if (require(state, 1, (enum Token_type[]){RBR}, 1) == NULL)
+		return root;
+
+	if (match(state, 1, (enum Token_type[]){LCBR}) == NULL)
+		node_add_child(root, parse_func_body1(state));
+	else {
+		offset++;
+		node_add_child(root, parse_func_body(state));
+		require(state, 1, (enum Token_type[]){RCBR}, 1);
+	}
+
+	Token* telse = match(state, 1, (enum Token_type[]){ELSE});
+
+	if (telse == NULL)
+		return root;
+
+	offset++;
+
+	Node* nelse = empty_node();
+	nelse->value = *telse;
+
+	node_add_child(nelse, parse_func_body1(state));
+	node_add_child(root, nelse);
+
+	return root;
+}
+
+
+static Node* parse_while(Compiler_state* state) {
+	Node* root = empty_node();
+
+	Token* t1 = require(state, 1, (enum Token_type[]){WHILE}, 1);
+
+	if (t1 == NULL)
+		return root;
+
+	root->value = *t1;
+
+	if (require(state, 1, (enum Token_type[]){LBR}, 1) == NULL)
+		return root;
+
+	node_add_child(root, parse_expr1(state));
+
+	if (require(state, 1, (enum Token_type[]){RBR}, 1) == NULL)
+		return root;
+
+	if (match(state, 1, (enum Token_type[]){LCBR}) == NULL)
+		node_add_child(root, parse_func_body1(state));
+	else {
+		offset++;
+		node_add_child(root, parse_func_body(state));
+		require(state, 1, (enum Token_type[]){RCBR}, 1);
+	}
+
+	return root;
+}
+
+
+static Node* parse_for(Compiler_state* state) {
+	
+}
+
+
+static Node* parse_switch(Compiler_state* state) {
+	
+}
+
+
+static Node* parse_return(Compiler_state* state) {
+	Node* root = empty_node();
+
+	Token* t1 = require(state, 1, (enum Token_type[]){RETURN}, 1);
+
+	if (t1 == NULL)
+		return root;
+
+	root->value = *t1;
+
+	node_add_child(root, parse_expr1(state));
+
+	require(state, 1, (enum Token_type[]){SEMICOLON}, 1);
+
+	return root;
+}
+
+
+static Node* parse_func_body1(Compiler_state* state) {
+	Token* t1 = match(state, 24, (enum Token_type[]){
+	    VOID, CHAR, SHORT, INT, LONG, FLOAT, DOUBLE, ENUM, STRUCT, UNION,
+	    SIGNED, UNSIGNED, EXTERN, STATIC, INLINE, REGISTER, VOLATILE, RESTRICT, AUTO,
+	    IF, WHILE, FOR, SWITCH, RETURN
+	});
+
+	if (t1 == NULL) {
+		Node* root = parse_expr1(state);
+		require(state, 1, (enum Token_type[]){SEMICOLON}, 1);
+		return root;
+	}
+
+	if (t1->type == IF)
+		return parse_if(state);
+
+	if (t1->type == WHILE)
+		return parse_while(state);
+
+	if (t1->type == FOR)
+		return parse_for(state);
+
+	if (t1->type == SWITCH)
+		return parse_switch(state);
+
+	if (t1->type == RETURN)
+		return parse_return(state);
+
+	Node* var = parse_var(state);
+
+	Token* t2 = require(state, 2, (enum Token_type[]){
+	    ASSIGN, SEMICOLON
+	}, 1);
+
+	if (t2 == NULL)
+		return var;
+
+	if (t2->type == SEMICOLON) {
+		return var;
+	}
+
+	else if (t2->type == ASSIGN) {
+		node_add_child(var, parse_expr1(state));
+
+		require(state, 1, (enum Token_type[]){SEMICOLON}, 1);
+	}
+
+	return var;
+}
+
+
+static Node* parse_func_body(Compiler_state* state) {
+	Node* root = empty_node();
+	root->value.type = Group;
+
+	while (match(state, 1, (enum Token_type[]){RCBR}) == NULL) {
+		node_add_child(root, parse_func_body1(state));
+	}
+
+	return root;
+}
+
+
 static Node* start1(Compiler_state* state) {
 	// здесь может быть объявл. структуры, объеденения, перечисления, переменной и функции.
 	// переменная и функция начинается с типа, котором может быть структура, объед. или переч.,
@@ -987,6 +1153,8 @@ static Node* start1(Compiler_state* state) {
 		if (match(state, 1, (enum Token_type[]){RSBR}) == NULL)
 			node_add_child(arr, parse_expr1(state));
 
+		offset++;
+
 		node_add_child(arr, type);
 		type = arr;
 
@@ -1016,7 +1184,35 @@ static Node* start1(Compiler_state* state) {
 	}
 
 	else { // функция
+		Node* args = empty_node();
+		args->value.type = Group;
 
+		while (match(state, 1, (enum Token_type[]){RBR}) == NULL) {
+			Node* arg = parse_var(state);
+			node_add_child(args, arg);
+
+			Token* next = require(state, 2, (enum Token_type[]){COMMA, RBR}, 1);
+
+			if (next == NULL)
+				return root;
+
+			if (next->type == RBR)
+				break;
+		}
+
+		node_add_child(root, args);
+
+		Token* next = require(state, 2, (enum Token_type[]){SEMICOLON, LCBR}, 1);
+
+		if (next == NULL)
+			return root;
+
+		if (next->type == SEMICOLON)
+			return root;
+
+		node_add_child(root, parse_func_body(state));
+
+		require(state, 1, (enum Token_type[]){RCBR}, 1);
 	}
 
 	return root;

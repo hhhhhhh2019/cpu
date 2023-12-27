@@ -34,6 +34,8 @@ char lexer_init() {
 
 
 void lexer(Compiler_state* state) {
+	// TODO: починить распознование printf как pr int f, abc1 как abc 1 и т.д.
+
 	char* undef_str = calloc(1,1);
 
 	unsigned long undef_line = 1;
