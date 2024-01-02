@@ -45,7 +45,7 @@ int main(int argc, char** argv) {
 	}
 
 	lexer_init();
-	prepeare_todo();
+	// prepeare_todo();
 	prepeare_names();
 
 	Compiler_state state = parse_file_prepoc(input_filename);

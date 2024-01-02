@@ -97,7 +97,7 @@ enum Token_type {
 	Start1,
 	Start11,
 	Start111,
-	Func1,
+	Func,
 	Func11,
 	Func_args,
 	Func_arg,
@@ -182,6 +182,7 @@ enum Token_type {
 	INC_POST,
 	DEC_POST,
 	ARRAY_INDEX,
+	Func_pointer,
 };
 
 

@@ -40,16 +40,8 @@ static inline void node_add_child(Node* node, Node* child) {
 }
 
 
-Stack(int);
-
-Stack(long);
-
-extern int table[171][171];
-extern enum Token_type** todo;
-void prepeare_todo();
-
-
 void create_dot_from_node(Node*);
+void free_node(Node*);
 
 
 #endif

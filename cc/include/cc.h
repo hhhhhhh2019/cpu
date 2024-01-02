@@ -46,6 +46,7 @@ void print_help();
 Compiler_state parse_file_prepoc(char*);
 void lexer(Compiler_state*);
 void synt(Compiler_state*);
+void semant(Compiler_state*);
 
 void add_error(Compiler_state*, Error);
 

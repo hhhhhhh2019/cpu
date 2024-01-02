@@ -98,7 +98,7 @@ unsigned long types_regex_count = sizeof(types_regex) / sizeof(Type_regex);
 char** token_type_names;
 
 void prepeare_names() {
-token_type_names = malloc(sizeof(char*) * 175);
+token_type_names = malloc(sizeof(char*) * 176);
 token_type_names[0] = "EOI\0";
 token_type_names[1] = "UNDEFINED\0";
 token_type_names[2] = "HEX_NUMBER\0";
@@ -191,7 +191,7 @@ token_type_names[88] = "Start\0";
 token_type_names[89] = "Start1\0";
 token_type_names[90] = "Start11\0";
 token_type_names[91] = "Start111\0";
-token_type_names[92] = "Func1\0";
+token_type_names[92] = "Func\0";
 token_type_names[93] = "Func11\0";
 token_type_names[94] = "Func_args\0";
 token_type_names[95] = "Func_arg\0";
@@ -274,6 +274,7 @@ token_type_names[171] = "Group\0";
 token_type_names[172] = "INC_POST\0";
 token_type_names[173] = "DEC_POST\0";
 token_type_names[174] = "ARRAY_INDEX\0";
+token_type_names[175] = "Func_pointer\0";
 }
 
 int table[171][171] = {
@@ -482,7 +483,7 @@ todo[7][0] = 1;
 todo[7][1] = Var1;
 todo[8] = malloc(sizeof(enum Token_type) * 2);
 todo[8][0] = 1;
-todo[8][1] = Func1;
+todo[8][1] = Func;
 todo[9] = malloc(sizeof(enum Token_type) * 5);
 todo[9][0] = 4;
 todo[9][1] = Func11;

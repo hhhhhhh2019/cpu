@@ -1,5 +1,5 @@
-int f(int a, int b) {
-	int c = 0;
+unsigned int foo(unsigned int a, unsigned int b, char (*f)(int)) {
+	unsigned int c = 0;
 
 	while (a != b) {
 		if (a > b)
@@ -10,7 +10,7 @@ int f(int a, int b) {
 		c++;
 	}
 
-	foo(c);
+	bar(a,b,c);
 
 	return c;
 }
