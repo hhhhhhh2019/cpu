@@ -55,8 +55,6 @@ start:
 	add r1, r0, 4 ; command (write)
 	stob r1, r10, 1
 
-	add r1, r0, 0xfffffffffffff
-
 	; wait end
 	add r2, r0, 1
 
@@ -67,5 +65,29 @@ start:
 
 
 
-	add r1, r0, 0xfffffffffffff
+	; read from vvmhc
+
+	add r1, r0, 1 ; block count
+	stos r1, r10, 0x02
+
+	add r1, r0, 0x200 ; disk addr
+	stol r1, r10, 0x04
+
+	add r1, pc, buffer - $ ; ram addr
+	stol r1, r10, 0x0c
+
+	add r1, r0, 3 ; command (read)
+  stob r1, r10, 1
+
+	add r2, r0, 1
+
+	start_loop3:
+    loab r1, r10, 0
+  cmp r1, r2
+  addne pc, pc, start_loop3 - $
+
+
+	add r1, pc, buffer - $
+	loal r1, r1, 0
+
 chst r0

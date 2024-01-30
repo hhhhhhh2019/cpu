@@ -49,5 +49,7 @@ void vvmhc_step(VVMHC*);
 
 void vvmhc_add_disk(VVMHC*, char* filename, char id);
 
+void vvmhc_close(VVMHC*);
+
 
 #endif
