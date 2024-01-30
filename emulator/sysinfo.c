@@ -10,9 +10,9 @@ void sysinfo_init(Sysinfo* sysinfo, void *motherboard, unsigned long hz) {
 
 
 void sysinfo_step(Sysinfo* sysinfo) {
-	char cmd  = *(char*) (sysinfo->registers + 0);
-	short arg = *(short*)(sysinfo->registers + 1);
-	long* resp = (long*)(sysinfo->registers + 3);
+	char  cmd  = *(char*) (sysinfo->registers + 0);
+	short arg  = *(short*)(sysinfo->registers + 1);
+	long* resp =  (long*) (sysinfo->registers + 3);
 
 	Motherboard* motherboard = (Motherboard*)sysinfo->motherboard;
 

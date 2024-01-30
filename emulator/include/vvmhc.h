@@ -9,17 +9,14 @@
 
 #define VVMHC_STATE_INIT  1
 #define VVMHC_STATE_BUSY  2
-#define VVMHC_STATE_PAUSE 4
 
 #define VVMHC_CMD_GET_CONNECTED 1
 #define VVMHC_CMD_GET_SIZE 2
 #define VVMHC_CMD_READ 3
 #define VVMHC_CMD_WRITE 4
-#define VVMHC_CMD_SET_INTERRUPT 5
 
 
 typedef struct {
-	char connected;
 	char* filename;
 	FILE* fd;
 	unsigned long size;
@@ -30,10 +27,18 @@ typedef struct {
 	void* motherboard;
 	unsigned int type_id;
 	unsigned long hz;
-	char registers[31];
+	char registers[37];
 
 	char init;
 	char init_timer;
+
+	char state; // 0 - none, 1 - reading from disk, 2 - writing
+
+	char* buffer;
+	unsigned long buffer_size;
+	unsigned long buff_offset;
+	unsigned long ram_offset;
+	unsigned long disk_offset;
 
 	VVMHC_disk disks[16];
 } VVMHC;

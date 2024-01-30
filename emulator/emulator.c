@@ -91,6 +91,7 @@ int main(int argc, char** argv) {
 
 	vvmhc_init(motherboard.devices[motherboard.devices_count-1], &motherboard, 100);
 
+	vvmhc_add_disk(motherboard.devices[motherboard.devices_count-1], "disk.img", 0);
 
 	char cpu_enabled = 1;
 
@@ -116,7 +117,6 @@ int main(int argc, char** argv) {
 	for (unsigned long tick = 0; cpu_enabled; tick++) {
 		cpu_enabled = 0;
 
-		getc(stdin);
 		printf("step tick: %lu\n", tick);
 
 		for (int i = 0; i < motherboard.cpu.cores_count; i++) {
@@ -126,6 +126,17 @@ int main(int argc, char** argv) {
 				continue;
 
 			print_registers(&motherboard.cpu.cores[0], 0);
+		}
+
+		getc(stdin);
+
+		for (int i = 0; i < motherboard.cpu.cores_count; i++) {
+			cpu_enabled |= motherboard.cpu.cores[i].state & STATE_ENABLE;
+
+			if (tick % (max_hz / motherboard.cpu.cores[i].hz) != 0)
+				continue;
+
+			// print_registers(&motherboard.cpu.cores[0], 0);
 			core_step(&motherboard.cpu.cores[0]);
 		}
 
@@ -144,6 +155,9 @@ int main(int argc, char** argv) {
 		if (tick % (max_hz / motherboard.cpu.apic.hz) == 0)
 			apic_step(&motherboard.cpu.apic);
 	}
+
+
+	vvmhc_close(motherboard.devices[1]);
 }
 
 
@@ -157,4 +171,7 @@ void device_step(void* device) {
 
 	if (type == SYSINFO_TYPE_ID)
 		sysinfo_step(device);
+
+	if (type == VVMHC_TYPE_ID)
+		vvmhc_step(device);
 }

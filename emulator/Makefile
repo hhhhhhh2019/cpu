@@ -1,7 +1,10 @@
 LIBS = 
 
-CC_FLAGS=-c -I ./include -DDEBUG -fsanitize=undefined -fno-sanitize=alignment -fsanitize=address -g #`pkg-config --cflags $(LIBS)`
-LD_FLAGS=-lasan -lubsan #`pkg-config --libs $(LIBS)`
+CC_FLAGS=-c -I ./include -DDEBUG -g #`pkg-config --cflags $(LIBS)`
+LD_FLAGS= #`pkg-config --libs $(LIBS)`
+
+#  -fsanitize=undefined -fno-sanitize=alignment -fsanitize=address
+#  -lasan -lubsan
 
 CC ?= gcc
 LD = $(CC)

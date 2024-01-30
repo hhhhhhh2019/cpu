@@ -1,4 +1,4 @@
-unsigned int foo(unsigned int a, unsigned int b, char (*f)(int)) {
+unsigned int foo(unsigned int a, unsigned int b) {
 	unsigned int c = 0;
 
 	while (a != b) {

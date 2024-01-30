@@ -9,6 +9,7 @@
 enum Error_type {
 	CANT_OPEN_FILE,
 	SYNTAX_ERROR,
+	SEMANT_ERROR,
 };
 
 

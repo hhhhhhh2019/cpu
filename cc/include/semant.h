@@ -2,17 +2,18 @@
 #define SEMANT_H
 
 
+#include <synt.h>
 #include <lexer.h>
 
 
 typedef struct {
-	Token name;
+	Node* var;
 } Variable;
 
 
 struct FieldOfView;
 
-typedef struct {
+typedef struct FieldOfView {
 	struct FieldOfView* parent;
 	unsigned int vars_count;
 	Variable* vars;

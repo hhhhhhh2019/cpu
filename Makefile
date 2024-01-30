@@ -1,7 +1,7 @@
 all: compile run
 
 compile: make_as
-	as/as bios.S -o bios
+	as/as vvmhc_test.S -o bios
 	#fasm bios.asm bios
 
 run: make_emulator

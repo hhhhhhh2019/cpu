@@ -74,6 +74,9 @@ int main(int argc, char** argv) {
 	create_dot_from_node(state.AST);
 
 
+	semant(&state);
+
+
 	free_and_exit(state, 0);
 }
 
