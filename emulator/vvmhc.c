@@ -62,8 +62,6 @@ void vvmhc_step(VVMHC* vvmhc) {
 	char  id          = *(char* )(vvmhc->registers + 0x1c);
 	long  tp          = *(long* )(vvmhc->registers + 0x1d);
 
-	printf("vvmhc: cmd: %d\n", cmd);
-
 	vvmhc->registers[0x01] = 0;
 
 	if (vvmhc->init == 0) {
@@ -75,14 +73,11 @@ void vvmhc_step(VVMHC* vvmhc) {
 		vvmhc->init_timer = 10;
 		vvmhc->init = 1;
 
-		printf("vvmhc: start init\n");
-
 		return;
 	}
 
 	if (vvmhc->init_timer != 0) {
 		vvmhc->init_timer--;
-		printf("vvmhc: init timer: %d\n", vvmhc->init_timer);
 		return;
 	}
 
@@ -109,12 +104,6 @@ void vvmhc_step(VVMHC* vvmhc) {
 		if (vvmhc->buff_offset == vvmhc->buffer_size) {
 			*state &= ~VVMHC_STATE_BUSY;
 			vvmhc->state = 0;
-
-			printf("vvmhc: seek: %lu\n", vvmhc->disk_offset);
-			printf("vvmhc: buffer[0]: %d\n", vvmhc->buffer[0]);
-			printf("vvmhc: buffer size: %lu\n", vvmhc->buffer_size);
-			printf("vvmhc: filename: %s\n", vvmhc->disks[id].filename);
-			printf("vvmhc: fd: %p\n", vvmhc->disks[id].fd);
 
 			fseek(vvmhc->disks[id].fd, vvmhc->disk_offset, SEEK_SET);
 			fwrite(vvmhc->buffer, vvmhc->buffer_size, 1, vvmhc->disks[id].fd);
@@ -164,8 +153,6 @@ void vvmhc_step(VVMHC* vvmhc) {
 
 
 	if (cmd == VVMHC_CMD_WRITE) {
-		printf("vvmhc read:\n\t id: %d\n", id);
-
 		if (vvmhc->disks[id].fd == NULL)
 			return;
 

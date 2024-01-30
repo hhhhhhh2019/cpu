@@ -31,8 +31,6 @@ void mmu_step(MMU* mmu) {
 	unsigned int size = *(unsigned int*)(mmu->registers + 5);
 	unsigned short id = *(unsigned short*)(mmu->registers + 9);
 
-	printf("mmu: cmd: %d\n", cmd);
-
 	mmu->registers[0] = 0;
 
 	Motherboard* motherboard = mmu->motherboard;
@@ -111,8 +109,6 @@ void mmu_write(MMU* mmu, char vaddr, unsigned long tp, unsigned long addr, unsig
 	for (int i = 0; i < mmu->mmio_count; i++) {
 		if (addr < mmu->mmio[i].start_addr || addr >= mmu->mmio[i].start_addr + mmu->mmio[i].size)
 			continue;
-
-		printf("mmu: find MMIO: addr: %lu start_addr: %lu offset: %lu\n", addr, mmu->mmio[i].start_addr, addr - mmu->mmio[i].start_addr);
 
 		for (int j = 0; j < size; j++)
 			mmu->mmio[i].data[addr - mmu->mmio[i].start_addr + j] = value >> (j * 8) & 0xff;
