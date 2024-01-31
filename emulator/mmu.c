@@ -115,7 +115,7 @@ void mmu_write(MMU* mmu, char vaddr, unsigned long tp, unsigned long addr, unsig
 
 		return;
 	}
-	
+
 	for (int j = 0; j < size; j++)
 		((Motherboard*)mmu->motherboard)->ram.ram[addr + j] = value >> (j * 8) & 0xff;
 }

@@ -5,7 +5,7 @@
 #include <stdio.h>
 
 
-#define VVMHC_TYPE_ID 2
+#define VVMHC_TYPE_ID 3
 
 #define VVMHC_STATE_INIT  1
 #define VVMHC_STATE_BUSY  2

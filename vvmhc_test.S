@@ -14,7 +14,7 @@ start:
 	add r1, r0, 31 ; size
 	stoi r1, r10, 5
 
-	add r1, r0, 1 ; device id (at the moment vvmhc is second device)
+	add r1, r0, 2 ; device id (at the moment vvmhc is third device)
 	stos r1, r10, 9
 
 	add r1, r0, 2 ; command (add)
@@ -77,14 +77,14 @@ start:
 	stol r1, r10, 0x0c
 
 	add r1, r0, 3 ; command (read)
-  stob r1, r10, 1
+	stob r1, r10, 1
 
 	add r2, r0, 1
 
 	start_loop3:
-    loab r1, r10, 0
-  cmp r1, r2
-  addne pc, pc, start_loop3 - $
+		loab r1, r10, 0
+	cmp r1, r2
+	addne pc, pc, start_loop3 - $
 
 
 	add r1, pc, buffer - $

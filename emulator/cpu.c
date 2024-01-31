@@ -30,11 +30,11 @@ char instr_size[] = {
 	10, // smul r r num64
 	10, // sdiv r r num64
 	10, // cmp r r num64
-	10,  // adde r r num64
-	10,  // addne r r num64
-	10,  // addl r r num64
-	10,  // addb r r num64
-	10,  // addo r r num64
+	10, // adde r r num64
+	10, // addne r r num64
+	10, // addl r r num64
+	10, // addb r r num64
+	10, // addo r r num64
 	2,  // pushl r
 	2,  // pushi r
 	2,  // pushs r
@@ -165,6 +165,7 @@ void core_int(Core* core, unsigned char id) {
 		return;
 
 	char* ram = ((Motherboard*)core->motherboard)->ram.ram;
+	MMU* mmu = &((Motherboard*)core->motherboard)->mmu;
 
 	core->is_interrupt = 1;
 	core->registersk[REG_PC] = cpu2lt64(*(unsigned long*)(ram + id * 8));
@@ -203,9 +204,6 @@ void core_step(Core* core) {
 	LOG("num1: %lx\n", num1);
 	LOG("num2: %lx\n", num2);
 	LOG("num3: %x\n", num3);
-
-	
-	long prev_pc_state = core->registers[REG_PC];
 
 
 	if (instr == 0x00) { // stol r r num64
@@ -262,26 +260,44 @@ void core_step(Core* core) {
 
 	else if (instr == 0x08) { // add r r r
 		core->registers[r1] = core_alu(core, core->registers[r2], core->registers[r3], ALU_ADD);
+
+		if (r1 == REG_PC)
+			return;
 	}
 
 	else if (instr == 0x09) { // sub r r r
 		core->registers[r1] = core_alu(core, core->registers[r2], core->registers[r3], ALU_SUB);
+
+		if (r1 == REG_PC)
+			return;
 	}
 
 	else if (instr == 0x0a) { // mul r r r
 		core->registers[r1] = core_alu(core, core->registers[r2], core->registers[r3], ALU_MUL);
+
+		if (r1 == REG_PC)
+			return;
 	}
 
 	else if (instr == 0x0b) { // div r r r
 		core->registers[r1] = core_alu(core, core->registers[r2], core->registers[r3], ALU_DIV);
+
+		if (r1 == REG_PC)
+			return;
 	}
 
 	else if (instr == 0x0c) { // smul r r r
 		core->registers[r1] = core_alu(core, core->registers[r2], core->registers[r3], ALU_SMUL);
+
+		if (r1 == REG_PC)
+			return;
 	}
 
 	else if (instr == 0x0d) { // sdiv r r r
 		core->registers[r1] = core_alu(core, core->registers[r2], core->registers[r3], ALU_SDIV);
+
+		if (r1 == REG_PC)
+			return;
 	}
 
 	else if (instr == 0x0e) { // cmp r r
@@ -290,26 +306,44 @@ void core_step(Core* core) {
 
 	else if (instr == 0x0f) { // add r r num
 		core->registers[r1] = core_alu(core, core->registers[r2], num1, ALU_ADD);
+
+		if (r1 == REG_PC)
+			return;
 	}
 
 	else if (instr == 0x10) { // sub r r num
 		core->registers[r1] = core_alu(core, core->registers[r2], num1, ALU_SUB);
+
+		if (r1 == REG_PC)
+			return;
 	}
 
 	else if (instr == 0x11) { // mul r r num
 		core->registers[r1] = core_alu(core, core->registers[r2], num1, ALU_MUL);
+
+		if (r1 == REG_PC)
+			return;
 	}
 
 	else if (instr == 0x12) { // div r r num
 		core->registers[r1] = core_alu(core, core->registers[r2], num1, ALU_DIV);
+
+		if (r1 == REG_PC)
+			return;
 	}
 
 	else if (instr == 0x13) { // smul r r num
 		core->registers[r1] = core_alu(core, core->registers[r2], num1, ALU_SMUL);
+
+		if (r1 == REG_PC)
+			return;
 	}
 
 	else if (instr == 0x14) { // sdiv r r num
 		core->registers[r1] = core_alu(core, core->registers[r2], num1, ALU_SDIV);
+
+		if (r1 == REG_PC)
+			return;
 	}
 
 	else if (instr == 0x15) { // cmp r num64
@@ -317,35 +351,59 @@ void core_step(Core* core) {
 	}
 
 	else if (instr == 0x16) { // adde r r num64
-		if ((core->registers[REG_FLAG] & FLAG_ZERO) != 0)
+		if ((core->registers[REG_FLAG] & FLAG_ZERO) != 0) {
 			core->registers[r1] = core_alu(core, core->registers[r2], num1, ALU_ADD);
+			
+			if (r1 == REG_PC)
+				return;
+		}
 	}
 
 	else if (instr == 0x17) { // addne r r num64
-		if ((core->registers[REG_FLAG] & FLAG_ZERO) == 0)
+		if ((core->registers[REG_FLAG] & FLAG_ZERO) == 0) {
 			core->registers[r1] = core_alu(core, core->registers[r2], num1, ALU_ADD);
+			
+			if (r1 == REG_PC)
+				return;
+		}
 	}
 
 	else if (instr == 0x18) { // addl r r num64
-		if ((core->registers[REG_FLAG] & FLAG_CARRY) != 0)
+		if ((core->registers[REG_FLAG] & FLAG_CARRY) != 0) {
 			core->registers[r1] = core_alu(core, core->registers[r2], num1, ALU_ADD);
+			
+			if (r1 == REG_PC)
+				return;
+		}
 	}
 
 	else if (instr == 0x19) { // addg r r num64
 		if ((core->registers[REG_FLAG] & FLAG_ZERO) == 0 &&
-		    (core->registers[REG_FLAG] & FLAG_CARRY) == 0)
+		    (core->registers[REG_FLAG] & FLAG_CARRY) == 0) {
 			core->registers[r1] = core_alu(core, core->registers[r2], num1, ALU_ADD);
+			
+			if (r1 == REG_PC)
+				return;
+		}
 	}
 
 	else if (instr == 0x1a) { // addsl r r num64
-		if ((core->registers[REG_FLAG] & FLAG_SIGN) != 0)
+		if ((core->registers[REG_FLAG] & FLAG_SIGN) != 0) {
 			core->registers[r1] = core_alu(core, core->registers[r2], num1, ALU_ADD);
+			
+			if (r1 == REG_PC)
+				return;
+		}
 	}
 
 	else if (instr == 0x1b) { // addsg r r num64
 		if ((core->registers[REG_FLAG] & FLAG_ZERO) == 0 &&
-		    (core->registers[REG_FLAG] & FLAG_SIGN) == 0)
+		    (core->registers[REG_FLAG] & FLAG_SIGN) == 0) {
 			core->registers[r1] = core_alu(core, core->registers[r2], num1, ALU_ADD);
+
+			if (r1 == REG_PC)
+				return;
+		}
 	}
 
 	else if (instr == 0x1c) { // pushl r
@@ -371,21 +429,33 @@ void core_step(Core* core) {
 	else if (instr == 0x20) { // popl r
 		core->registers[r1] = *(unsigned long*)(ram + core->registers[REG_SP]);
 		core->registers[REG_SP] += 8;
+
+		if (r1 == REG_PC)
+			return;
 	}
 
 	else if (instr == 0x21) { // popi r
 		core->registers[r1] = *(unsigned long*)(ram + core->registers[REG_SP]) & 0xffffffff;
 		core->registers[REG_SP] += 4;
+
+		if (r1 == REG_PC)
+			return;
 	}
 
-	else if (instr == 0x22) { // popl r
+	else if (instr == 0x22) { // pops r
 		core->registers[r1] = *(unsigned long*)(ram + core->registers[REG_SP]) & 0xffff;
 		core->registers[REG_SP] += 2;
+
+		if (r1 == REG_PC)
+			return;
 	}
 
-	else if (instr == 0x23) { // popl r
+	else if (instr == 0x23) { // popb r
 		core->registers[r1] = *(unsigned long*)(ram + core->registers[REG_SP]) & 0xff;
 		core->registers[REG_SP] += 1;
+
+		if (r1 == REG_PC)
+			return;
 	}
 
 	else if (instr == 0x24) { // call r
@@ -393,6 +463,8 @@ void core_step(Core* core) {
 		*(unsigned long*)(ram + core->registers[REG_SP]) = core->registers[REG_PC];
 
 		core->registers[REG_PC] = core->registers[r1];
+
+		return;
 	}
 
 	else if (instr == 0x25) { // int num8
@@ -406,46 +478,79 @@ void core_step(Core* core) {
 
 	else if (instr == 0x27) { // and r r r
 		core->registers[r1] = core->registers[r2] & core->registers[r3];
+
+		if (r1 == REG_PC)
+			return;
 	}
 
 	else if (instr == 0x28) { // or r r r
 		core->registers[r1] = core->registers[r2] | core->registers[r3];
+
+		if (r1 == REG_PC)
+			return;
 	}
 
 	else if (instr == 0x29) { // xor r r r
 		core->registers[r1] = core->registers[r2] ^ core->registers[r3];
+
+		if (r1 == REG_PC)
+			return;
 	}
 
 	else if (instr == 0x2a) { // not r r
 		core->registers[r1] = ~core->registers[r2];
+
+		if (r1 == REG_PC)
+			return;
 	}
 
 	else if (instr == 0x2b) { // shl r r r
 		core->registers[r1] = core->registers[r2] << core->registers[r3];
+
+		if (r1 == REG_PC)
+			return;
 	}
 
 	else if (instr == 0x2c) { // shr r r r
 		core->registers[r1] = core->registers[r2] >> core->registers[r3];
+
+		if (r1 == REG_PC)
+			return;
 	}
 
 	else if (instr == 0x2d) { // and r r num64
 		core->registers[r1] = core->registers[r2] & num1;
+
+		if (r1 == REG_PC)
+			return;
 	}
 
 	else if (instr == 0x2e) { // or r r num64
 		core->registers[r1] = core->registers[r2] | num1;
+
+		if (r1 == REG_PC)
+			return;
 	}
 
 	else if (instr == 0x2f) { // xor r r num64
 		core->registers[r1] = core->registers[r2] ^ num1;
+
+		if (r1 == REG_PC)
+			return;
 	}
 
 	else if (instr == 0x30) { // shl r r num64
 		core->registers[r1] = core->registers[r2] << num1;
+
+		if (r1 == REG_PC)
+			return;
 	}
 
 	else if (instr == 0x31) { // shr r r num64
 		core->registers[r1] = core->registers[r2] >> num1;
+
+		if (r1 == REG_PC)
+			return;
 	}
 
 	else if (instr == 0x32) { // chst r
@@ -526,6 +631,5 @@ void core_step(Core* core) {
 	}
 
 
-	if (core->registers[REG_PC] == prev_pc_state)
-		core->registers[REG_PC] += instr_size[instr];
+	core->registers[REG_PC] += instr_size[instr];
 }

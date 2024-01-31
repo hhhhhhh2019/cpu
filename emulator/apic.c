@@ -1,3 +1,4 @@
+#include "cpu.h"
 #include <apic.h>
 #include <motherboard.h>
 #include <utils.h>
@@ -24,7 +25,7 @@ void apic_step(APIC* apic) {
 	Motherboard* motherboard = apic->motherboard;
 
 	for (int i = 0; i < apic->queues_count; i++) {
-		if (motherboard->cpu.cores[i].is_interrupt)
+		if (motherboard->cpu.cores[i].is_interrupt || (motherboard->cpu.cores[i].state & STATE_INTERRUPTS) == 0)
 			continue;
 
 		if (queue_can_pop(&apic->queues[i]) == 0)

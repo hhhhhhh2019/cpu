@@ -2,6 +2,7 @@
 #include <utils.h>
 
 #include <sysinfo.h>
+#include <timer.h>
 #include <vvmhc.h>
 
 #include <stdlib.h>
@@ -87,14 +88,21 @@ int main(int argc, char** argv) {
 
 
 	motherboard.devices = realloc(motherboard.devices, sizeof(void*) * (++motherboard.devices_count));
+	motherboard.devices[motherboard.devices_count-1] = malloc(sizeof(Timer));
+
+	timer_init(motherboard.devices[motherboard.devices_count-1], &motherboard, 100);
+
+
+	motherboard.devices = realloc(motherboard.devices, sizeof(void*) * (++motherboard.devices_count));
 	motherboard.devices[motherboard.devices_count-1] = malloc(sizeof(VVMHC));
 
 	vvmhc_init(motherboard.devices[motherboard.devices_count-1], &motherboard, 100);
 
 	vvmhc_add_disk(motherboard.devices[motherboard.devices_count-1], "disk.img", 0);
 
-	char cpu_enabled = 1;
 
+
+	char cpu_enabled = 1;
 
 	unsigned long max_hz = 0;
 
@@ -157,7 +165,7 @@ int main(int argc, char** argv) {
 	}
 
 
-	vvmhc_close(motherboard.devices[1]);
+	// vvmhc_close(motherboard.devices[2]);
 }
 
 
@@ -171,6 +179,9 @@ void device_step(void* device) {
 
 	if (type == SYSINFO_TYPE_ID)
 		sysinfo_step(device);
+
+	if (type == TIMER_TYPE_ID)
+		timer_step(device);
 
 	if (type == VVMHC_TYPE_ID)
 		vvmhc_step(device);
