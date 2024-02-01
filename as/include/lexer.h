@@ -7,6 +7,7 @@
 
 enum Token_type {
 	EOI,
+	UNDEFINED,
 	HEX_NUMBER,
 	BIN_NUMBER,
 	DEC_NUMBER,
@@ -81,7 +82,6 @@ enum Token_type {
 	PIPE,
 	TILDA,
 	CARET,
-	UNDEFINED,
 	OFFSET,
 	S,
 	S1,
@@ -109,11 +109,11 @@ enum Token_type {
 };
 
 
-typedef struct Type_regex_t {
+typedef struct Type_regex {
 	enum Token_type type;
 	char* regex_str;
 	regex_t regex;
-} Type_regex_t;
+} Type_regex;
 
 
 typedef struct Token {
@@ -136,7 +136,7 @@ typedef struct Lexer_result {
 
 
 
-extern Type_regex_t types_regex[];
+extern Type_regex types_regex[];
 extern unsigned int types_regex_count;
 
 

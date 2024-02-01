@@ -75,8 +75,8 @@ Instruction_descr instr_args[] = {
 
 	{CHST,   0x32,  2, 1, (char[]){0}},
 	{LOST,   0x33,  2, 1, (char[]){0}},
-	{STOLK,  0x34,  2, 1, (char[]){0}},
-	{LOALK,  0x35,  2, 1, (char[]){0}},
+	{STOLK,  0x34, 10, 3, (char[]){0, 0, 1}},
+	{LOALK,  0x35, 10, 3, (char[]){0, 0, 1}},
 	{CHTP,   0x36,  2, 1, (char[]){0}},
 	{LOTP,   0x37,  2, 1, (char[]){0}},
 	{CHFLAG, 0x38,  2, 1, (char[]){0}},

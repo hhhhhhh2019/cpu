@@ -7,7 +7,7 @@
 #include <ctype.h>
 
 
-Type_regex_t types_regex[] = {
+Type_regex types_regex[] = {
 	{HEX_NUMBER,  "^0x[0-9a-fA-F]+"},
 	{DEC_NUMBER,  "^[0-9]+"},
 	{BIN_NUMBER,  "^0b[0-1]+"},
@@ -100,7 +100,7 @@ Type_regex_t types_regex[] = {
 	{UNDEFINED,   "^[a-zA-Z_]+[a-zA-Z0-9_]*"},
 };
 
-unsigned int types_regex_count = sizeof(types_regex) / sizeof(Type_regex_t);
+unsigned int types_regex_count = sizeof(types_regex) / sizeof(Type_regex);
 
 
 char lexer_init() {
