@@ -1,13 +1,29 @@
 LIBS = 
+DEBUG = 1
+SANITIZER = 1
 
-CC_FLAGS=-c -I ./include -DDEBUG  -g #`pkg-config --cflags $(LIBS)`
-LD_FLAGS=-lm#`pkg-config --libs $(LIBS)`
+OUTPUT = as
 
-# CC_FLAGS+=-fsanitize=address #-fsanitize=undefined -fno-sanitize=alignment
-# LD_FLAGS+=-lasan -lubsan -lm
+CC_FLAGS = -c -I ./include
+LD_FLAGS =
 
-CC ?= gcc
-LD = $(CC)
+
+ifneq ($(LIBS),)
+	CC_FLAGS += `pkg-config --cflags $(LIBS)`
+	LD_FLAGS += `pkg-config --libs $(LIBS)`
+endif
+
+
+ifeq ($(DEBUG),1)
+	CC_FLAGS += -g -DDEBUG
+endif
+
+
+ifeq ($(SANITIZER),1)
+	CC_FLAGS += -fsanitize=address
+	LD_FLAGS += -l asan
+endif
+
 
 SOURCES = $(wildcard *.c)
 OBJECTS = $(SOURCES:.c=.o)
@@ -16,9 +32,10 @@ OBJECTS = $(SOURCES:.c=.o)
 %.o: %.c
 	$(CC) $(CC_FLAGS) $< -o $@
 
+
 all: $(OBJECTS)
-	$(LD) $^ $(LD_FLAGS) -o as
+	$(CC) $^ $(LD_FLAGS) -o $(OUTPUT)
 
 
 clean:
-	rm *.o as -f
+	rm *.o $(OUTPUT) -f

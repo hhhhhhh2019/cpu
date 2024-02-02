@@ -1,6 +1,6 @@
 #include <as.h>
 
 
-void preproc(Parser_state* state) {
+Lexer_result preprocess(char* filename) {
 	
 }

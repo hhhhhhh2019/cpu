@@ -569,11 +569,11 @@ void core_step(Core* core) {
 		}
 	}
 
-	else if (instr == 0x34) { // stolk r r
+	else if (instr == 0x34) { // stolk r r num64
 		if (core->registers == core->registersk) {
 			mmu_write(&motherboard->mmu,
 			          (core->state & STATE_PAGING) != 0, core->registers[REG_TP],
-			          core->registersk[r2] + num2, 8, core->registersn[r1]);
+			          core->registersk[r2] + num1, 8, core->registersn[r1]);
 		} else {
 			// panic
 		}
@@ -581,10 +581,11 @@ void core_step(Core* core) {
 
 	else if (instr == 0x35) { // loalk r r num64
 		if (core->registers == core->registersk) {
+			printf("%lx %lx\n", core->registersk[r2], num2);
 			char rules;
 			core->registersn[r1] = mmu_read(&motherboard->mmu,
 			          (core->state & STATE_PAGING) != 0, core->registers[REG_TP],
-			          core->registersk[r2] + num2, 8, &rules);
+			          core->registersk[r2] + num1, 8, &rules);
 		} else {
 			// panic
 		}

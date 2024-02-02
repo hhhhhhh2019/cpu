@@ -1,301 +1,272 @@
+#include "lexer.h"
 #include <as.h>
-#include <lexer.h>
 
 #include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <ctype.h>
 
 
-Type_regex types_regex[] = {
-	{HEX_NUMBER,  "^0x[0-9a-fA-F]+"},
-	{DEC_NUMBER,  "^[0-9]+"},
-	{BIN_NUMBER,  "^0b[0-1]+"},
-
-	{CHARACTER,   "^'.'"},
-
-	{REGISTER,    "^(r0|r1|r2|r3|r4|r5|r6|r7|r8|r9|r10|r11|r12|r13|r14|r15|pc|sp)"},
-	{DB,          "^db"},
-	{DS,          "^ds"},
-	{DI,          "^di"},
-	{DL,          "^dl"},
-	{TIMES,       "^times"},
-	//{MOV,         "^mov"},
-
-	{STOL,        "^stol"},
-	{STOI,        "^stoi"},
-	{STOS,        "^stos"},
-	{STOB,        "^stob"},
-	{LOAL,        "^loal"},
-	{LOAI,        "^loai"},
-	{LOAS,        "^loas"},
-	{LOAB,        "^loab"},
-
-	{ADDE,        "^adde"},
-	{ADDNE,       "^addne"},
-	{ADDL,        "^addl"},
-	{ADDG,        "^addg"},
-	{ADDSL,       "^addsl"},
-	{ADDSG,       "^addsg"},
-
-	{ADD,         "^add"},
-	{SUB,         "^sub"},
-	{MUL,         "^mul"},
-	{DIV,         "^div"},
-	{SMUL,        "^smul"},
-	{SDIV,        "^sdiv"},
-	{CMP,         "^cmp"},
-
-	{PUSHL,       "^pushl"},
-	{PUSHI,       "^pushi"},
-	{PUSHS,       "^pushs"},
-	{PUSHB,       "^pushb"},
-	{POPL,        "^popl"},
-	{POPI,        "^popi"},
-	{POPS,        "^pops"},
-	{POPB,        "^popb"},
-
-	{CALL,        "^call"},
-	{RET,         "^ret"},
-	{INT,         "^int"},
-	{IRET,        "^iret"},
-	{CINT,        "^cint"},
-
-	{AND,         "^and"},
-	{OR,          "^or"},
-	{XOR,         "^xor"},
-	{NOT,         "^not"},
-	{SHL,         "^shl"},
-	{SHR,         "^shr"},
-
-	{CHST,        "^chst"},
-	{LOST,        "^lost"},
-	{STOLK,       "^stolk"},
-	{LOALK,       "^loalk"},
-	{CHTP,        "^chtp"},
-	{LOTP,        "^lotp"},
-	{CHFLAG,      "^chflag"},
-	{LOFLAG,      "^loflag"},
-
-	{PLUS,        "^\\+"},
-	{MINUS,       "^\\-"},
-	{MULTIPLE,    "^\\*"},
-	{DIVIDE,      "^\\/"},
-	{BR_OPEN,     "^\\("},
-	{BR_CLOSE,    "^\\)"},
-
-	{AMPERSAND,   "^\\&"},
-	{CARET,       "^\\^"},
-	{PIPE,        "^\\|"},
-	{TILDA,       "^\\~"},
-
-	{COMMA,       "^,"},
-	{COLON,       "^:"},
-
-	{LASTADDR,    "^\\$\\$"},
-	{CURRENTADDR, "^\\$"},
-
-	{OFFSET,      "\\.offset"},
-
-	{UNDEFINED,   "^[a-zA-Z_]+[a-zA-Z0-9_]*"},
-};
-
-unsigned int types_regex_count = sizeof(types_regex) / sizeof(Type_regex);
+static unsigned long offset;
+static unsigned long line;
+static unsigned long column;
 
 
-char lexer_init() {
-	for (int i = 0; i < types_regex_count; i++) {
-		if (regcomp(&types_regex[i].regex, types_regex[i].regex_str, REG_EXTENDED)) {
-			printf("RegEx #%d \"%s\" compilation failed!\n", i, types_regex[i].regex_str);
-			return 1;
-		}
-	}
-
-	return 0;
+static enum Token_type get_type(char* value) {
+	
 }
 
 
+static char next_hex_number(Token* token, char* data) {
+	token->type = HEX_NUMBER;
+  token->name = calloc(1,1);
+	unsigned long offset = 0;
 
-unsigned long loffset;
-unsigned long col;
-unsigned long line;
+	while (1) {
+		char c = *data;
 
+		if (!(('0' <= c && c <= '9') ||
+		      ('a' <= c && c <= 'f') ||
+		      ('A' <= c && c <= 'F')))
+			break;
 
-void lexer_parse(Parser_state* state) {
-	state->lresult.real_tokens = malloc(0);
-	state->lresult.real_tokens_count = 0;
-
-	state->lresult.tokens = malloc(0);
-	state->lresult.tokens_count = 0;
-
-	loffset = 0;
-	col = 0;
-	line = 1;
-
-
-	char is_comment = 0;
-	char is_string = 0;
-
-	char* string = NULL;
-
-
-	while (loffset < state->filedata_size && state->ok) {
-		Token t;
-
-		char c = state->filedata[loffset++];
-
-		col++;
-
-
-		if (c == ';') {
-			is_comment = 1;
-		}
-
-
-		if (c == '\n') {
-			if (is_string) {
-				printf("%s %lu:%lu Ожидалось '\"'!\n", state->filename, line,col);
-				state->ok = 0;
-				return;
-			}
-
-
-			t = (Token){
-				.col = col,
-				.line = line,
-				.filepath = state->filepath,
-				.type = NEWLINE,
-				.value = "\n"
-			};
-			
-			state->lresult.tokens = realloc(
-			    state->lresult.tokens,
-			    sizeof(Token) * (++state->lresult.tokens_count));
-			state->lresult.tokens[state->lresult.tokens_count-1] = t;
-
-			line++;
-			col = 0;
-
-			is_comment = 0;
-
-			continue;
-		}
-
-
-
-		if ((isspace(c) && !is_string) || is_comment)
-			continue;
-
-		if (c == '"') {
-			if (is_string) {
-				t = (Token){
-					.col = col - strlen(string) - 1,
-					.line = line,
-					.filepath = state->filepath,
-					.type = STRING,
-					.value = string
-				};
-
-				state->lresult.real_tokens = realloc(
-			    state->lresult.real_tokens,
-			    sizeof(Token) * (++state->lresult.real_tokens_count));
-				state->lresult.real_tokens[state->lresult.real_tokens_count-1] = t;
-
-				state->lresult.tokens = realloc(
-				    state->lresult.tokens,
-				    sizeof(Token) * (++state->lresult.tokens_count));
-				state->lresult.tokens[state->lresult.tokens_count-1] = t;
-			}
-
-			else {
-				string = calloc(1,1);
-			}
-
-			is_string = 1 - is_string;
-
-			continue;
-		}
-
-
-		if (is_string) {
-			int len = strlen(string);
-
-			string = realloc(string, len+2);
-			string[len+1] = 0;
-			string[len] = c;
-
-			continue;
-		}
-
-
-		loffset--;
-
-		t = lexer_next_token(state);
-		
-		state->lresult.real_tokens = realloc(
-		    state->lresult.real_tokens,
-		    sizeof(Token) * (++state->lresult.real_tokens_count));
-		state->lresult.real_tokens[state->lresult.real_tokens_count-1] = t;
-
-		state->lresult.tokens = realloc(
-		    state->lresult.tokens,
-		    sizeof(Token) * (++state->lresult.tokens_count));
-		state->lresult.tokens[state->lresult.tokens_count-1] = t;
+		token->name = realloc(token->name, ++offset + 1);
+		token->name[offset] = 0;
+		token->name[offset - 1] = c;
 	}
 
+	token->line = line;
+	token->column = column;
 
-	state->lresult.tokens = realloc(
-	    state->lresult.tokens,
-	    sizeof(Token) * (++state->lresult.tokens_count));
-	state->lresult.tokens[state->lresult.tokens_count-1] = (Token){
-		.col = 0,
-		.line = 0,
-		.value = "\0",
-		.type = EOI
-	};
+	column += offset;
+
+	return 1;
 }
 
 
-Token lexer_next_token(Parser_state* state) {
-	if (loffset >= state->filedata_size)
-		return (Token){0,NULL,0,0};
+static char next_bin_number(Token* token, char* data) {
+	token->type = BIN_NUMBER;
+  token->name = calloc(1,1);
+	unsigned long offset = 0;
+	
+	while (1) {
+		char c = *data;
 
-	Token t = {
-		.col = col,
-		.line = line,
-		.filepath = state->filepath,
+		if (!('0' <= c && c <= '1'))
+			break;
+
+		token->name = realloc(token->name, ++offset + 1);
+		token->name[offset] = 0;
+		token->name[offset - 1] = c;
+	}
+
+	token->line = line;
+	token->column = column;
+
+	column += offset;
+
+	return 1;
+}
+
+
+static char next_number(Token* token, char* data) {
+	if (*(data + 1) == 'x' || *(data + 1) == 'X')
+		return next_hex_number(token, data + 2);
+
+	if (*(data + 1) == 'b' || *(data + 1) == 'B')
+		return next_bin_number(token, data + 2);
+
+
+	token->type = DEC_NUMBER;
+  token->name = calloc(1,1);
+	unsigned long offset = 0;
+
+	
+	while (1) {
+		char c = *data;
+
+		if (!('0' <= c && c <= '9'))
+			break;
+
+		token->name = realloc(token->name, ++offset + 1);
+		token->name[offset] = 0;
+		token->name[offset - 1] = c;
+	}
+
+	token->line = line;
+	token->column = column;
+
+	column += offset;
+
+	return 1;
+}
+
+
+static char next_token(Token* token, char* data) {
+	token->type = NOT_SET;
+
+	if (*data == 0)
+		return 0;
+
+	if (*data == ' ' || *data == '\t')
+		return next_token(token, data + 1);
+
+	if ('0' <= *data && *data <= '9')
+		return next_number(token, data);
+
+	// if (*data == '#')
+	// 	return next_macros(token, data);
+
+	if (*data == '\n') {
+		token->name = calloc(2,1);
+		token->name[0] = *data;
+		token->line = line;
+		token->column = column;
+		line++;
+		column = 0;
+		return 1;
+	}
+
+	if (*data == '+') {
+		token->name = calloc(2,1);
+		token->name[0] = *data;
+		token->line = line;
+		token->column = column++;
+		return 1;
+	}
+
+	if (*data == '-') {
+		token->name = calloc(2,1);
+		token->name[0] = *data;
+		token->line = line;
+		token->column = column++;
+		return 1;
+	}
+
+	if (*data == '*') {
+		token->name = calloc(2,1);
+		token->name[0] = *data;
+		token->line = line;
+		token->column = column++;
+		return 1;
+	}
+
+	if (*data == '/') {
+		token->name = calloc(2,1);
+		token->name[0] = *data;
+		token->line = line;
+		token->column = column++;
+		return 1;
+	}
+
+	if (*data == '^') {
+		token->name = calloc(2,1);
+		token->name[0] = *data;
+		token->line = line;
+		token->column = column++;
+		return 1;
+	}
+
+	if (*data == '|') {
+		token->name = calloc(2,1);
+		token->name[0] = *data;
+		token->line = line;
+		token->column = column++;
+		return 1;
+	}
+
+	if (*data == '&') {
+		token->name = calloc(2,1);
+		token->name[0] = *data;
+		token->line = line;
+		token->column = column++;
+		return 1;
+	}
+
+	if (*data == '~') {
+		token->name = calloc(2,1);
+		token->name[0] = *data;
+		token->line = line;
+		token->column = column++;
+		return 1;
+	}
+
+	if (*data == '(') {
+		token->name = calloc(2,1);
+		token->name[0] = *data;
+		token->line = line;
+		token->column = column++;
+		return 1;
+	}
+
+	if (*data == ')') {
+		token->name = calloc(2,1);
+		token->name[0] = *data;
+		token->line = line;
+		token->column = column++;
+		return 1;
+	}
+
+	if (*data == '\\') {
+		token->name = calloc(2,1);
+		token->name[0] = *data;
+		token->line = line;
+		token->column = column++;
+		return 1;
+	}
+
+	if (*data == ',') {
+		token->name = calloc(2,1);
+		token->name[0] = *data;
+		token->line = line;
+		token->column = column++;
+		return 1;
+	}
+
+	
+	token->name = calloc(1,1);
+	unsigned long offset = 0;
+
+	
+	while (1) {
+		char c = *data;
+
+		if (c == '+'  || c == '*'  || c == '-' || c == '/' || c == ' ' ||
+		    c == '\t' || c == '\\' || c == '|' || c == '^' || c == '&' ||
+		    c == '~'  || c == ',')
+			break;
+
+		token->name = realloc(token->name, ++offset + 1);
+		token->name[offset] = 0;
+		token->name[offset - 1] = c;
+	}
+
+	token->line = line;
+	token->column = column;
+
+	column += offset;
+
+
+	return 1;
+}
+
+
+Lexer_result lexer(char* data) {
+	offset = 0;
+	column = 0;
+	line   = 0;
+
+	Lexer_result result = {
+		.tokens_count = 0,
+		.tokens = malloc(0)
 	};
 
-	regmatch_t match;
+	Token token;
 
-	int max_size = 0;
-	int max_id = 0;
+	while (next_token(&token, data + offset)) {
+		if (token.type == NOT_SET)
+			token.type = get_type(token.name);
 
-	for (int i = 0; i < types_regex_count; i++) {
-		if (regexec(&types_regex[i].regex, state->filedata + loffset, 1, &match, 0) != 0)
-			continue;
-
-		int size = match.rm_eo - match.rm_so;
-
-		if (size <= max_size)
-			continue;
-
-		max_size = size;
-
-		t.type = types_regex[i].type;
+		result.tokens = realloc(result.tokens, sizeof(Token) * (++result.tokens_count));
+		result.tokens[result.tokens_count - 1] = token;
 	}
 
-	if (max_size == 0) {
-		printf("Lexer Error\n");
-		state->ok = 0;
-		return (Token){0,NULL,0,0};
-	}
-
-	t.value = calloc(max_size + 1, 1);
-	memcpy(t.value, state->filedata + loffset, max_size);
-
-	loffset += max_size;
-	col += max_size - 1;
-
-	return t;
+	return result;
 }
