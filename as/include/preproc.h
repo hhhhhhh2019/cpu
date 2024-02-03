@@ -7,11 +7,21 @@
 
 typedef struct {
 	char* name;
-	char* value;
-} Macros;
+	unsigned int tokens_count;
+	Token* tokens;
+} Define;
 
 
-Lexer_result preprocess(char* filename);
+typedef struct {
+	char* name;
+	unsigned int args_count;
+	Token* args;
+	unsigned int tokens_count;
+	Token* tokens;
+} Macro;
+
+
+Lexer_result preprocess(void* state, char* filename);
 
 
 #endif

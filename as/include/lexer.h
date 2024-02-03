@@ -7,7 +7,11 @@ enum Token_type {
 	UNDEFINED,
 	NEWLINE,
 	INSTRUCTION,
+	TIMES,
+	DATA_ALLOC,
 	LABEL,
+	STRING,
+	CHAR,
 	DEC_NUMBER,
 	HEX_NUMBER,
 	BIN_NUMBER,
@@ -30,7 +34,7 @@ enum Token_type {
 
 
 typedef struct {
-	char* name;
+	char* value;
 	enum Token_type type;
 	unsigned long line;
 	unsigned long column;

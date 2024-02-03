@@ -1,11 +1,12 @@
 #include <as.h>
-#include <preproc.h>
+#include <utils.h>
 
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 
 
-char* input_filename = NULL;
+char* input_filename = "../bios.S";
 char* output_filename = "a.out";
 
 
@@ -37,10 +38,22 @@ int main(int argc, char** argv) {
 	}
 
 
-	Compiler_state state;
+	Compiler_state state = {
+		.macros_count = 0,
+		.macros = malloc(0),
+		.defines_count = 0,
+		.defines = malloc(0),
+	};
 
+	state.lexer_result = preprocess(&state, input_filename);
 
-	state.lexer_result = preprocess(input_filename);
+	LOG("\n");
+	LOG("preprocess result:\n");
+
+	for (int i = 0; i < state.lexer_result.tokens_count; i++) {
+		if (state.lexer_result.tokens[i].type != NEWLINE)
+			LOG("%s\n", state.lexer_result.tokens[i].value);
+	}
 }
 
 

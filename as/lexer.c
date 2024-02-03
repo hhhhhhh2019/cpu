@@ -1,7 +1,9 @@
 #include "lexer.h"
 #include <as.h>
+#include <utils.h>
 
 #include <stdlib.h>
+#include <string.h>
 
 
 static unsigned long offset;
@@ -10,26 +12,90 @@ static unsigned long column;
 
 
 static enum Token_type get_type(char* value) {
-	
+	if (strcmp(value, "times") == 0)
+		return TIMES;
+
+	if (strcmp(value, "db") == 0 ||
+	    strcmp(value, "ds") == 0 ||
+	    strcmp(value, "di") == 0 ||
+	    strcmp(value, "dl") == 0)
+		return DATA_ALLOC;
+
+	if (strcmp(value, "stol")   == 0 ||
+	    strcmp(value, "stoi")   == 0 ||
+	    strcmp(value, "stos")   == 0 ||
+	    strcmp(value, "stob")   == 0 ||
+	    strcmp(value, "loal")   == 0 ||
+	    strcmp(value, "loai")   == 0 ||
+	    strcmp(value, "loas")   == 0 ||
+	    strcmp(value, "loab")   == 0 ||
+	    strcmp(value, "add")    == 0 ||
+	    strcmp(value, "sub")    == 0 ||
+	    strcmp(value, "mul")    == 0 ||
+	    strcmp(value, "div")    == 0 ||
+	    strcmp(value, "smul")   == 0 ||
+	    strcmp(value, "sdiv")   == 0 ||
+	    strcmp(value, "cmp")    == 0 ||
+	    strcmp(value, "adde")   == 0 ||
+	    strcmp(value, "addne")  == 0 ||
+	    strcmp(value, "addl")   == 0 ||
+	    strcmp(value, "addg")   == 0 ||
+	    strcmp(value, "addsl")  == 0 ||
+	    strcmp(value, "addsg")  == 0 ||
+	    strcmp(value, "pushl")  == 0 ||
+	    strcmp(value, "pushi")  == 0 ||
+	    strcmp(value, "pushs")  == 0 ||
+	    strcmp(value, "pushb")  == 0 ||
+	    strcmp(value, "popl")   == 0 ||
+	    strcmp(value, "popi")   == 0 ||
+	    strcmp(value, "pops")   == 0 ||
+	    strcmp(value, "popb")   == 0 ||
+	    strcmp(value, "call")   == 0 ||
+	    strcmp(value, "int")    == 0 ||
+	    strcmp(value, "iret")   == 0 ||
+	    strcmp(value, "and")    == 0 ||
+	    strcmp(value, "or")     == 0 ||
+	    strcmp(value, "xor")    == 0 ||
+	    strcmp(value, "not")    == 0 ||
+	    strcmp(value, "shl")    == 0 ||
+	    strcmp(value, "shr")    == 0 ||
+	    strcmp(value, "chst")   == 0 ||
+	    strcmp(value, "lost")   == 0 ||
+	    strcmp(value, "stolk")  == 0 ||
+	    strcmp(value, "loalk")  == 0 ||
+	    strcmp(value, "chtp")   == 0 ||
+	    strcmp(value, "lotp")   == 0 ||
+	    strcmp(value, "chflag") == 0 ||
+	    strcmp(value, "loflag") == 0 ||
+	    strcmp(value, "cint")   == 0)
+		return INSTRUCTION;
+
+	if (strcmp(value, "#include") == 0)
+		return INCLUDE;
+
+	if (strcmp(value, "#define") == 0)
+		return DEFINE;
+
+	return UNDEFINED;
 }
 
 
 static char next_hex_number(Token* token, char* data) {
 	token->type = HEX_NUMBER;
-  token->name = calloc(1,1);
+  token->value = calloc(1,1);
 	unsigned long offset = 0;
 
 	while (1) {
-		char c = *data;
+		char c = *(data + offset);
 
 		if (!(('0' <= c && c <= '9') ||
 		      ('a' <= c && c <= 'f') ||
 		      ('A' <= c && c <= 'F')))
 			break;
 
-		token->name = realloc(token->name, ++offset + 1);
-		token->name[offset] = 0;
-		token->name[offset - 1] = c;
+		token->value = realloc(token->value, ++offset + 1);
+		token->value[offset] = 0;
+		token->value[offset - 1] = c;
 	}
 
 	token->line = line;
@@ -43,18 +109,18 @@ static char next_hex_number(Token* token, char* data) {
 
 static char next_bin_number(Token* token, char* data) {
 	token->type = BIN_NUMBER;
-  token->name = calloc(1,1);
+  token->value = calloc(1,1);
 	unsigned long offset = 0;
 	
 	while (1) {
-		char c = *data;
+		char c = *(data + offset);
 
 		if (!('0' <= c && c <= '1'))
 			break;
 
-		token->name = realloc(token->name, ++offset + 1);
-		token->name[offset] = 0;
-		token->name[offset - 1] = c;
+		token->value = realloc(token->value, ++offset + 1);
+		token->value[offset] = 0;
+		token->value[offset - 1] = c;
 	}
 
 	token->line = line;
@@ -67,27 +133,31 @@ static char next_bin_number(Token* token, char* data) {
 
 
 static char next_number(Token* token, char* data) {
-	if (*(data + 1) == 'x' || *(data + 1) == 'X')
+	if (*(data + 1) == 'x' || *(data + 1) == 'X') {
+		offset += 2;
 		return next_hex_number(token, data + 2);
+	}
 
-	if (*(data + 1) == 'b' || *(data + 1) == 'B')
+	if (*(data + 1) == 'b' || *(data + 1) == 'B') {
+		offset += 2;
 		return next_bin_number(token, data + 2);
+	}
 
 
 	token->type = DEC_NUMBER;
-  token->name = calloc(1,1);
+  token->value = calloc(1,1);
 	unsigned long offset = 0;
 
 	
 	while (1) {
-		char c = *data;
+		char c = *(data + offset);
 
 		if (!('0' <= c && c <= '9'))
 			break;
 
-		token->name = realloc(token->name, ++offset + 1);
-		token->name[offset] = 0;
-		token->name[offset - 1] = c;
+		token->value = realloc(token->value, ++offset + 1);
+		token->value[offset] = 0;
+		token->value[offset - 1] = c;
 	}
 
 	token->line = line;
@@ -99,24 +169,100 @@ static char next_number(Token* token, char* data) {
 }
 
 
+static char next_char(Token* token, char* data) {
+	data++;
+	offset++;
+
+	token->type = CHAR;
+	token->value = calloc(2,1);
+	token->value[0] = *data;
+
+	data++;
+
+	if (*data != '\'') {
+		return 0;
+	}
+
+	data++;
+	offset++;
+
+	return 1;
+}
+
+
+static char next_string(Token* token, char* data) {
+	data++;
+	offset++;
+
+	token->type = STRING;
+	token->value = calloc(1,1);
+	unsigned long offset = 0;
+
+
+	while ((*data) != 0 && (*data) != '"') {
+		token->value = realloc(token->value, ++offset + 1);
+		token->value[offset] = 0;
+		token->value[offset - 1] = *data;
+
+		if (*data == '\\') {
+			data++;
+
+			token->value = realloc(token->value, ++offset + 1);
+			token->value[offset] = 0;
+			token->value[offset - 1] = *data;
+		}
+
+		data++;
+	}
+
+	if (*data == 0) {
+		return 0;
+	}
+
+	data++;
+	offset++;
+
+	return 1;
+}
+
+
 static char next_token(Token* token, char* data) {
 	token->type = NOT_SET;
 
 	if (*data == 0)
 		return 0;
 
-	if (*data == ' ' || *data == '\t')
+	if (*data == ';') {
+		line++;
+		column = 0;
+
+		while (*data != '\n' && *data != 0) {
+			offset++;
+			data++;
+		}
+
 		return next_token(token, data + 1);
+	}
+
+	if (*data == ' ' || *data == '\t') {
+		offset++;
+		column++;
+		return next_token(token, data + 1);
+	}
 
 	if ('0' <= *data && *data <= '9')
 		return next_number(token, data);
 
-	// if (*data == '#')
-	// 	return next_macros(token, data);
+	if (*data == '\'')
+		return next_char(token, data);
+
+	if (*data == '"')
+		return next_string(token, data);
 
 	if (*data == '\n') {
-		token->name = calloc(2,1);
-		token->name[0] = *data;
+		token->type = NEWLINE;
+		token->value = calloc(2,1);
+		token->value[0] = *data;
 		token->line = line;
 		token->column = column;
 		line++;
@@ -125,124 +271,134 @@ static char next_token(Token* token, char* data) {
 	}
 
 	if (*data == '+') {
-		token->name = calloc(2,1);
-		token->name[0] = *data;
+		token->type = PLUS;
+		token->value = calloc(2,1);
+		token->value[0] = *data;
 		token->line = line;
 		token->column = column++;
 		return 1;
 	}
 
 	if (*data == '-') {
-		token->name = calloc(2,1);
-		token->name[0] = *data;
+		token->type = MINUS;
+		token->value = calloc(2,1);
+		token->value[0] = *data;
 		token->line = line;
 		token->column = column++;
 		return 1;
 	}
 
 	if (*data == '*') {
-		token->name = calloc(2,1);
-		token->name[0] = *data;
+		token->type = STAR;
+		token->value = calloc(2,1);
+		token->value[0] = *data;
 		token->line = line;
 		token->column = column++;
 		return 1;
 	}
 
 	if (*data == '/') {
-		token->name = calloc(2,1);
-		token->name[0] = *data;
+		token->type = SLASH;
+		token->value = calloc(2,1);
+		token->value[0] = *data;
 		token->line = line;
 		token->column = column++;
 		return 1;
 	}
 
 	if (*data == '^') {
-		token->name = calloc(2,1);
-		token->name[0] = *data;
+		token->type = CARET;
+		token->value = calloc(2,1);
+		token->value[0] = *data;
 		token->line = line;
 		token->column = column++;
 		return 1;
 	}
 
 	if (*data == '|') {
-		token->name = calloc(2,1);
-		token->name[0] = *data;
+		token->type = PIPE;
+		token->value = calloc(2,1);
+		token->value[0] = *data;
 		token->line = line;
 		token->column = column++;
 		return 1;
 	}
 
 	if (*data == '&') {
-		token->name = calloc(2,1);
-		token->name[0] = *data;
+		token->type = AMPERSAND;
+		token->value = calloc(2,1);
+		token->value[0] = *data;
 		token->line = line;
 		token->column = column++;
 		return 1;
 	}
 
 	if (*data == '~') {
-		token->name = calloc(2,1);
-		token->name[0] = *data;
+		token->type = TILDA;
+		token->value = calloc(2,1);
+		token->value[0] = *data;
 		token->line = line;
 		token->column = column++;
 		return 1;
 	}
 
 	if (*data == '(') {
-		token->name = calloc(2,1);
-		token->name[0] = *data;
+		token->type = LEFT_PAREN;
+		token->value = calloc(2,1);
+		token->value[0] = *data;
 		token->line = line;
 		token->column = column++;
 		return 1;
 	}
 
 	if (*data == ')') {
-		token->name = calloc(2,1);
-		token->name[0] = *data;
+		token->type = RIGHT_PAREN;
+		token->value = calloc(2,1);
+		token->value[0] = *data;
 		token->line = line;
 		token->column = column++;
 		return 1;
 	}
 
 	if (*data == '\\') {
-		token->name = calloc(2,1);
-		token->name[0] = *data;
+		token->type = BACK_SLASH;
+		token->value = calloc(2,1);
+		token->value[0] = *data;
 		token->line = line;
 		token->column = column++;
 		return 1;
 	}
 
 	if (*data == ',') {
-		token->name = calloc(2,1);
-		token->name[0] = *data;
+		token->type = COMMA;
+		token->value = calloc(2,1);
+		token->value[0] = *data;
 		token->line = line;
 		token->column = column++;
 		return 1;
 	}
 
-	
-	token->name = calloc(1,1);
+
+	token->value = calloc(1,1);
 	unsigned long offset = 0;
 
-	
 	while (1) {
-		char c = *data;
+		char c = *(data + offset);
 
 		if (c == '+'  || c == '*'  || c == '-' || c == '/' || c == ' ' ||
 		    c == '\t' || c == '\\' || c == '|' || c == '^' || c == '&' ||
-		    c == '~'  || c == ',')
+		    c == '~'  || c == ','  || c == '\n')
 			break;
 
-		token->name = realloc(token->name, ++offset + 1);
-		token->name[offset] = 0;
-		token->name[offset - 1] = c;
+		token->value = realloc(token->value, ++offset + 1);
+		token->value[offset] = 0;
+		token->value[offset - 1] = c;
 	}
 
 	token->line = line;
 	token->column = column;
 
 	column += offset;
-
 
 	return 1;
 }
@@ -261,8 +417,13 @@ Lexer_result lexer(char* data) {
 	Token token;
 
 	while (next_token(&token, data + offset)) {
+		if (token.type != NEWLINE)
+			LOG("%s\n", token.value);
+
+		offset += strlen(token.value);
+
 		if (token.type == NOT_SET)
-			token.type = get_type(token.name);
+			token.type = get_type(token.value);
 
 		result.tokens = realloc(result.tokens, sizeof(Token) * (++result.tokens_count));
 		result.tokens[result.tokens_count - 1] = token;
