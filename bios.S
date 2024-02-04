@@ -1,3 +1,3 @@
-#define Var 0x123 + 2
+#define A(x,y) x + y
 
-add r1, r0, Var
+A(10, 123)

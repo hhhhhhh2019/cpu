@@ -1,6 +1,5 @@
-#include "lexer.h"
-#include "preproc.h"
 #include <as.h>
+#include <error.h>
 #include <utils.h>
 
 #include <stdio.h>
@@ -78,8 +77,30 @@ static unsigned long parse_macro(
 		macro.tokens[macro.tokens_count - 1] = t;
 	}
 
-	state->macros = realloc(state->macros, sizeof(Macro) * (++state->macros_count));
-  state->macros[state->macros_count - 1] = macro;
+
+	char redefine = 0;
+
+
+	for (int i = 0; i < state->defines_count; i++) {
+		if (strcmp(macro.name, state->defines[i].name) == 0)
+			redefine = 1;
+	}
+
+	for (int i = 0; i < state->macros_count; i++) {
+		if (strcmp(macro.name, state->macros[i].name) != 0)
+			redefine = 1;
+	}
+
+
+	if (redefine) {
+		add_error((Error){
+			.type = PREPROCESS_REDEFINITION,
+			.token = tokens[1]
+		});
+	} else {
+		state->macros = realloc(state->macros, sizeof(Macro) * (++state->macros_count));
+		state->macros[state->macros_count - 1] = macro;
+	}
 
 	return offset;
 }
@@ -117,8 +138,30 @@ static unsigned long parse_define(
 		define.tokens[define.tokens_count - 1] = t;
 	}
 
-	state->defines = realloc(state->defines, sizeof(Macro) * (++state->defines_count));
-  state->defines[state->defines_count - 1] = define;
+
+	char redefine = 0;
+
+
+	for (int i = 0; i < state->defines_count; i++) {
+		if (strcmp(define.name, state->defines[i].name) == 0)
+			redefine = 1;
+	}
+
+	for (int i = 0; i < state->macros_count; i++) {
+		if (strcmp(define.name, state->macros[i].name) != 0)
+			redefine = 1;
+	}
+
+
+	if (redefine) {
+		add_error((Error){
+			.type = PREPROCESS_REDEFINITION,
+			.token = tokens[1]
+		});
+	} else {
+		state->defines = realloc(state->defines, sizeof(Macro) * (++state->defines_count));
+		state->defines[state->defines_count - 1] = define;
+	}
 
 	return offset;
 }
@@ -138,7 +181,10 @@ static void expand_define(
 static void expand_macro(
     Compiler_state* state, Macro macro, Token* tokens, unsigned long tokens_count,
     Token** result_tokens, unsigned long* result_tokens_count) {
+	*result_tokens_count = 0;
+	*result_tokens = malloc(0);
 
+	
 }
 
 
@@ -182,11 +228,24 @@ static char preproc(Compiler_state* state, Lexer_result* lexer_result, char* dir
 		if (t.type == INCLUDE) {
 			result = 1;
 
+			if (i == lexer_result->tokens_count - 1 ||
+			    lexer_result->tokens[i+1].type != STRING) {
+        add_error((Error){
+            .type = EXPECT_TOKEN,
+				    .token = lexer_result->tokens[i],
+				    .excepted_token = STRING
+        });
+        continue;
+      }
+
 			Token path_token = lexer_result->tokens[++i];
 			char* path = find_include_file(state, path_token.value, dirname);
 
 			if (path == NULL) {
-				ERROR("File \"%s\" not found\n", path_token.value);
+				add_error((Error){
+				    .type = FILE_NOT_FOUND,
+				    .token = path_token
+				});
 				continue;
 			}
 
@@ -276,8 +335,11 @@ Lexer_result preprocess(void* vstate, char* filename) {
 	fread(data, size, 1, file);
 
 	LOG("lexer start: %s\n", filename);
-	Lexer_result lexer_result = lexer(data);
+	Lexer_result lexer_result = lexer(data, filename);
 	LOG("lexer end: %s\n", filename);
+
+	if (errors_count != 0)
+		return lexer_result;
 
 	while (preproc(vstate, &lexer_result, dn)) {}
 

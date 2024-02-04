@@ -1,4 +1,5 @@
 #include "lexer.h"
+#include "error.h"
 #include <as.h>
 #include <utils.h>
 
@@ -186,6 +187,8 @@ static char next_char(Token* token, char* data) {
 	data++;
 	offset++;
 
+	column += offset;
+
 	return 1;
 }
 
@@ -196,31 +199,40 @@ static char next_string(Token* token, char* data) {
 
 	token->type = STRING;
 	token->value = calloc(1,1);
-	unsigned long offset = 0;
+	token->line = line;
+	token->column = column;
+	unsigned long soffset = 0;
 
 
-	while ((*data) != 0 && (*data) != '"') {
-		token->value = realloc(token->value, ++offset + 1);
-		token->value[offset] = 0;
-		token->value[offset - 1] = *data;
+	while ((*data) != 0 && (*data) != '"' && (*data) != '\n') {
+		token->value = realloc(token->value, ++soffset + 1);
+		token->value[soffset] = 0;
+		token->value[soffset - 1] = *data;
 
 		if (*data == '\\') {
 			data++;
 
-			token->value = realloc(token->value, ++offset + 1);
-			token->value[offset] = 0;
-			token->value[offset - 1] = *data;
+			token->value = realloc(token->value, ++soffset + 1);
+			token->value[soffset] = 0;
+			token->value[soffset - 1] = *data;
 		}
 
 		data++;
 	}
 
-	if (*data == 0) {
+	if ((*data) != '"') {
+		add_error((Error){
+		    .type = STRING_NOT_CLOSED,
+		    .token = *token
+		});
+
 		return 0;
 	}
 
 	data++;
 	offset++;
+
+	column += soffset;
 
 	return 1;
 }
@@ -404,7 +416,7 @@ static char next_token(Token* token, char* data) {
 }
 
 
-Lexer_result lexer(char* data) {
+Lexer_result lexer(char* data, char* filename) {
 	offset = 0;
 	column = 0;
 	line   = 0;
@@ -417,8 +429,10 @@ Lexer_result lexer(char* data) {
 	Token token;
 
 	while (next_token(&token, data + offset)) {
+		token.filename = filename;
+
 		if (token.type != NEWLINE)
-			LOG("%s\n", token.value);
+			LOG("%ld:%ld %s\n", token.line, token.column, token.value);
 
 		offset += strlen(token.value);
 

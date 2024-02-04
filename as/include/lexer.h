@@ -36,6 +36,7 @@ enum Token_type {
 typedef struct {
 	char* value;
 	enum Token_type type;
+	char* filename;
 	unsigned long line;
 	unsigned long column;
 } Token;
@@ -48,7 +49,7 @@ typedef struct {
 
 
 
-Lexer_result lexer(char* data);
+Lexer_result lexer(char* data, char* filename);
 
 
 #endif

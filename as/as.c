@@ -1,4 +1,5 @@
 #include <as.h>
+#include <error.h>
 #include <utils.h>
 
 #include <stdio.h>
@@ -46,6 +47,8 @@ int main(int argc, char** argv) {
 	};
 
 	state.lexer_result = preprocess(&state, input_filename);
+
+	print_errors();
 
 	LOG("\n");
 	LOG("preprocess result:\n");
