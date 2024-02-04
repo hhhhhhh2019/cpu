@@ -397,9 +397,9 @@ static char next_token(Token* token, char* data) {
 	while (1) {
 		char c = *(data + offset);
 
-		if (c == '+'  || c == '*'  || c == '-' || c == '/' || c == ' ' ||
-		    c == '\t' || c == '\\' || c == '|' || c == '^' || c == '&' ||
-		    c == '~'  || c == ','  || c == '\n')
+		if (c == '+'  || c == '*'  || c == '-'  || c == '/' || c == ' ' ||
+		    c == '\t' || c == '\\' || c == '|'  || c == '^' || c == '&' ||
+		    c == '~'  || c == ','  || c == '\n' || c == '(' || c == ')')
 			break;
 
 		token->value = realloc(token->value, ++offset + 1);

@@ -40,9 +40,9 @@ static unsigned long parse_macro(
 		.tokens = malloc(0)
 	};
 
-	unsigned long offset = 2;
+	unsigned long offset = 3;
 
-	for (; offset < tokens_count; offset++) {
+	for (; offset < tokens_count;) {
 		if (tokens[offset].type == RIGHT_PAREN)
 			break;
 
@@ -52,11 +52,24 @@ static unsigned long parse_macro(
 		}
 
 		macro.args = realloc(macro.args, sizeof(Token) * (++macro.args_count));
-		macro.args[macro.args_count - 1] = tokens[offset];
+		macro.args[macro.args_count - 1] = tokens[offset++];
 
-		if (tokens[offset + 1].type == COMMA)
-			offset += 2;
+		if (tokens[offset].type == COMMA)
+			offset++;
 	}
+	
+
+	if (tokens[offset].type != RIGHT_PAREN) {
+		add_error((Error){
+				.type = EXPECT_TOKEN,
+				.token = tokens[offset],
+		    .excepted_token = RIGHT_PAREN
+		});
+		return 0;
+	}
+
+	offset++;
+
 
 	for (; offset < tokens_count; offset++) {
 		Token t = tokens[offset];
@@ -108,7 +121,7 @@ static unsigned long parse_macro(
 
 static unsigned long parse_define(
     Compiler_state* state, Token* tokens, unsigned long tokens_count) {
-	if (tokens[1].type == LEFT_PAREN)
+	if (tokens[2].type == LEFT_PAREN)
 		return parse_macro(state, tokens, tokens_count);
 
 	Define define = {
@@ -178,19 +191,76 @@ static void expand_define(
 }
 
 
-static void expand_macro(
+static void expand_macros(
     Compiler_state* state, Macro macro, Token* tokens, unsigned long tokens_count,
-    Token** result_tokens, unsigned long* result_tokens_count) {
+    Token** result_tokens, unsigned long* result_tokens_count, unsigned long* noffset) {
+	if (tokens[1].type != LEFT_PAREN) {
+		add_error((Error){
+		    .type = EXPECT_TOKEN,
+		    .token = tokens[1],
+		    .excepted_token = LEFT_PAREN
+		});
+		return;
+	}
+
 	*result_tokens_count = 0;
 	*result_tokens = malloc(0);
 
-	
+	unsigned long offset = 2;
+
+	unsigned long args_count = macro.args_count;
+	Token* args = malloc(sizeof(Token) * args_count);
+
+	for (int i = 0; i < macro.args_count; i++) {
+		if (tokens[offset].type == RIGHT_PAREN) {
+			add_error((Error){
+					.type = UNEXPECTED_TOKEN,
+					.token = tokens[2 + i],
+			});
+			return;
+		}
+
+		args[i] = tokens[offset++];
+
+		if (tokens[offset].type == COMMA)
+			offset++;
+	}
+
+	if (tokens[offset].type != RIGHT_PAREN) {
+		add_error((Error){
+				.type = EXPECT_TOKEN,
+				.token = tokens[offset],
+		    .excepted_token = RIGHT_PAREN
+		});
+		return;
+	}
+
+
+	for (int i = 0; i < macro.tokens_count; i++) {
+		Token t = macro.tokens[i];
+
+		for (int j = 0; j < macro.args_count; j++) {
+			if (strcmp(macro.tokens[i].value, macro.args[j].value) != 0)
+				continue;
+
+			t = args[j];
+			break;
+		}
+
+		*result_tokens = realloc(*result_tokens, sizeof(Token) * (++(*result_tokens_count)));
+		(*result_tokens)[(*result_tokens_count) - 1] = t;
+
+		offset++;
+	}
+
+
+	*noffset = offset;
 }
 
 
 static char check_macros(
     Compiler_state* state, Token* tokens, unsigned long tokens_count,
-    Token** result_tokens, unsigned long* result_tokens_count) {
+    Token** result_tokens, unsigned long* result_tokens_count, unsigned long* offset) {
 	for (int i = 0; i < state->defines_count; i++) {
 		if (strcmp(tokens[0].value, state->defines[i].name) != 0)
 			continue;
@@ -205,8 +275,8 @@ static char check_macros(
 		if (strcmp(tokens[0].value, state->macros[i].name) != 0)
 			continue;
 
-		expand_macro(state, state->macros[i], tokens, tokens_count,
-		             result_tokens, result_tokens_count);
+		expand_macros(state, state->macros[i], tokens, tokens_count,
+		              result_tokens, result_tokens_count, offset);
 
 		return 1;
 	}
@@ -276,9 +346,12 @@ static char preproc(Compiler_state* state, Lexer_result* lexer_result, char* dir
 		Token* new_tokens;
 		unsigned long new_tokens_count;
 
+		unsigned long offset = 0;
+
 		if (check_macros(state,
 		        &lexer_result->tokens[i], lexer_result->tokens_count - i,
-		        &new_tokens, &new_tokens_count)) {
+		        &new_tokens, &new_tokens_count, &offset)) {
+			i += offset;
 			result = 1;
 
 			for (int j = 0; j < new_tokens_count; j++) {
