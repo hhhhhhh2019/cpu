@@ -12,6 +12,33 @@ static unsigned long line;
 static unsigned long column;
 
 
+char* token_type_names[] = {
+	[NOT_SET]     = "NOT_SET",
+	[UNDEFINED]   = "UNDEFINED",
+	[INSTRUCTION] = "INSTRUCTION",
+	[TIMES]       = "TIMES",
+	[DATA_ALLOC]  = "DATA_ALLOC",
+	[LABEL]       = "LABEL",
+	[STRING]      = "STRING",
+	[CHAR]        = "CHAR",
+	[DEC_NUMBER]  = "DEC_NUMBER",
+	[HEX_NUMBER]  = "HEX_NUMBER",
+	[BIN_NUMBER]  = "BIN_NUMBER",
+	[COMMA] = "COMMA",
+	[REGISTER] = "REGISTER",
+	[PLUS] = "+",
+	[MINUS] = "-",
+	[STAR] = "*",
+	[SLASH] = "/",
+	[PIPE] = "|",
+	[CARET] = "^",
+	[AMPERSAND] = "&",
+	[TILDA] = "~",
+	[LEFT_PAREN] = "(",
+	[RIGHT_PAREN] = ")",
+};
+
+
 static enum Token_type get_type(char* value) {
 	if (strcmp(value, "times") == 0)
 		return TIMES;
@@ -71,11 +98,34 @@ static enum Token_type get_type(char* value) {
 	    strcmp(value, "cint")   == 0)
 		return INSTRUCTION;
 
+	if (strcmp(value, "r0")  == 0 ||
+			strcmp(value, "r1")  == 0 ||
+			strcmp(value, "r2")  == 0 ||
+			strcmp(value, "r3")  == 0 ||
+			strcmp(value, "r4")  == 0 ||
+			strcmp(value, "r5")  == 0 ||
+			strcmp(value, "r6")  == 0 ||
+			strcmp(value, "r7")  == 0 ||
+			strcmp(value, "r8")  == 0 ||
+			strcmp(value, "r9")  == 0 ||
+			strcmp(value, "r10") == 0 ||
+			strcmp(value, "r11") == 0 ||
+			strcmp(value, "r12") == 0 ||
+			strcmp(value, "r13") == 0 ||
+			strcmp(value, "r14") == 0 ||
+			strcmp(value, "r15") == 0 ||
+			strcmp(value, "sp")  == 0 ||
+			strcmp(value, "pc")  == 0)
+		return REGISTER;
+
 	if (strcmp(value, "#include") == 0)
 		return INCLUDE;
 
 	if (strcmp(value, "#define") == 0)
 		return DEFINE;
+
+	if (value[strlen(value)-1] == ':')
+		return LABEL;
 
 	return UNDEFINED;
 }
@@ -253,7 +303,7 @@ static char next_token(Token* token, char* data) {
 			data++;
 		}
 
-		return next_token(token, data + 1);
+		return next_token(token, data);
 	}
 
 	if (*data == ' ' || *data == '\t') {
@@ -421,6 +471,9 @@ Lexer_result lexer(char* data, char* filename) {
 	column = 0;
 	line   = 0;
 
+	unsigned long tokens_count = 0;
+	Token* tokens = malloc(0);
+
 	Lexer_result result = {
 		.tokens_count = 0,
 		.tokens = malloc(0)
@@ -430,18 +483,32 @@ Lexer_result lexer(char* data, char* filename) {
 
 	while (next_token(&token, data + offset)) {
 		token.filename = filename;
-
+		
 		if (token.type != NEWLINE)
-			LOG("%ld:%ld %s\n", token.line, token.column, token.value);
+			LOG("%ld:%ld %s\n", token.line + 1, token.column + 1, token.value);
+		else
+			LOG("%ld:%ld NEWLINE\n", token.line + 1, token.column + 1);
 
 		offset += strlen(token.value);
 
 		if (token.type == NOT_SET)
 			token.type = get_type(token.value);
 
-		result.tokens = realloc(result.tokens, sizeof(Token) * (++result.tokens_count));
-		result.tokens[result.tokens_count - 1] = token;
+		tokens = realloc(tokens, sizeof(Token) * (++tokens_count));
+		tokens[tokens_count - 1] = token;
 	}
+
+	
+	for (int i = 0; i < tokens_count; i++) {
+		if (tokens[i].type == BACK_SLASH && tokens[i + 1].type == NEWLINE) {
+			i++;
+			continue;
+		}
+
+		result.tokens = realloc(result.tokens, sizeof(Token) * (++result.tokens_count));
+		result.tokens[result.tokens_count - 1] = tokens[i];
+	}
+
 
 	return result;
 }

@@ -1,3 +1,4 @@
+#include "lexer.h"
 #include <error.h>
 #include <utils.h>
 
@@ -14,6 +15,7 @@ static char* messages_english[] = {
 	[FILE_NOT_FOUND] = "file not found",
 	[STRING_NOT_CLOSED] = "string not closed",
 	[EXPECT_TOKEN] = "expected token",
+	[UNEXPECTED_TOKEN] = "unexpected token",
 };
 
 
@@ -22,16 +24,21 @@ static char* messages_russian[] = {
 	[FILE_NOT_FOUND] = "файл не найден",
 	[STRING_NOT_CLOSED] = "строка не закрыта",
 	[EXPECT_TOKEN] = "ожидался токен",
+	[UNEXPECTED_TOKEN] = "непредвиденный токен",
 };
 
 
 static char* token_string_english[] = {
 	[STRING] = "string",
+	[LEFT_PAREN] = "(",
+	[RIGHT_PAREN] = ")",
 };
 
 
 static char* token_string_russian[] = {
 	[STRING] = "строка",
+	[LEFT_PAREN] = "(",
+	[RIGHT_PAREN] = ")",
 };
 
 

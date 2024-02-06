@@ -254,7 +254,7 @@ static void expand_macros(
 	}
 
 
-	*noffset = offset;
+	*noffset = macro.tokens_count;
 }
 
 
@@ -376,7 +376,7 @@ static char preproc(Compiler_state* state, Lexer_result* lexer_result, char* dir
 }
 
 
-Lexer_result preprocess(void* vstate, char* filename) {
+Lexer_result preprocess(void* state, char* filename) {
 	LOG("preprocess: %s\n", filename);
 
 	char* rp = realpath(filename, NULL);
@@ -414,7 +414,7 @@ Lexer_result preprocess(void* vstate, char* filename) {
 	if (errors_count != 0)
 		return lexer_result;
 
-	while (preproc(vstate, &lexer_result, dn)) {}
+	while (preproc(state, &lexer_result, dn)) {}
 
 	return lexer_result;
 }

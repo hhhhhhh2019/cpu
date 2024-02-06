@@ -1,5 +1,5 @@
 LIBS = 
-DEBUG = 1
+DEBUG = 0
 SANITIZER = 0
 
 OUTPUT = as

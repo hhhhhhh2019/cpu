@@ -55,8 +55,19 @@ int main(int argc, char** argv) {
 
 	for (int i = 0; i < state.lexer_result.tokens_count; i++) {
 		if (state.lexer_result.tokens[i].type != NEWLINE)
-			LOG("%s\n", state.lexer_result.tokens[i].value);
+			LOG("%s %s\n",
+			    token_type_names[state.lexer_result.tokens[i].type],
+			    state.lexer_result.tokens[i].value);
+		else
+			LOG("NEWLINE\n");
 	}
+
+	synt(&state);
+
+	print_errors();
+	
+	// for (int i = 0; i < state.synt_result.nodes_count; i++)
+	// 	create_dot_from_node(state.synt_result.nodes[i]);
 }
 
 

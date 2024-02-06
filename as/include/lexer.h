@@ -48,6 +48,8 @@ typedef struct {
 } Lexer_result;
 
 
+extern char* token_type_names[];
+
 
 Lexer_result lexer(char* data, char* filename);
 
