@@ -16,6 +16,7 @@ static char* messages_english[] = {
 	[STRING_NOT_CLOSED] = "string not closed",
 	[EXPECT_TOKEN] = "expected token",
 	[UNEXPECTED_TOKEN] = "unexpected token",
+	[LABEL_REDEFINE] = "label redefinition",
 };
 
 
@@ -25,20 +26,21 @@ static char* messages_russian[] = {
 	[STRING_NOT_CLOSED] = "строка не закрыта",
 	[EXPECT_TOKEN] = "ожидался токен",
 	[UNEXPECTED_TOKEN] = "непредвиденный токен",
+	[LABEL_REDEFINE] = "повторное определение метки",
 };
 
 
 static char* token_string_english[] = {
 	[STRING] = "string",
-	[LEFT_PAREN] = "(",
-	[RIGHT_PAREN] = ")",
+	[LEFT_PAREN] = "\"(\"",
+	[RIGHT_PAREN] = "\")\"",
 };
 
 
 static char* token_string_russian[] = {
 	[STRING] = "строка",
-	[LEFT_PAREN] = "(",
-	[RIGHT_PAREN] = ")",
+	[LEFT_PAREN] = "\"(\"",
+	[RIGHT_PAREN] = "\")\"",
 };
 
 

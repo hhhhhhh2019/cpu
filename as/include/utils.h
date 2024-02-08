@@ -2,6 +2,8 @@
 #define UTILS_H
 
 
+#include <synt.h>
+
 #include <stdio.h>
 
 
@@ -20,6 +22,9 @@
 #define ERROR(...) do { \
 	printf("\033[38;5;1mError:\033[0m "); printf(__VA_ARGS__); \
 } while(0)
+
+
+long solve_expression(Node*);
 
 
 #endif

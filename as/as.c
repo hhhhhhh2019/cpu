@@ -68,6 +68,10 @@ int main(int argc, char** argv) {
 	
 	// for (int i = 0; i < state.synt_result.nodes_count; i++)
 	// 	create_dot_from_node(state.synt_result.nodes[i]);
+	
+	semant(&state);
+
+	print_errors();
 }
 
 

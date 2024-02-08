@@ -124,8 +124,10 @@ static enum Token_type get_type(char* value) {
 	if (strcmp(value, "#define") == 0)
 		return DEFINE;
 
-	if (value[strlen(value)-1] == ':')
+	if (value[strlen(value)-1] == ':') {
+		value[strlen(value)-1] = 0;
 		return LABEL;
+	}
 
 	return UNDEFINED;
 }

@@ -16,6 +16,9 @@ enum Node_type {
 typedef struct Node {
 	enum Node_type type;
 	unsigned long id;
+	unsigned long size;
+	unsigned long code;
+	unsigned long offset;
 	struct Node* parent;
 	unsigned long childs_count;
 	struct Node** childs;

@@ -7,15 +7,15 @@
 
 
 // Label is nonterminal name
-typedef struct Label_t {
+typedef struct {
 	char* name;
 	unsigned int offset;
-} Label_t;
+} Label;
 
 
 
 typedef struct Instruction_descr {
-	char* token;
+	char* name;
 	char code;
 	char size;
 	int args_count;
@@ -25,7 +25,7 @@ typedef struct Instruction_descr {
 
 
 typedef struct Semant_result {
-	Label_t* labels;
+	Label* labels;
 	unsigned int labels_count;
 } Semant_result;
 
