@@ -33,6 +33,11 @@ typedef struct {
 
 
 void create_dot_from_node(Node*);
+void free_all_nodes();
+
+
+extern Node** all_nodes;
+extern unsigned long all_nodes_count;
 
 
 #endif

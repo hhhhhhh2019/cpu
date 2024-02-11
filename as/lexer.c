@@ -12,6 +12,10 @@ static unsigned long line;
 static unsigned long column;
 
 
+char** alloced_names;
+unsigned long alloced_names_size;
+
+
 char* token_type_names[] = {
 	[NOT_SET]     = "NOT_SET",
 	[UNDEFINED]   = "UNDEFINED",
@@ -496,6 +500,9 @@ Lexer_result lexer(char* data, char* filename) {
 		if (token.type == NOT_SET)
 			token.type = get_type(token.value);
 
+		alloced_names = realloc(alloced_names, sizeof(char*) * (++alloced_names_size));
+    alloced_names[alloced_names_size - 1] = token.value;
+
 		tokens = realloc(tokens, sizeof(Token) * (++tokens_count));
 		tokens[tokens_count - 1] = token;
 	}
@@ -513,4 +520,11 @@ Lexer_result lexer(char* data, char* filename) {
 
 
 	return result;
+}
+
+
+void free_all_alloced_names() {
+	for (int i = 0; i < alloced_names_size; i++) {
+		free(alloced_names[i]);
+	}
 }

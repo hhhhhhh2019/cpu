@@ -5,9 +5,16 @@
 #include <stdlib.h>
 
 
+Node** all_nodes;
+unsigned long all_nodes_count;
+
+
 static inline Node* empty_node() {
 	Node* node = calloc(sizeof(Node),1);
 	node->childs = malloc(0);
+
+	all_nodes = realloc(all_nodes, sizeof(Node*) * (++all_nodes_count));
+  all_nodes[all_nodes_count - 1] = node;
 
 	return node;
 }
@@ -439,6 +446,11 @@ static Node* parse_line(Compiler_state* state) {
 
 void synt(Compiler_state* state) {
 	offset = 0;
+
+	all_nodes = malloc(0);
+  all_nodes_count = 0;
+  state->synt_result.nodes = malloc(0);
+  state->synt_result.nodes_count = 0;
 
 	for (; offset < state->lexer_result.tokens_count;) {
 		Node* node = parse_line(state);

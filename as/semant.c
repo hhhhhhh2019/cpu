@@ -82,8 +82,8 @@ Instruction_descr instr_args[] = {
 unsigned int instr_count = sizeof(instr_args) / sizeof(Instruction_descr);
 
 
-unsigned long offset;
-char* last_label;
+static unsigned long offset;
+static char* last_label;
 
 
 static void check_label(Compiler_state* state, Node* node) {
@@ -94,7 +94,8 @@ static void check_label(Compiler_state* state, Node* node) {
 		if (last_label != NULL) {
 			label = realloc(label, strlen(last_label) + strlen(label) + 1);
 			// strcat(last_label, label); // asan throw heap buffer overflow
-			strcpy(last_label, label + strlen(label));
+			// strcpy(last_label, label + strlen(label));
+			memcpy(label + strlen(label), last_label, strlen(last_label));
 		}
 	} else
 		last_label = label;
@@ -125,7 +126,7 @@ static void check_data(Compiler_state* state, Node* node) {
 	root->size = 0;
 
 	if (node->token.type == TIMES) {
-		times = solve_expression(node->childs[0]);
+		times = solve_expression(state, 0, NULL, node->childs[0], 0);
 		node = node->childs[1];
 	}
 
@@ -253,7 +254,7 @@ void semant(Compiler_state* state) {
 	last_label = NULL;
 
 	for (int i = 0; i < state->synt_result.nodes_count; i++) {
-		state->synt_result.nodes[i]->size = 0;
+		state->synt_result.nodes[i]->offset = offset;
 
 		if (state->synt_result.nodes[i]->type == SLABEL)
 			check_label(state, state->synt_result.nodes[i]);

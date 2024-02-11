@@ -9,6 +9,8 @@
 
 
 typedef struct {
+	char* output_filename;
+
 	Lexer_result  lexer_result;
 	Synt_result   synt_result;
 	Semant_result semant_result;

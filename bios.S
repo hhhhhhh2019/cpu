@@ -5,7 +5,7 @@ add pc, pc, start - $
 
 var:
 	times 2 \
-	    dl 0,0 \
+	    dl 0x1234,10 \
 	    ds 12
 
 

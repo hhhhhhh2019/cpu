@@ -1,4 +1,5 @@
 #include <as.h>
+#include <bin.h>
 #include <error.h>
 #include <utils.h>
 
@@ -40,6 +41,7 @@ int main(int argc, char** argv) {
 
 
 	Compiler_state state = {
+		.output_filename = output_filename,
 		.macros_count = 0,
 		.macros = malloc(0),
 		.defines_count = 0,
@@ -72,6 +74,11 @@ int main(int argc, char** argv) {
 	semant(&state);
 
 	print_errors();
+
+	// free_all_nodes();
+	// free_all_alloced_names();
+	
+	bin(&state);
 }
 
 

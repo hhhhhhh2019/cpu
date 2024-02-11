@@ -2,6 +2,7 @@
 #define UTILS_H
 
 
+#include <as.h>
 #include <synt.h>
 
 #include <stdio.h>
@@ -24,7 +25,9 @@
 } while(0)
 
 
-long solve_expression(Node*);
+long solve_expression(Compiler_state*, char allow_labels, char*, Node*, unsigned long id);
+
+char get_reg_id(char*);
 
 
 #endif
