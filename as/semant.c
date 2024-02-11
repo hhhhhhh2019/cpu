@@ -172,7 +172,7 @@ static void check_instruction_no_args(Compiler_state* state, Node* node) {
 
 
 static void check_instruction(Compiler_state* state, Node* node) {
-	if (node->childs_count == 1) {
+	if (node->childs_count == 0) {
 		check_instruction_no_args(state, node);
 		return;
 	}

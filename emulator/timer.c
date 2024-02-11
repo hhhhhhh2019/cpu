@@ -15,8 +15,6 @@ void timer_step(Timer* timer) {
 	unsigned char  int_id = *(unsigned char*)(timer->registers + 8);
 	unsigned long* hz     =  (unsigned long*)(timer->registers + 9);
 
-	printf("timer: %lu\n", *delay);
-
 	*hz = timer->hz;
 
 	if (*delay == 0)

@@ -81,8 +81,6 @@ unsigned long mmu_read(MMU* mmu, char vaddr, unsigned long tp, unsigned long add
 		addr = mmu_v2p(mmu, addr, tp, rules);
 	}
 
-	printf("read: %lx\n", addr);
-
 	unsigned long mask = 0;
 	for (int i = 0; i < size; i++)
 		mask |= 255 << (i * 8);
@@ -103,8 +101,6 @@ void mmu_write(MMU* mmu, char vaddr, unsigned long tp, unsigned long addr, unsig
 		char rules;
 		addr = mmu_v2p(mmu, addr, tp, &rules);
 	}
-
-	printf("write: %lx %lx\n", addr, value);
 
 	unsigned long mask = 0;
 	for (int i = 0; i < size; i++)
