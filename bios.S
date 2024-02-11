@@ -1,6 +1,10 @@
 add pc, pc, start - $
 
-#include "include.S"
+; #include "include.S"
+
+#ifndef INT_OFFSET
+	#define INT_OFFSET(x) x * 16
+#endif
 
 
 var:

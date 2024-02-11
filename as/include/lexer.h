@@ -29,6 +29,11 @@ enum Token_type {
 	RIGHT_PAREN,
 	DEFINE,
 	INCLUDE,
+	IF,
+	IFDEF,
+	IFNDEF,
+	ELSE,
+	ENDIF,
 	BACK_SLASH,
 };
 

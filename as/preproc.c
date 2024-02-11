@@ -10,6 +10,8 @@
 #include <unistd.h>
 
 
+Stack(char);
+
 
 static char* find_include_file(Compiler_state* state, char* file, char* dirname) {
 	// check in current dir
@@ -292,8 +294,31 @@ static char preproc(Compiler_state* state, Lexer_result* lexer_result, char* dir
 	char result = 0;
 
 
+	Stack_char if_stack = {
+	    .values = malloc(0),
+	    .values_count = 0
+	};
+
+
 	for (int i = 0; i < lexer_result->tokens_count; i++) {
 		Token t = lexer_result->tokens[i];
+
+		if (t.type == ENDIF) {
+			stack_pop(if_stack);
+			continue;
+		}
+
+		if (t.type == ELSE) {
+			stack_push(if_stack, 1 - stack_pop(if_stack));
+			continue;
+		}
+
+
+		if (if_stack.values_count != 0) {
+			if (if_stack.values[if_stack.values_count-1] == 0)
+				continue;
+		}
+
 
 		if (t.type == INCLUDE) {
 			result = 1;
@@ -342,6 +367,64 @@ static char preproc(Compiler_state* state, Lexer_result* lexer_result, char* dir
 
 			continue;
 		}
+
+		if (t.type == IF) {
+			result = 1;
+			continue;
+		}
+
+		if (t.type == IFDEF) {
+			result = 1;
+
+			Token t2 = lexer_result->tokens[++i];
+
+			char find = 0;
+
+			for (int i = 0; i < state->defines_count; i++) {
+				if (strcmp(t2.value, state->defines[i].name) != 0)
+					continue;
+
+				find = 1;
+			}
+
+			for (int i = 0; i < state->macros_count; i++) {
+				if (strcmp(t2.value, state->macros[i].name) != 0)
+					continue;
+
+				find = 1;
+			}
+
+			stack_push(if_stack, find);
+
+			continue;
+		}
+
+		if (t.type == IFNDEF) {
+			result = 1;
+
+			Token t2 = lexer_result->tokens[++i];
+
+			char find = 0;
+
+			for (int i = 0; i < state->defines_count; i++) {
+				if (strcmp(t2.value, state->defines[i].name) != 0)
+					continue;
+
+				find = 1;
+			}
+
+			for (int i = 0; i < state->macros_count; i++) {
+				if (strcmp(t2.value, state->macros[i].name) != 0)
+					continue;
+
+				find = 1;
+			}
+
+			stack_push(if_stack, 1 - find);
+
+			continue;
+		}
+
 
 		Token* new_tokens;
 		unsigned long new_tokens_count;
