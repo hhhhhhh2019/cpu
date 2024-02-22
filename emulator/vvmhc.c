@@ -1,4 +1,3 @@
-#include "mmu.h"
 #include <stdio.h>
 #include <vvmhc.h>
 #include <motherboard.h>
@@ -6,6 +5,7 @@
 #include <errno.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
 
 
 void vvmhc_init(VVMHC* vvmhc, void* motherboard, unsigned long hz) {
@@ -77,12 +77,21 @@ void vvmhc_step(VVMHC* vvmhc) {
 	}
 
 	if (vvmhc->init_timer != 0) {
+		if (interactive_mode) {
+			printf("VVMHC: init timer %d\n", vvmhc->init_timer);
+		}
+
 		vvmhc->init_timer--;
 		return;
 	}
 
 
 	if (vvmhc->state == 1) { // reading from disk
+		if (interactive_mode) {
+			printf("VVMHC: read:\n    id: %d\n    addr: %016lx\n    count: %u\n    start_addr: %016lx\n",
+			    id, addr, block_count, start_addr);
+		}
+
 		mmu_write(&motherboard->mmu, tp != 0, tp, vvmhc->ram_offset++, 1, vvmhc->buffer[vvmhc->buff_offset++]);
 
 		if (vvmhc->buff_offset == vvmhc->buffer_size) {
@@ -97,6 +106,11 @@ void vvmhc_step(VVMHC* vvmhc) {
 
 
 	if (vvmhc->state == 2) { // writing
+		if (interactive_mode) {
+			printf("VVMHC: write:\n    id: %d\n    addr: %016lx\n    count: %u\n    start_addr: %016lx\n",
+			    id, addr, block_count, start_addr);
+		}
+
 		char rules;
 		char val = mmu_read(&motherboard->mmu, tp != 0, tp, vvmhc->ram_offset++, 1, &rules);
 		vvmhc->buffer[vvmhc->buff_offset++] = val;

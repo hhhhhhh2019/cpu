@@ -19,5 +19,7 @@ typedef struct {
 
 void device_step(void*);
 
+extern char interactive_mode;
+
 
 #endif
