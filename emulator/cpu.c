@@ -97,7 +97,7 @@ void cpu_init(CPU* cpu, void *motherboard, char cores_count, unsigned long hz) {
 void print_registers(Core* core, int id) {
 	char mode = 0;
 
-	if ((core->state & STATE_NORMAL_MODE) != 0 || core->is_interrupt)
+	if (core->registers == core->registersn)
 		mode = 1;
 
 	LOG("+--- Core %02d --- %d ---------------------------------------------------------------------+\n", id, mode);

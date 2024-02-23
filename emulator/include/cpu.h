@@ -5,10 +5,10 @@
 #include <apic.h>
 
 
-#define STATE_ENABLE      1
-#define STATE_INTERRUPTS  2
-#define STATE_PAGING      4
-#define STATE_NORMAL_MODE 8
+#define STATE_ENABLE      (1 << 0)
+#define STATE_INTERRUPTS  (1 << 1)
+#define STATE_PAGING      (1 << 2)
+#define STATE_NORMAL_MODE (1 << 3)
 
 #define FLAG_ZERO  1
 #define FLAG_CARRY 2
