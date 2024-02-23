@@ -153,7 +153,7 @@ r в длинну 4 бита, по этому инструкии с нечетн
 - 63 - инициализорована ли страница
 
 
-![img](../assets/paging.png)
+<img src="https://github.com/hhhhhhh2019/cpu/blob/master/assets/paging.png"></img>
 
 
 # MMU
