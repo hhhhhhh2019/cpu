@@ -77,6 +77,13 @@ unsigned long mmu_v2p(MMU* mmu, unsigned long addr, unsigned long tp, char* rule
 	unsigned long v1 = cpu2lt64(*((unsigned long*)(ram + v2 + i1 * 8)));
 	unsigned long v0 = cpu2lt64(*((unsigned long*)(ram + v1 + i0 * 8)));
 
+	// printf("----\n");
+	// printf("%016lx\n", v0);
+	// printf("%016lx\n", (0b1111l << 60));
+	// printf("%016lx\n", v0 & (0b1111l << 60));
+	// printf("%016lx\n", v0 & ~(0b1111l << 60));
+	// printf("----\n");
+
 	*rules = (v0 & (0b1111l << 60)) >> 60;
 
 	return (v0 & ~(0b1111l << 60)) + offset;

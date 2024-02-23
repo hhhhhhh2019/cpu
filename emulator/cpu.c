@@ -172,6 +172,14 @@ void core_int(Core* core, unsigned char id) {
 }
 
 
+void core_update_registers(Core* core) {
+	if ((core->state & STATE_NORMAL_MODE) == 0 || core->is_interrupt)
+		core->registers = core->registersk;
+	else
+		core->registers = core->registersn;
+}
+
+
 void core_step(Core* core) {
 	if ((core->state & STATE_ENABLE) == 0)
 		return;
@@ -179,24 +187,51 @@ void core_step(Core* core) {
 	core->registersk[0] = 0;
 	core->registersn[0] = 0;
 
-	if ((core->state & STATE_NORMAL_MODE) == 0 || core->is_interrupt)
-		core->registers = core->registersk;
-	else
-		core->registers = core->registersn;
+	core_update_registers(core);
 
 	Motherboard* motherboard = ((Motherboard*)core->motherboard);
 	char* ram = motherboard->ram.ram;
 
-	unsigned char instr = ram[core->registers[REG_PC]];
+	char rules;
 
-	unsigned char r1 = (ram[core->registers[REG_PC] + 1] & 0xf0) >> 4;
-	unsigned char r2 = ram[core->registers[REG_PC] + 1] & 0x0f;
-	unsigned char r3 = (ram[core->registers[REG_PC] + 2] & 0xf0) >> 4;
+	// unsigned char instr = ram[core->registers[REG_PC]];
+	unsigned char instr = mmu_read(&motherboard->mmu,
+	    (core->state & STATE_PAGING) != 0, core->registers[REG_TP],
+	    core->registers[REG_PC], 1, &rules);
 
-	unsigned long num1 = *(unsigned long*)(ram + core->registers[REG_PC] + 2);
-	unsigned long num2 = *(unsigned long*)(ram + core->registers[REG_PC] + 1);
-	unsigned char num3 = ram[core->registers[REG_PC] + 1];
-	unsigned char num4 = ram[core->registers[REG_PC] + 2];
+	unsigned short regs = mmu_read(&motherboard->mmu,
+	    (core->state & STATE_PAGING) != 0, core->registers[REG_TP],
+	    core->registers[REG_PC] + 1, 2, &rules);
+
+	// unsigned char r1 = (ram[core->registers[REG_PC] + 1] & 0xf0) >> 4;
+	// unsigned char r2 = ram[core->registers[REG_PC] + 1] & 0x0f;
+	// unsigned char r3 = (ram[core->registers[REG_PC] + 2] & 0xf0) >> 4;
+	
+	unsigned char r1 = (regs & 0xf0) >> 4;
+	unsigned char r2 = (regs & 0x0f);
+	unsigned char r3 = (regs & 0xf000) >> 12;
+
+	// unsigned long num1 = *(unsigned long*)(ram + core->registers[REG_PC] + 2);
+	// unsigned long num2 = *(unsigned long*)(ram + core->registers[REG_PC] + 1);
+	// unsigned char num3 = ram[core->registers[REG_PC] + 1];
+	// unsigned char num4 = ram[core->registers[REG_PC] + 2];
+
+	unsigned long num1 = mmu_read(&motherboard->mmu,
+	    (core->state & STATE_PAGING) != 0, core->registers[REG_TP],
+	    core->registers[REG_PC] + 2, 8, &rules);
+
+	unsigned long num2 = mmu_read(&motherboard->mmu,
+	    (core->state & STATE_PAGING) != 0, core->registers[REG_TP],
+	    core->registers[REG_PC] + 1, 8, &rules);
+
+	unsigned long num3 = mmu_read(&motherboard->mmu,
+	    (core->state & STATE_PAGING) != 0, core->registers[REG_TP],
+	    core->registers[REG_PC] + 1, 1, &rules);
+
+	unsigned long num4 = mmu_read(&motherboard->mmu,
+	    (core->state & STATE_PAGING) != 0, core->registers[REG_TP],
+	    core->registers[REG_PC] + 2, 1, &rules);
+
 
 
 	if (instr == 0x00) { // stol r r num64
@@ -805,7 +840,7 @@ void core_step(Core* core) {
 		}
 
 		if (core->registers == core->registersk) {
-			core->registersk[r1] = core->registersn[REG_TP];
+			core->registersn[REG_TP] = core->registersk[r1];
 		} else {
 			// panic
 		}
@@ -817,7 +852,7 @@ void core_step(Core* core) {
 		}
 
 		if (core->registers == core->registersk) {
-			core->registersn[REG_TP] = core->registersk[r1];
+			core->registersk[r1] = core->registersn[REG_TP];
 		} else {
 			// panic
 		}
@@ -849,7 +884,7 @@ void core_step(Core* core) {
 
 	else if (instr == 0x3a) { // cint num8 num8
 		if (interactive_mode) {
-			printf("cint %d %d\n", num3, num4);
+			printf("cint %lu %lu\n", num3, num4);
 		}
 
 		if (core->registers == core->registersk) {
@@ -861,4 +896,5 @@ void core_step(Core* core) {
 
 
 	core->registers[REG_PC] += instr_size[instr];
+	core_update_registers(core);
 }

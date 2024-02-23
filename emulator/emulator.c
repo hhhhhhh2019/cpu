@@ -18,7 +18,7 @@
 
 Motherboard motherboard;
 
-char* bios_name = NULL;
+char* bios_name = "bios";
 char* bios;
 unsigned long bios_size;
 
