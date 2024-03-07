@@ -35,6 +35,8 @@ enum Token_type {
 	ELSE,
 	ENDIF,
 	BACK_SLASH,
+
+	TOKENS_COUNT,
 };
 
 

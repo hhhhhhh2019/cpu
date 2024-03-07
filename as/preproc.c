@@ -1,3 +1,4 @@
+#include "lexer.h"
 #include <as.h>
 #include <error.h>
 #include <utils.h>
@@ -22,8 +23,8 @@ static char* find_include_file(Compiler_state* state, char* file, char* dirname)
 	strcat(path, file);
 
 	if (access(path, F_OK) == 0) {
-    return path;
-  }
+		return path;
+	}
 
 	// check in -I paths
 	
@@ -63,9 +64,10 @@ static unsigned long parse_macro(
 
 	if (tokens[offset].type != RIGHT_PAREN) {
 		add_error((Error){
-				.type = EXPECT_TOKEN,
-				.token = tokens[offset],
-		    .excepted_token = RIGHT_PAREN
+		    .type = EXPECT_TOKEN,
+		    .token = tokens[offset],
+		    .excepted_tokens_count = 1,
+		    .excepted_tokens = (enum Token_type[]){RIGHT_PAREN},
 		});
 		return 0;
 	}
@@ -200,7 +202,8 @@ static void expand_macros(
 		add_error((Error){
 		    .type = EXPECT_TOKEN,
 		    .token = tokens[1],
-		    .excepted_token = LEFT_PAREN
+		    .excepted_tokens_count = 1,
+		    .excepted_tokens = (enum Token_type[]){LEFT_PAREN},
 		});
 		return;
 	}
@@ -230,9 +233,10 @@ static void expand_macros(
 
 	if (tokens[offset].type != RIGHT_PAREN) {
 		add_error((Error){
-				.type = EXPECT_TOKEN,
-				.token = tokens[offset],
-		    .excepted_token = RIGHT_PAREN
+		.type = EXPECT_TOKEN,
+		.token = tokens[offset],
+		.excepted_tokens_count = 1,
+		    .excepted_tokens = (enum Token_type[]){RIGHT_PAREN},
 		});
 		return;
 	}
@@ -325,13 +329,14 @@ static char preproc(Compiler_state* state, Lexer_result* lexer_result, char* dir
 
 			if (i == lexer_result->tokens_count - 1 ||
 			    lexer_result->tokens[i+1].type != STRING) {
-        add_error((Error){
-            .type = EXPECT_TOKEN,
+				add_error((Error){
+				    .type = EXPECT_TOKEN,
 				    .token = lexer_result->tokens[i],
-				    .excepted_token = STRING
-        });
-        continue;
-      }
+				    .excepted_tokens_count = 1,
+				    .excepted_tokens = (enum Token_type[]){STRING},
+				});
+				continue;
+			}
 
 			Token path_token = lexer_result->tokens[++i];
 			char* path = find_include_file(state, path_token.value, dirname);
@@ -473,18 +478,18 @@ Lexer_result preprocess(void* state, char* filename) {
 
 	FILE* file = fopen(filename, "r");
 
-  if (file == NULL) {
+	if (file == NULL) {
 		ERROR("Cannot open file \"%s\": %s\n", filename, strerror(errno));
 #ifdef DEBUG
 		perror("fopen " STR(__FILE__) " " STR(__LINE__));
 #endif
 		exit(errno);
-  }
+	}
 
 	fseek(file, 0, SEEK_END);
 	unsigned long size = ftell(file);
 	fseek(file, 0, SEEK_SET);
- 
+
 	char* data = malloc(size+1);
 	data[size] = 0;
 

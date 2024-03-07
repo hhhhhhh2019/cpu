@@ -391,7 +391,8 @@ static Node* parse_instruction(Compiler_state* state) {
 		add_error((Error){
 		    .type = EXPECT_TOKEN,
 		    .token = state->lexer_result.tokens[offset],
-		    .excepted_token = INSTRUCTION,
+				.excepted_tokens_count = 1,
+		    .excepted_tokens = (enum Token_type[]){INSTRUCTION},
 		});
 		return NULL;
 	}

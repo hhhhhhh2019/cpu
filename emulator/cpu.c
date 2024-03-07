@@ -1,3 +1,4 @@
+#include "mmu.h"
 #include <cpu.h>
 #include <motherboard.h>
 #include <utils.h>
@@ -194,43 +195,57 @@ void core_step(Core* core) {
 
 	char rules;
 
-	// unsigned char instr = ram[core->registers[REG_PC]];
 	unsigned char instr = mmu_read(&motherboard->mmu,
 	    (core->state & STATE_PAGING) != 0, core->registers[REG_TP],
 	    core->registers[REG_PC], 1, &rules);
+
+	if ((rules & MMU_RULE_READ) == 0 || (rules & MMU_RULE_INIT) == 0) {
+		// panic
+	}
 
 	unsigned short regs = mmu_read(&motherboard->mmu,
 	    (core->state & STATE_PAGING) != 0, core->registers[REG_TP],
 	    core->registers[REG_PC] + 1, 2, &rules);
 
-	// unsigned char r1 = (ram[core->registers[REG_PC] + 1] & 0xf0) >> 4;
-	// unsigned char r2 = ram[core->registers[REG_PC] + 1] & 0x0f;
-	// unsigned char r3 = (ram[core->registers[REG_PC] + 2] & 0xf0) >> 4;
+	if ((rules & MMU_RULE_READ) == 0 || (rules & MMU_RULE_INIT) == 0) {
+		// panic
+	}
 	
 	unsigned char r1 = (regs & 0xf0) >> 4;
 	unsigned char r2 = (regs & 0x0f);
 	unsigned char r3 = (regs & 0xf000) >> 12;
 
-	// unsigned long num1 = *(unsigned long*)(ram + core->registers[REG_PC] + 2);
-	// unsigned long num2 = *(unsigned long*)(ram + core->registers[REG_PC] + 1);
-	// unsigned char num3 = ram[core->registers[REG_PC] + 1];
-	// unsigned char num4 = ram[core->registers[REG_PC] + 2];
-
 	unsigned long num1 = mmu_read(&motherboard->mmu,
 	    (core->state & STATE_PAGING) != 0, core->registers[REG_TP],
 	    core->registers[REG_PC] + 2, 8, &rules);
+
+	if ((rules & MMU_RULE_READ) == 0 || (rules & MMU_RULE_INIT) == 0) {
+		// panic
+	}
 
 	unsigned long num2 = mmu_read(&motherboard->mmu,
 	    (core->state & STATE_PAGING) != 0, core->registers[REG_TP],
 	    core->registers[REG_PC] + 1, 8, &rules);
 
+	if ((rules & MMU_RULE_READ) == 0 || (rules & MMU_RULE_INIT) == 0) {
+		// panic
+	}
+
 	unsigned long num3 = mmu_read(&motherboard->mmu,
 	    (core->state & STATE_PAGING) != 0, core->registers[REG_TP],
 	    core->registers[REG_PC] + 1, 1, &rules);
 
+	if ((rules & MMU_RULE_READ) == 0 || (rules & MMU_RULE_INIT) == 0) {
+		// panic
+	}
+
 	unsigned long num4 = mmu_read(&motherboard->mmu,
 	    (core->state & STATE_PAGING) != 0, core->registers[REG_TP],
 	    core->registers[REG_PC] + 2, 1, &rules);
+
+	if ((rules & MMU_RULE_READ) == 0 || (rules & MMU_RULE_INIT) == 0) {
+		// panic
+	}
 
 
 

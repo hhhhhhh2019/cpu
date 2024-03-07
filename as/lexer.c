@@ -157,7 +157,7 @@ static enum Token_type get_type(char* value) {
 
 static char next_hex_number(Token* token, char* data) {
 	token->type = HEX_NUMBER;
-  token->value = calloc(1,1);
+	token->value = calloc(1,1);
 	unsigned long offset = 0;
 
 	while (1) {
@@ -184,7 +184,7 @@ static char next_hex_number(Token* token, char* data) {
 
 static char next_bin_number(Token* token, char* data) {
 	token->type = BIN_NUMBER;
-  token->value = calloc(1,1);
+	token->value = calloc(1,1);
 	unsigned long offset = 0;
 	
 	while (1) {
@@ -220,7 +220,7 @@ static char next_number(Token* token, char* data) {
 
 
 	token->type = DEC_NUMBER;
-  token->value = calloc(1,1);
+	token->value = calloc(1,1);
 	unsigned long offset = 0;
 
 	
@@ -519,7 +519,7 @@ Lexer_result lexer(char* data, char* filename) {
 			token.type = get_type(token.value);
 
 		alloced_names = realloc(alloced_names, sizeof(char*) * (++alloced_names_size));
-    alloced_names[alloced_names_size - 1] = token.value;
+		alloced_names[alloced_names_size - 1] = token.value;
 
 		tokens = realloc(tokens, sizeof(Token) * (++tokens_count));
 		tokens[tokens_count - 1] = token;

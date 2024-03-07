@@ -1,4 +1,5 @@
 #include "error.h"
+#include "lexer.h"
 #include "utils.h"
 #include <as.h>
 
@@ -88,7 +89,7 @@ static char* last_label;
 
 static void check_label(Compiler_state* state, Node* node) {
 	char* label = malloc(strlen(node->token.value) + 1);
-  strcpy(label, node->token.value);
+	strcpy(label, node->token.value);
 
 	if (label[0] == '.') {
 		if (last_label != NULL) {
@@ -180,7 +181,7 @@ static void check_instruction(Compiler_state* state, Node* node) {
 	char* suitable = malloc(0);
 	unsigned int suitable_size = 0;
 
-	char* suitable_buffer = malloc(0);
+	char* suitable_buffer;
 	unsigned int suitable_buffer_size = 0;
 
 	for (int i = 0; i < instr_count; i++) {
@@ -200,6 +201,9 @@ static void check_instruction(Compiler_state* state, Node* node) {
 	while (arg_id < instr->childs_count) {
 		Node* arg = instr->childs[arg_id];
 
+		suitable_buffer = malloc(0);
+		suitable_buffer_size = 0;
+
 		char arg_code = 1;
 		if (arg->token.type == REGISTER)
 			arg_code = 0;
@@ -215,11 +219,12 @@ static void check_instruction(Compiler_state* state, Node* node) {
 			suitable_buffer[suitable_buffer_size-1] = suitable[i];
 		}
 
+		if (suitable_buffer_size == 0)
+			break;
+
 		free(suitable);
 		suitable = suitable_buffer;
 		suitable_size = suitable_buffer_size;
-		suitable_buffer = malloc(0);
-		suitable_buffer_size = 0;
 
 		// if (node->childs_count == 1)
 		// 	break;
@@ -227,15 +232,32 @@ static void check_instruction(Compiler_state* state, Node* node) {
 		arg_id++;
 	}
 
-	if (suitable_size != 1) {
-		fprintf(stderr, "Instr not found!\n");
+	if (suitable_size != 1 && arg_id == 0) {
+		add_error((Error){
+		    .type = INSTRUCTION_NOT_FOUND,
+		    .token = instr->token
+		});
+
+		// fprintf(stderr, "Instr not found!\n");
 		free(suitable);
-		free(suitable_buffer);
+		// free(suitable_buffer);
 		return;
 	}
 
 	if (arg_id != instr_args[suitable[0]].args_count) {
-		fprintf(stderr, "Instr args error!\n");
+		enum Token_type* types = malloc(sizeof(enum Token_type) * suitable_size);
+
+		for (int i = 0; i < suitable_size; i++)
+			types[i] = instr_args[suitable[i]].args[arg_id-1] == 0 ? REGISTER : DEC_NUMBER;
+
+		add_error((Error){
+		    .type = EXPECT_TOKEN,
+		    .token = instr->childs[arg_id-1]->token,
+		    .excepted_tokens_count = suitable_size,
+		    .excepted_tokens = types
+	});
+
+		// fprintf(stderr, "Instr args error!\n");
 		return;
 	}
 
@@ -245,7 +267,7 @@ static void check_instruction(Compiler_state* state, Node* node) {
 	offset += instr->size;
 
 	free(suitable);
-	free(suitable_buffer);
+	// free(suitable_buffer);
 }
 
 

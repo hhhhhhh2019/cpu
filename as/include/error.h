@@ -12,13 +12,16 @@ enum Error_type {
 	EXPECT_TOKEN,
 	UNEXPECTED_TOKEN,
 	LABEL_REDEFINE,
+	INSTRUCTION_NOT_FOUND,
+	INSTRUCTION_ARG_ERROR,
 };
 
 
 typedef struct {
 	enum Error_type type;
 	Token token;
-	enum Token_type excepted_token;
+	unsigned int excepted_tokens_count;
+	enum Token_type* excepted_tokens;
 } Error;
 
 
