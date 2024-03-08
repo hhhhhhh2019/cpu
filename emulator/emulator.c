@@ -121,6 +121,13 @@ int main(int argc, char** argv) {
 	vvmhc_add_disk(motherboard.devices[motherboard.devices_count-1], "disk.img", 0);
 
 
+	motherboard.devices = realloc(motherboard.devices, sizeof(void*) * (++motherboard.devices_count));
+	motherboard.devices[motherboard.devices_count-1] = malloc(sizeof(UART));
+
+	uart_init(motherboard.devices[motherboard.devices_count-1], &motherboard, 100);
+
+
+
 	struct termios start_attrs;
 	tcgetattr(fileno(stdin), &start_attrs);
 

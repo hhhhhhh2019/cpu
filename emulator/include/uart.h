@@ -15,7 +15,9 @@ typedef struct {
 	unsigned long hz;
 	char registers[3];
 
-	char ready;
+	char next_char;
+	char have_char;
+	char c;
 } UART;
 
 
