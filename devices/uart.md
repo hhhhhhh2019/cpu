@@ -1,6 +1,6 @@
 # UART
 
-TYPE ID = 1
+TYPE = 4
 
 # Регистры
 

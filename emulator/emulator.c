@@ -9,6 +9,8 @@
 #include <string.h>
 #include <stdio.h>
 #include <errno.h>
+#include <termio.h>
+#include <unistd.h>
 
 
 #define BIOS_ADDRESS 0x10000
@@ -31,6 +33,7 @@ unsigned long tick = 0;
 
 
 char print_regs = 1;
+char emulator_enable;
 
 
 void print_help();
@@ -117,6 +120,20 @@ int main(int argc, char** argv) {
 	vvmhc_add_disk(motherboard.devices[motherboard.devices_count-1], "disk.img", 0);
 
 
+	struct termios start_attrs;
+	tcgetattr(fileno(stdin), &start_attrs);
+
+
+	struct termios attrs = start_attrs;
+	attrs.c_lflag &= ~ECHO;
+	attrs.c_iflag |= IGNBRK;
+	attrs.c_iflag &= ~BRKINT;
+	attrs.c_lflag &= ~ICANON;
+	attrs.c_lflag &= ~ISIG;
+
+	tcsetattr(fileno(stdin), TCSANOW, &attrs);
+
+
 
 	char cpu_enabled = 1;
 
@@ -137,15 +154,18 @@ int main(int argc, char** argv) {
 	motherboard.cpu.cores[0].state = STATE_ENABLE;
 
 
-	while (1) {
+	emulator_enable = 1;
+
+	while (emulator_enable) {
 		if (interactive_mode) {
-			putc('\n', stdout);
-			putc('>', stdout);
-			putc(' ', stdout);
+			printf("\n> ");
 
 			unsigned long len = 0;
 
 			char* input = readline(&len);
+
+			if (input == NULL)
+				continue;
 
 			parse_command(input, len);
 
@@ -154,6 +174,9 @@ int main(int argc, char** argv) {
 			step();
 		}
 	}
+
+
+	tcsetattr(fileno(stdin), 0, &start_attrs);
 
 
 	// vvmhc_close(motherboard.devices[2]);
@@ -219,16 +242,49 @@ char* readline(unsigned long* len) {
 	*len = 0;
 	char* buffer = malloc(0);
 
-	int c = getc(stdin);
+	int c;
 
-	while (c != '\n' && c != EOF) {
+	do {
+		c = getc(stdin);
+
+		if (c == 4) { // ctrl-d
+			continue;
+		}
+
+		if (c == 3) { // ctrl-c
+			printf("\33[%luD", *len);
+			printf("\33[2K\r");
+			buffer = realloc(buffer, 0);
+			*len = 0;
+			printf("> ");
+			continue;
+		}
+
+		if (c == 127) { // backspace
+			if (*len == 0)
+				continue;
+
+			buffer = realloc(buffer, sizeof(char) * (--*len));
+			printf("\33[0D");
+			putc(' ', stdout);
+			printf("\33[0D");
+			continue;
+		}
+
+		if (c == 9) { // tab
+			continue;
+		}
+
+		printf("%c", c);
+
 		buffer = realloc(buffer, sizeof(char) * (++*len));
 		buffer[*len - 1] = c;
+	} while (c != '\n' && c != EOF);
 
-		c = getc(stdin);
-	}
+	if (*len == 0)
+		return buffer;
 
-	buffer = realloc(buffer, sizeof(char) * (*len + 1));
+	(*len)--;
 	buffer[*len] = 0;
 
 	return buffer;
@@ -278,6 +334,13 @@ void parse_command(char* s, unsigned int len) {
 
 		if (strcmp(a, "registers") == 0 || strcmp(a, "r") == 0)
 			print_regs ^= 1;
+
+		return;
+	}
+
+
+	if (strcmp(cmd, "quit") == 0 || strcmp(cmd, "q") == 0) {
+		emulator_enable = 0;
 
 		return;
 	}

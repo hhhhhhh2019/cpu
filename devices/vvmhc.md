@@ -1,6 +1,6 @@
 # VVMHC (virtual volatile memory host controller)
 
-TYPE ID = 2
+TYPE = 3
 
 # Регистры
 
