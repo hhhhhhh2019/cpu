@@ -1,3 +1,4 @@
+#include "error.h"
 #include <stdlib.h>
 #include <string.h>
 #include <utils.h>
@@ -128,7 +129,10 @@ long solve_expression(
 			}
 		}
 
-		// error
+		add_error((Error){
+		    .type = LABEL_NOT_FOUND,
+		    .token = node->token
+		});
 
 		return 0;
 	}

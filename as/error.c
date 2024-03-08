@@ -19,6 +19,7 @@ static char* messages_english[] = {
 	[LABEL_REDEFINE] = "label redefinition",
 	[INSTRUCTION_NOT_FOUND] = "instruction not found",
 	[INSTRUCTION_ARG_ERROR] = "instruction argument error",
+	[LABEL_NOT_FOUND] = "label not defined",
 };
 
 
@@ -31,6 +32,7 @@ static char* messages_russian[] = {
 	[LABEL_REDEFINE] = "повторное определение метки",
 	[INSTRUCTION_NOT_FOUND] = "инструкция не найдена",
 	[INSTRUCTION_ARG_ERROR] = "неправильный аргумент",
+	[LABEL_NOT_FOUND] = "метка не определена",
 };
 
 
@@ -40,6 +42,8 @@ static char* token_string_english[] = {
 	[RIGHT_PAREN] = "\")\"",
 	[REGISTER] = "register",
 	[DEC_NUMBER] = "number",
+	[BIN_NUMBER] = "number",
+	[HEX_NUMBER] = "number",
 };
 
 
@@ -49,6 +53,8 @@ static char* token_string_russian[] = {
 	[RIGHT_PAREN] = "\")\"",
 	[REGISTER] = "регистр",
 	[DEC_NUMBER] = "число",
+	[HEX_NUMBER] = "число",
+	[BIN_NUMBER] = "число",
 };
 
 

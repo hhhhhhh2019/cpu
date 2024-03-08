@@ -34,7 +34,7 @@ int main(int argc, char** argv) {
 
 
 	if (input_filename == NULL) {
-		printf("Expected input filename");
+		printf("Expected input filename\n");
 		print_help();
 		return 1;
 	}
@@ -79,6 +79,8 @@ int main(int argc, char** argv) {
 	// free_all_alloced_names();
 	
 	bin(&state);
+
+	print_errors();
 }
 
 
