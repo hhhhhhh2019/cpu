@@ -4,6 +4,7 @@
 #include <sysinfo.h>
 #include <timer.h>
 #include <vvmhc.h>
+#include <uart.h>
 
 #include <stdlib.h>
 #include <string.h>
@@ -199,6 +200,9 @@ void device_step(void* device) {
 
 	if (type == VVMHC_TYPE_ID)
 		vvmhc_step(device);
+
+	if (type == UART_TYPE_ID)
+		uart_step(device);
 }
 
 
