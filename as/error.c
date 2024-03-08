@@ -85,13 +85,26 @@ void print_errors() {
 
 	for (int i = 0; i < errors_count; i++) {
 		if (errors[i].type == EXPECT_TOKEN) {
-			char* msg = malloc(0);
+			int msg_len =
+			    strlen(errors[i].token.filename) + 2 +
+			    dec_len(errors[i].token.line + 1) + 1 + dec_len(errors[i].token.column + 1) + 2 +
+			    1 + strlen(errors[i].token.value) + 3 +
+			    strlen(messages[errors[i].type]) + 1;
+
+			for (int j = 0; j < errors[i].excepted_tokens_count; j++) {
+				if (j == 0)
+					msg_len += 1 + strlen(token_string[errors[i].excepted_tokens[j]]);
+				else
+					msg_len += 2 + strlen(token_string[errors[i].excepted_tokens[j]]);
+			}
+
+			char* msg = malloc(msg_len + 1);
 
 			sprintf(msg, "%s: %lu:%lu: \"%s\": %s:",
-					errors[i].token.filename,
-					errors[i].token.line + 1, errors[i].token.column + 1,
-					errors[i].token.value,
-					messages[errors[i].type]);
+			    errors[i].token.filename,
+			    errors[i].token.line + 1, errors[i].token.column + 1,
+			    errors[i].token.value,
+			    messages[errors[i].type]);
 
 			char printed[TOKENS_COUNT];
 

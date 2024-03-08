@@ -1,8 +1,10 @@
-#include "error.h"
+#include <utils.h>
+#include <error.h>
+#include <lexer.h>
+
+#include <math.h>
 #include <stdlib.h>
 #include <string.h>
-#include <utils.h>
-#include <lexer.h>
 
 
 long dec2l(char* s) {
@@ -208,4 +210,9 @@ char get_reg_id(char* s) {
 	if (strcmp(s, "pc")  == 0) return 15;
 	if (strcmp(s, "sp")  == 0) return 14;
 	return 0;
+}
+
+
+int dec_len(long n) {
+	return floor(log10(labs(n))) + 1;
 }

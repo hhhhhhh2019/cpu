@@ -5,7 +5,7 @@ SANITIZER = 0
 OUTPUT = as
 
 CC_FLAGS = -c -I ./include
-LD_FLAGS =
+LD_FLAGS = -lm
 
 
 ifneq ($(LIBS),)

@@ -47,5 +47,7 @@ long solve_expression(Compiler_state*, char allow_labels, char*, Node*, unsigned
 
 char get_reg_id(char*);
 
+int dec_len(long);
+
 
 #endif
