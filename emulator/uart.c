@@ -26,6 +26,8 @@ void uart_step(UART* uart) {
 		if (interactive_mode)
 			printf("UART input: ");
 		uart->c = getc(stdin);
+		if (interactive_mode)
+		 putc(uart->c, stdout);
 		uart->next_char = 0;
 		uart->have_char = 1;
 	}
@@ -40,6 +42,7 @@ void uart_step(UART* uart) {
 		if (interactive_mode)
 			printf("UART output: ");
 		putc(*data_out, stdout);
+		fflush(stdout);
 		*state &= ~UART_STATE_WRITE;
 	}
 

@@ -12,6 +12,7 @@
 #include <errno.h>
 #include <termio.h>
 #include <unistd.h>
+#include <sys/poll.h>
 
 
 #define BIOS_ADDRESS 0x10000
@@ -33,7 +34,7 @@ unsigned long max_hz = 0;
 unsigned long tick = 0;
 
 
-char print_regs = 1;
+char print_regs = 0;
 char emulator_enable;
 
 
@@ -67,6 +68,7 @@ int main(int argc, char** argv) {
 
 		else if (strcmp(argv[i], "--interactive") == 0 || strcmp(argv[i], "-i") == 0) {
 			interactive_mode = 1;
+			print_regs = 1;
 		}
 	}
 
@@ -165,6 +167,12 @@ int main(int argc, char** argv) {
 	emulator_enable = 1;
 
 	while (emulator_enable) {
+		emulator_enable = 0;
+
+		for (int i = 0; i < motherboard.cpu.cores_count; i++) {
+			emulator_enable |= motherboard.cpu.cores[i].state & STATE_ENABLE;
+		}
+
 		if (interactive_mode) {
 			printf("\n> ");
 
@@ -179,6 +187,22 @@ int main(int argc, char** argv) {
 
 			free(input);
 		} else {
+			fd_set read_fds, write_fds, except_fds;
+
+			FD_ZERO(&read_fds);
+			FD_ZERO(&write_fds);
+			FD_ZERO(&except_fds);
+			FD_SET(fileno(stdin), &read_fds);
+
+			struct timeval timeout;
+			timeout.tv_sec = 0;
+			timeout.tv_usec = 1;
+
+			if (select(fileno(stdin) + 1, &read_fds, &write_fds, &except_fds, &timeout) > 0) {
+				if (getc(stdin) == 3)
+					emulator_enable = 0;
+			}
+
 			step();
 		}
 	}
@@ -214,7 +238,8 @@ void device_step(void* device) {
 
 
 void step() {
-	printf("\nstep: %lu\n\n", tick);
+	if (interactive_mode)
+		printf("\nstep: %lu\n\n", tick);
 
 	if (print_regs) {
 		for (int i = 0; i < motherboard.cpu.cores_count; i++)
