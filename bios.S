@@ -63,12 +63,12 @@ start:
 		uart_loop1:
 			loab r1, r10, UART_STATE_OFFSET
 			and r1, r1, UART_STATE_IN_READY
-			cmp r1, r0
+			add r0, r1, r0
 		adde pc, pc, uart_loop1 - $
 
 		loab r2, r10, UART_DATA_IN_OFFSET
 
-		cmp r2, 3
+		add r0, r2, 3
 		adde pc, pc, end - $
 
 
