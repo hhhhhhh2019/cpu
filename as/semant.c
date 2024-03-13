@@ -89,15 +89,20 @@ static void check_label(Compiler_state* state, Node* node) {
 	char* label = malloc(strlen(node->token.value) + 1);
 	strcpy(label, node->token.value);
 
+	printf("%s %s ", last_label, label);
+
 	if (label[0] == '.') {
 		if (last_label != NULL) {
-			label = realloc(label, strlen(last_label) + strlen(label) + 1);
-			// strcat(last_label, label); // asan throw heap buffer overflow
-			// strcpy(last_label, label + strlen(label));
-			memcpy(label + strlen(label), last_label, strlen(last_label));
+			int l = strlen(label);
+			label = realloc(label, strlen(last_label) + l + 1);
+			memcpy(label + strlen(last_label), label, l);
+			memcpy(label, last_label, strlen(last_label));
+			label[l + strlen(last_label)] = 0;
 		}
 	} else
 		last_label = label;
+
+	printf("%s\n", label);
 
 	for (int i = 0; i < state->semant_result.labels_count; i++) {
 		if (strcmp(state->semant_result.labels[i].name, label) != 0)

@@ -119,9 +119,11 @@ long solve_expression(
 		strcpy(label, node->token.value);
 
 		if (label[0] == '.' && last_label != NULL) {
-			label = realloc(label, strlen(last_label) + strlen(label) + 1);
-			// strcpy(last_label, label + strlen(label));
-			memcpy(label + strlen(label), last_label, strlen(last_label));
+			int l = strlen(label);
+			label = realloc(label, strlen(last_label) + l + 1);
+			memcpy(label + strlen(last_label), label, l);
+			memcpy(label, last_label, strlen(last_label));
+			label[l + strlen(last_label)] = 0;
 		}
 
 		for (int i = 0; i < state->semant_result.labels_count; i++) {

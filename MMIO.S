@@ -1,3 +1,7 @@
+#ifndef MMIO_H
+#define MMIO_H
+
+
 #define MMU_MMIO_OFFSET       0x100
 
 #define MMU_COMMAND_OFFSET    0x0
@@ -9,16 +13,20 @@
 #define MMU_COMMAND_ADD   0x2
 
 
+#define SYSINFO_TYPE 1
+
 #define SYSINFO_MMIO_OFFSET    0x110
 
-#define SYSINFO_COMMAND_OFFSET 0x0
-#define SYSINFO_ARGUMENT       0x1
-#define SYSINFO_RESPONSE       0x3
+#define SYSINFO_COMMAND_OFFSET  0x0
+#define SYSINFO_ARGUMENT_OFFSET 0x1
+#define SYSINFO_RESPONSE_OFFSET 0x3
 
 #define SYSINFO_COMMAND_GET_DEVICE_COUNT 0x1
 #define SYSINFO_COMMAND_GET_RAM_SIZE     0x2
 #define SYSINFO_COMMAND_GET_DEVICE_TYPE  0x3
 
+
+#define TIMER_TYPE 2
 
 #define TIMER_MMIO_OFFSET      0x120
 
@@ -60,3 +68,6 @@
 #define UART_STATE_IN_READY 0b001
 #define UART_STATE_READ     0b010
 #define UART_STATE_WRITE    0b100
+
+
+#endif

@@ -46,14 +46,15 @@ void mmu_step(MMU* mmu) {
 
 	if (cmd == 2) { // add
 		if (interactive_mode) {
-			printf("MMU add command:\n    id: %u\n    size: %u\n    addr: %u\n", id, size, start_addr);
+			printf("MMU add command:\n    id: %u\n    size: %u\n    addr: %u\n\n", id, size, start_addr);
 		}
 
 		if (id < motherboard->devices_count) {
 			mmu_add_mmio(mmu, (MMIO){
 			    .start_addr = start_addr,
 			    .size = size,
-			    .data = motherboard->devices[id] + sizeof(void*) + sizeof(int) * 2 + sizeof(unsigned long)
+			    .data = (char*)((unsigned long)(motherboard->devices[id]) +
+			             sizeof(void*) + sizeof(int) * 2 + sizeof(long))
 			});
 		}
 	}
@@ -131,7 +132,7 @@ void mmu_write(MMU* mmu, char vaddr, unsigned long tp, unsigned long addr, unsig
 			continue;
 
 		if (interactive_mode) {
-			printf("MMU write into MMIO:\n    id: %d\n    offset: %lu\n    value: %016lx\n\n", i, addr - mmu->mmio[i].start_addr, value);
+			printf("MMU write into MMIO:\n    id: %d\n    offset: %lu\n    value: %016lx\n %p\n\n", i, addr - mmu->mmio[i].start_addr, value, mmu->mmio[i].data);
 		}
 
 		for (int j = 0; j < size; j++)
