@@ -4,10 +4,15 @@ add pc, pc, start - $
 #include "MMIO.S"
 
 #include "uart.S"
+#include "vvmhc.S"
 
 
 devices_count:
 	ds 0
+
+
+buffer:
+	times 512 db 0
 
 
 start:
@@ -114,5 +119,39 @@ mount_devices:
 	add r12, r12, 1
 	add r0, r11, r12
 	addne pc, pc, .loop1 - $
+
+
+test:
+	add r1, pc, buffer - $
+	pushl r1 ; dest_addr
+
+	add r1, r0, 1
+	pushl r1 ; lba
+
+	add r1, r0, 1
+	pushs r1 ; count
+
+	add r1, r0, 0
+	pushs r1 ; count
+
+	add r1, pc, vvmhc_read_sectors - $
+	call r1
+
+	add sp, sp, 2 + 2 + 8 + 8
+
+
+	add r1, pc, buffer - $
+
+	.loop1:
+		loab r2, r1, 0
+		pushb r2
+
+		add r2, pc, uart_putc - $
+		call r2
+
+		add sp, sp, 1
+
+		add r1, r1, 1
+	add pc, pc, .loop1 - $
 end:
 chst r0

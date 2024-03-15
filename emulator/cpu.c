@@ -44,7 +44,6 @@ char instr_size[] = {
 	2,  // pops r
 	2,  // popb r
 	2,  // call r
-	1,  // ret
 	2,  // int num8
 	1,  // iret
 	3,  // and r r r

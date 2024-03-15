@@ -10,6 +10,7 @@ uart_getc:
 popl pc
 
 
+; ch: byte
 uart_putc:
 pushl r1
 pushl r10
