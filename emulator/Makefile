@@ -1,6 +1,6 @@
 LIBS =
 DEBUG = 1
-SANITIZER = 0
+SANITIZER = 1
 
 OUTPUT = emulator
 

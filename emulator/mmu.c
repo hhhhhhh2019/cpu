@@ -46,7 +46,7 @@ void mmu_step(MMU* mmu) {
 
 	if (cmd == 2) { // add
 		if (interactive_mode) {
-			printf("MMU add command:\n    id: %u\n    size: %u\n    addr: %u\n\n", id, size, start_addr);
+			printf("MMU add command:\n    id: %u\n    size: %u\n    addr: %016x\n\n", id, size, start_addr);
 		}
 
 		if (id < motherboard->devices_count) {
@@ -100,7 +100,7 @@ unsigned long mmu_read(MMU* mmu, char vaddr, unsigned long tp, unsigned long add
 
 	unsigned long mask = 0;
 	for (int i = 0; i < size; i++)
-		mask |= 255 << (i * 8);
+		mask |= 255l << (i * 8);
 
 	for (int i = 0; i < mmu->mmio_count; i++) {
 		if (addr < mmu->mmio[i].start_addr || addr >= mmu->mmio[i].start_addr + mmu->mmio[i].size)
@@ -132,7 +132,7 @@ void mmu_write(MMU* mmu, char vaddr, unsigned long tp, unsigned long addr, unsig
 			continue;
 
 		if (interactive_mode) {
-			printf("MMU write into MMIO:\n    id: %d\n    offset: %lu\n    value: %016lx\n %p\n\n", i, addr - mmu->mmio[i].start_addr, value, mmu->mmio[i].data);
+			printf("MMU write into MMIO:\n    id: %d\n    offset: %08lx\n    value: %016lx\n %p\n\n", i, addr - mmu->mmio[i].start_addr, value, mmu->mmio[i].data);
 		}
 
 		for (int j = 0; j < size; j++)

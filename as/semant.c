@@ -89,8 +89,6 @@ static void check_label(Compiler_state* state, Node* node) {
 	char* label = malloc(strlen(node->token.value) + 1);
 	strcpy(label, node->token.value);
 
-	printf("%s %s ", last_label, label);
-
 	if (label[0] == '.') {
 		if (last_label != NULL) {
 			int l = strlen(label);
@@ -101,8 +99,6 @@ static void check_label(Compiler_state* state, Node* node) {
 		}
 	} else
 		last_label = label;
-
-	printf("%s\n", label);
 
 	for (int i = 0; i < state->semant_result.labels_count; i++) {
 		if (strcmp(state->semant_result.labels[i].name, label) != 0)
@@ -251,11 +247,11 @@ static void check_instruction(Compiler_state* state, Node* node) {
 		enum Token_type* types = malloc(sizeof(enum Token_type) * suitable_size);
 
 		for (int i = 0; i < suitable_size; i++)
-			types[i] = instr_args[suitable[i]].args[arg_id-1] == 0 ? REGISTER : DEC_NUMBER;
+			types[i] = instr_args[suitable[i]].args[arg_id] == 0 ? REGISTER : DEC_NUMBER;
 
 		add_error((Error){
 		    .type = EXPECT_TOKEN,
-		    .token = instr->childs[arg_id-1]->token,
+		    .token = instr->childs[arg_id]->token,
 		    .excepted_tokens_count = suitable_size,
 		    .excepted_tokens = types
 	});

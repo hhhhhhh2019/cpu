@@ -32,8 +32,9 @@ char instr_size[] = {
 	10, // adde r r num64
 	10, // addne r r num64
 	10, // addl r r num64
-	10, // addb r r num64
-	10, // addo r r num64
+	10, // addg r r num64
+	10, // addsl r r num64
+	10, // addsg r r num64
 	2,  // pushl r
 	2,  // pushi r
 	2,  // pushs r
@@ -633,7 +634,7 @@ void core_step(Core* core) {
 		}
 
 		core->registers[REG_SP] -= 8;
-		*(unsigned long*)(ram + core->registers[REG_SP]) = core->registers[REG_PC];
+		*(unsigned long*)(ram + core->registers[REG_SP]) = core->registers[REG_PC] + instr_size[0x22];
 
 		core->registers[REG_PC] = core->registers[r1];
 
@@ -642,7 +643,7 @@ void core_step(Core* core) {
 
 	else if (instr == 0x23) { // int num8
 		if (interactive_mode) {
-			printf("int %d\n", num3);
+			printf("int %lu\n", num3);
 		}
 
 		apic_push(&motherboard->cpu.apic, num3);

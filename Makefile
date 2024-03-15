@@ -6,7 +6,7 @@ compile: make_as
 	#fasm bios.asm bios
 
 run: make_emulator
-	emulator/emulator -b bios -i
+	emulator/emulator -b bios
 
 make_as:
 	make -C as
