@@ -5,6 +5,23 @@
 #include "MMIO.S"
 
 
+vvmhc_init:
+pushl r1
+pushl r10
+	loai r10, pc, devices_params.vvmhc - $ + 1
+
+	add r1, r0, 1
+	stob r1, r10, VVMHC_STATE_OFFSET
+
+	.loop:
+		loab r1, r10, VVMHC_STATE_OFFSET
+		add r0, r1, 0
+	adde pc, pc, .loop - $
+popl r10
+popl r1
+popl pc
+
+
 vvmhc_wait:
 pushl r10
 	loai r10, pc, devices_params.vvmhc - $ + 1

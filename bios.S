@@ -122,10 +122,14 @@ mount_devices:
 
 
 test:
+	add r1, pc, vvmhc_init - $
+	call r1
+
+
 	add r1, pc, buffer - $
 	pushl r1 ; dest_addr
 
-	add r1, r0, 1
+	add r1, r0, 512
 	pushl r1 ; lba
 
 	add r1, r0, 1
@@ -140,10 +144,12 @@ test:
 	add sp, sp, 2 + 2 + 8 + 8
 
 
-	add r1, pc, buffer - $
+	add r5, pc, buffer - $
+
+	add r1, r0, 512
 
 	.loop1:
-		loab r2, r1, 0
+		loab r2, r5, 0
 		pushb r2
 
 		add r2, pc, uart_putc - $
@@ -151,7 +157,8 @@ test:
 
 		add sp, sp, 1
 
-		add r1, r1, 1
-	add pc, pc, .loop1 - $
+		add r5, r5, 1
+		sub r1, r1, 1
+	addne pc, pc, .loop1 - $
 end:
 chst r0

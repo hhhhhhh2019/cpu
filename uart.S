@@ -24,8 +24,8 @@ pushl r10
 	add r1, r0, UART_STATE_WRITE
 	stob r1, r10, UART_STATE_OFFSET
 
-popl r1
 popl r10
+popl r1
 popl pc
 
 
