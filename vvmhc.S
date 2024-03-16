@@ -51,6 +51,7 @@ pushl r10
 	stos r1, r10, VVMHC_BLOCK_COUNT_OFFSET
 
 	loal r1, sp, 8 + 8 + 8 + 2 + 2 ; lba
+	shl r1, r1, 9
 	stol r1, r10, VVMHC_STARTADDR_OFFSET
 
 	loal r1, sp, 8 + 8 + 8 + 2 + 2 + 8 ; dest_addr

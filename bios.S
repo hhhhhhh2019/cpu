@@ -129,7 +129,7 @@ test:
 	add r1, pc, buffer - $
 	pushl r1 ; dest_addr
 
-	add r1, r0, 512
+	add r1, r0, 1
 	pushl r1 ; lba
 
 	add r1, r0, 1
