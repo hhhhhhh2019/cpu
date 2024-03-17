@@ -3,8 +3,8 @@ add pc, pc, start - $
 
 #include "MMIO.S"
 
-#include "uart.S"
-#include "vvmhc.S"
+; #include "uart.S"
+; #include "vvmhc.S"
 
 
 devices_count:
@@ -43,7 +43,14 @@ start:
 
 
 find_devices:
+	; r11 - devices count
+	; r12 - id
+	; r2  - type
+	; r3  - offset
+	; r4  - size
 	or r12, r0, r0 ; mov r12, 0
+
+	add r3, r0, 0x110
 
 	.loop1:
 		stos r12, r10, SYSINFO_ARGUMENT_OFFSET
@@ -53,112 +60,62 @@ find_devices:
 
 		loal r2, r10, SYSINFO_RESPONSE_OFFSET
 
+		mul r5, r12, 1 + 2 + 4 + 4
+		add r6, pc, devices - $
+		add r5, r5, r6
 
-		add r0, r2, SYSINFO_TYPE
-		adde pc, pc, .sysinfo - $
+		add r6, pc, devices_size - $
+		mul r7, r12, 2
+		add r6, r6, r7
+		loas r4, r6, 0
 
-		add r0, r2, TIMER_TYPE
-		adde pc, pc, .timer - $
+		stob r12, r5, 0
+		stos r2,  r5, 1
+		stoi r4,  r5, 1 + 2
+		stoi r3,  r5, 1 + 2 + 4
 
-		add r0, r2, VVMHC_TYPE
-		adde pc, pc, .vvmhc - $
+		add r3, r3, r4
 
-		add r0, r2, UART_TYPE
-		adde pc, pc, .uart - $
-
-		add pc, pc, .loop1_end - $
-
-		.sysinfo:
-			add r1, pc, devices_params.sysinfo - $
-			add pc, pc, .loop1_write - $
-		.timer:
-			add r1, pc, devices_params.timer - $
-			add pc, pc, .loop1_write - $
-		.vvmhc:
-			add r1, pc, devices_params.vvmhc - $
-			add pc, pc, .loop1_write - $
-		.uart:
-			add r1, pc, devices_params.uart - $
-			add pc, pc, .loop1_write - $
-
-	.loop1_write:
-		stob r12, r1, 0
-	.loop1_end:
+		; round to 0x**0
+		not r4, r3
+		and r4, r4, 0b1111
+		add r3, r3, r4
+		add r3, r3, 1
 	add r12, r12, 1
 	add r0, r11, r12
 	addne pc, pc, .loop1 - $
 
 
 mount_devices:
-	; reset MMU
+	; r11 - devices count
+	; r12 - id
+	; r3  - offset
+	; r4  - size
+	
+	or r12, r0, r0
 
 	add r10, r0, MMU_MMIO_OFFSET
 
 	add r1, r0, MMU_COMMAND_RESET
-	stob r1, r0, MMU_COMMAND_OFFSET
+	stob r1, r10, MMU_COMMAND_OFFSET
 
-	or r12, r0, r0
-
-
-	add r9, pc, devices_params - $
-	
 	.loop1:
-		loab r1, r9, 0
-		stob r1, r10, MMU_DEVICE_ID_OFFSET
+		mul r5, r12, 1 + 2 + 4 + 4
+		add r6, pc, devices - $
+		add r5, r5, r6
 
-		loai r1, r9, 1
-		stoi r1, r10, MMU_START_ADDR_OFFSET
+		loai r4, r5, 1 + 2
+		loai r3, r5, 1 + 2 + 4
 
-		loai r1, r9, 1 + 4
-		stoi r1, r10, MMU_SIZE_OFFSET
+		stoi r3, r10, MMU_START_ADDR_OFFSET
+		stoi r4, r10, MMU_SIZE_OFFSET
+		stos r12, r10, MMU_DEVICE_ID_OFFSET
 
 		add r1, r0, MMU_COMMAND_ADD
 		stob r1, r10, MMU_COMMAND_OFFSET
-
-		add r9, r9, 1 + 4 + 4
 	add r12, r12, 1
 	add r0, r11, r12
 	addne pc, pc, .loop1 - $
 
-
-test:
-	add r1, pc, vvmhc_init - $
-	call r1
-
-
-	add r1, pc, buffer - $
-	pushl r1 ; dest_addr
-
-	add r1, r0, 1
-	pushl r1 ; lba
-
-	add r1, r0, 1
-	pushs r1 ; count
-
-	add r1, r0, 0
-	pushs r1 ; count
-
-	add r1, pc, vvmhc_read_sectors - $
-	call r1
-
-	add sp, sp, 2 + 2 + 8 + 8
-
-
-	add r5, pc, buffer - $
-
-	add r1, r0, 512
-
-	.loop1:
-		loab r2, r5, 0
-		pushb r2
-
-		add r2, pc, uart_putc - $
-		call r2
-
-		add sp, sp, 1
-
-		add r5, r5, 1
-		sub r1, r1, 1
-	addne pc, pc, .loop1 - $
 end:
 chst r0

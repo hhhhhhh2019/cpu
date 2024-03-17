@@ -1,8 +1,6 @@
 #ifndef MMIO_H
 #define MMIO_H
 
-; TODO: alignment
-
 #define MMU_MMIO_OFFSET       0x100
 
 #define MMU_COMMAND_OFFSET    0x0
@@ -71,23 +69,24 @@
 #define UART_STATE_WRITE    0b100
 
 
-; id, size, offset
-devices_params:
-.sysinfo:
-	db 0
-	di SYSINFO_MMIO_OFFSET
-	di 11
-.timer:
-	db 1
-	di TIMER_MMIO_OFFSET
-	di 17
-.vvmhc:
-	db 0
-	di VVMHC_MMIO_OFFSET
-	di 37
-.uart:
-	db 0
-	di UART_MMIO_OFFSET
-	di 3
+; id, type, size, offset
+devices:
+times 128 db 0 ds 0 di 0 di 0
+
+devices_size:
+ds 11 ; sysinfo
+ds 17 ; timer
+ds 37 ; vvmhc
+ds  3 ; uart
+ds 0 ; 
+ds 0 ; 
+ds 0 ; 
+ds 0 ; 
+ds 0 ; 
+ds 0 ; 
+ds 0 ; 
+ds 0 ; 
+ds 0 ; 
+ds 0 ; 
 
 #endif
