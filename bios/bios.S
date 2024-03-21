@@ -1,10 +1,9 @@
 add pc, pc, start - $
 
 
-#include "MMIO.S"
+#include "devices.S"
 
-; #include "uart.S"
-; #include "vvmhc.S"
+#include "vvmhc.S"
 
 
 devices_count:
@@ -117,5 +116,38 @@ mount_devices:
 	add r0, r11, r12
 	addne pc, pc, .loop1 - $
 
+
+init_devices:
+	; r12 - device id
+	; r3 - offset in devices
+	; r4 - device type
+
+	or r12, r0, r0
+
+	.loop1:
+		add r3, pc, devices - $
+		mul r2, r12, 1 + 2 + 4 + 4
+		add r3, r3, r2
+
+		loas r4, r3, 1
+		
+		; add r0, r4, SYSINFO_TYPE
+		; add r0, r4, TIMER_TYPE
+		add r0, r4, VVMHC_TYPE
+		adde pc, pc, .vvmhc - $
+		; add r0, r4, UART_TYPE
+
+		add pc, pc, .loop1_end - $
+
+	.vvmhc:
+		pushs r12
+		add r1, pc, init_vvmhc - $
+		call r1
+		add sp, sp, 8
+		add pc, pc, .loop1_end - $
+	.loop1_end:
+	add r12, r12, 1
+	add r0, r11, r12
+	addne pc, pc, .loop1 - $
 end:
 chst r0
