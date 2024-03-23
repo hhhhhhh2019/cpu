@@ -22,7 +22,7 @@
 
 Motherboard motherboard;
 
-char* bios_name = "bios";
+char* bios_name = "bios.bin";
 char* bios;
 unsigned long bios_size;
 

@@ -254,6 +254,14 @@ static char next_char(Token* token, char* data) {
 
 	data++;
 
+
+	if (token->value[0] == '\\') {
+		token->value = realloc(token->value, 3);
+		token->value[1] = *data;
+		token->value[2] = 0;
+		data++;
+	}
+
 	if (*data != '\'') {
 		return 0;
 	}

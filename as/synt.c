@@ -84,9 +84,10 @@ static Node* parse_expr_arr(Compiler_state*);
 
 
 static Node* parse_expr5_1(Compiler_state* state) {
-	Token* a = require(state, 6, (enum Token_type[]){
+	Token* a = require(state, 7, (enum Token_type[]){
 	    BIN_NUMBER, HEX_NUMBER, DEC_NUMBER,
-	    CHAR, LEFT_PAREN, UNDEFINED
+	    CHAR, LEFT_PAREN, UNDEFINED,
+	    STRING
 	}, 1);
 
 	if (a == NULL)

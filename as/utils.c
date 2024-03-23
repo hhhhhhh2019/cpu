@@ -86,8 +86,37 @@ long solve_expression(
 		return hex2l(node->token.value);
 	if (node->token.type == BIN_NUMBER)
 		return bin2l(node->token.value);
-	if (node->token.type == CHAR)
+	if (node->token.type == CHAR) {
+		if (node->token.value[0] == '\\') {
+			if (node->token.value[1] == 'a')
+				return '\a';
+			if (node->token.value[1] == 'b')
+				return '\b';
+			if (node->token.value[1] == 'f')
+				return '\f';
+			if (node->token.value[1] == 'n')
+				return '\n';
+			if (node->token.value[1] == 'r')
+				return '\r';
+			if (node->token.value[1] == 't')
+				return '\t';
+			if (node->token.value[1] == 'v')
+				return '\v';
+			if (node->token.value[1] == '\\')
+				return '\\';
+			if (node->token.value[1] == '\'')
+				return '\'';
+			if (node->token.value[1] == '"')
+				return '\"';
+			if (node->token.value[1] == '?')
+				return '\?';
+			if (node->token.value[1] == '0')
+				return '\0';
+			if (node->token.value[1] == 'e')
+				return '\e';
+		}
 		return node->token.value[0];
+	}
 
 	if (node->token.type == UNDEFINED) {
 		if (allow_labels == 0) {

@@ -1,9 +1,12 @@
 add pc, pc, start - $
 
+msg_init_complete:
+	db 'i', 'n', 'i', 't', ' ', 'c', 'o', 'm', 'p', 'l', 'e', 't', 'e', '\n', 0, 0
 
 #include "devices.S"
 
 #include "vvmhc.S"
+#include "uart.S"
 
 
 devices_count:
@@ -149,5 +152,14 @@ init_devices:
 	add r12, r12, 1
 	add r0, r11, r12
 	addne pc, pc, .loop1 - $
+
+
+	add r1, pc, msg_init_complete - $
+	pushl r1
+	add r1, r0, 3
+	pushs r1
+	add r1, pc, uart_puts - $
+	call r1
+	add sp, sp, 2 + 8
 end:
 chst r0
