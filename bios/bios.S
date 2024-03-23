@@ -1,7 +1,9 @@
 add pc, pc, start - $
 
 msg_init_complete:
-	db 'i', 'n', 'i', 't', ' ', 'c', 'o', 'm', 'p', 'l', 'e', 't', 'e', '\n', 0, 0
+	; db 'i', 'n', 'i', 't', ' ', 'c', 'o', 'm', 'p', 'l', 'e', 't', 'e', '\n', 0, 0
+	db "init complete\n", 0
+db 0xff
 
 #include "devices.S"
 

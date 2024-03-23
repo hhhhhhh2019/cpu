@@ -1,3 +1,4 @@
+#include "lexer.h"
 #include <bin.h>
 #include <errno.h>
 #include <utils.h>
@@ -37,6 +38,19 @@ static void parse_data(Compiler_state* state, Node* node, unsigned long id) {
 			size = 1;
 
 		for (int i = 0; i < node->childs[0]->childs_count; i++) {
+			if (node->childs[0]->childs[i]->token.type == STRING) {
+				for (int n = 0; n < strlen(node->childs[0]->childs[i]->token.value); n++) {
+					for (int j = 0; j < size; j++) {
+						for (int k = 0; k < times; k++)
+							buffer[buffer_offset + root->size / times * k] =
+							    (((long)node->childs[0]->childs[i]->token.value[n] & 0xff) >> j * 8) & 0xff;
+						buffer_offset++;
+					}
+				}
+
+				continue;
+			}
+
 			long val = solve_expression(state, 1, last_label, node->childs[0]->childs[i], id);
 
 

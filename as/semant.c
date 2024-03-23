@@ -141,8 +141,17 @@ static void check_data(Compiler_state* state, Node* node) {
 			size = 2;
 		else if (strcmp(node->token.value, "db") == 0)
 			size = 1;
+		
+		int count = 0;
 
-		root->size += size * node->childs[0]->childs_count;
+		for (int i = 0; i < node->childs[0]->childs_count; i++) {
+			if (node->childs[0]->childs[i]->token.type == STRING)
+				count += strlen(node->childs[0]->childs[i]->token.value);
+			else
+				count += 1;
+		}
+
+		root->size += size * count;
 
 		if (node->childs_count == 1)
 			break;
