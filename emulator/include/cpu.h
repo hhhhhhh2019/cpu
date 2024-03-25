@@ -26,6 +26,7 @@ enum ALU_OP {
 	ALU_SUB,
 	ALU_MUL,
 	ALU_DIV,
+	ALU_MOD,
 	ALU_SMUL,
 	ALU_SDIV
 };

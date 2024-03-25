@@ -40,10 +40,43 @@ static void parse_data(Compiler_state* state, Node* node, unsigned long id) {
 		for (int i = 0; i < node->childs[0]->childs_count; i++) {
 			if (node->childs[0]->childs[i]->token.type == STRING) {
 				for (int n = 0; n < strlen(node->childs[0]->childs[i]->token.value); n++) {
+					long val = (long)node->childs[0]->childs[i]->token.value[n] & 0xff;
+
+					if (val == '\\') {
+						n++;
+
+						if (node->childs[0]->childs[i]->token.value[n] == 'a')
+							val = '\a';
+						if (node->childs[0]->childs[i]->token.value[n] == 'b')
+							val = '\b';
+						if (node->childs[0]->childs[i]->token.value[n] == 'f')
+							val = '\f';
+						if (node->childs[0]->childs[i]->token.value[n] == 'n')
+							val = '\n';
+						if (node->childs[0]->childs[i]->token.value[n] == 'r')
+							val = '\r';
+						if (node->childs[0]->childs[i]->token.value[n] == 't')
+							val = '\t';
+						if (node->childs[0]->childs[i]->token.value[n] == 'v')
+							val = '\v';
+						if (node->childs[0]->childs[i]->token.value[n] == '\\')
+							val = '\\';
+						if (node->childs[0]->childs[i]->token.value[n] == '\'')
+							val = '\'';
+						if (node->childs[0]->childs[i]->token.value[n] == '"')
+							val = '\"';
+						if (node->childs[0]->childs[i]->token.value[n] == '?')
+							val = '\?';
+						if (node->childs[0]->childs[i]->token.value[n] == '0')
+							val = '\0';
+						if (node->childs[0]->childs[i]->token.value[n] == 'e')
+							val = '\e';
+					}
+
 					for (int j = 0; j < size; j++) {
 						for (int k = 0; k < times; k++)
 							buffer[buffer_offset + root->size / times * k] =
-							    (((long)node->childs[0]->childs[i]->token.value[n] & 0xff) >> j * 8) & 0xff;
+							    (val >> j * 8) & 0xff;
 						buffer_offset++;
 					}
 				}

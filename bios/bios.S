@@ -1,18 +1,21 @@
 add pc, pc, start - $
 
-msg_init_complete:
-	; db 'i', 'n', 'i', 't', ' ', 'c', 'o', 'm', 'p', 'l', 'e', 't', 'e', '\n', 0, 0
-	db "init complete\n", 0
-db 0xff
-
 #include "devices.S"
 
 #include "vvmhc.S"
 #include "uart.S"
+#include "utils.S"
 
+msg_init_complete:
+	db "init complete\n", 0
 
 devices_count:
 	ds 0
+
+
+; device id, disk id
+disks:
+	times 16 ds 0 db 0
 
 
 buffer:
@@ -163,5 +166,24 @@ init_devices:
 	add r1, pc, uart_puts - $
 	call r1
 	add sp, sp, 2 + 8
+
+
+	add r1, pc, buffer - $
+	pushl r1
+	add r1, r0, 123456789
+	pushl r1
+	add r1, pc, itoa - $
+	call r1
+	add sp, sp, 8 + 8
+
+	add r1, pc, buffer - $
+	pushl r1
+	add r1, r0, 3
+	pushs r1
+	add r1, pc, uart_puts - $
+	call r1
+	add sp, sp, 2 + 8
+
+	
 end:
 chst r0

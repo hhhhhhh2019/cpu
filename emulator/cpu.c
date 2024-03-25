@@ -21,12 +21,14 @@ char instr_size[] = {
 	3,  // sub r r r
 	3,  // mul r r r
 	3,  // div r r r
+	3,  // mod r r r
 	3,  // smul r r r
 	3,  // sdiv r r r
 	10, // add r r num64
 	10, // sub r r num64
 	10, // mul r r num64
 	10, // div r r num64
+	10, // mod r r num64
 	10, // smul r r num64
 	10, // sdiv r r num64
 	10, // adde r r num64
@@ -129,12 +131,15 @@ unsigned long core_alu(Core* core, unsigned long a, unsigned long b, enum ALU_OP
 	unsigned long sub = a - b;
 	unsigned long mul = a * b;
 	unsigned long div = 0;
-	if (b != 0)
+	unsigned long mod = 0;
+	if (b != 0) {
 		div = a / b;
-	long smul = a * b;
+		mod = a % b;
+	}
+	long smul = sa * sb;
 	long sdiv = 0;
 	if (b != 0)
-		div = a / b;
+		sdiv = sa / sb;
 
 	if (a == b)
 		core->registers[REG_FLAG] |= FLAG_ZERO;
@@ -150,10 +155,12 @@ unsigned long core_alu(Core* core, unsigned long a, unsigned long b, enum ALU_OP
 		return mul;
 	if (op == ALU_DIV)
 		return div;
+	if (op == ALU_MOD)
+		return mod;
 	if (op == ALU_SMUL)
-		return *(&smul);
+		return *((unsigned long*)&smul);
 	if (op == ALU_SDIV)
-		return *(&sdiv);
+		return *((unsigned long*)&sdiv);
 
 	return 0;
 }
@@ -375,7 +382,18 @@ void core_step(Core* core) {
 			return;
 	}
 
-	else if (instr == 0x0c) { // smul r r r
+	else if (instr == 0x0c) { // mod r r r
+		if (interactive_mode) {
+			printf("mod r%d r%d r%d\n", r1, r2, r3);
+		}
+
+		core->registers[r1] = core_alu(core, core->registers[r2], core->registers[r3], ALU_MOD);
+
+		if (r1 == REG_PC)
+			return;
+	}
+
+	else if (instr == 0x0d) { // smul r r r
 		if (interactive_mode) {
 			printf("smul r%d r%d r%d\n", r1, r2, r3);
 		}
@@ -386,7 +404,7 @@ void core_step(Core* core) {
 			return;
 	}
 
-	else if (instr == 0x0d) { // sdiv r r r
+	else if (instr == 0x0e) { // sdiv r r r
 		if (interactive_mode) {
 			printf("sdiv r%d r%d r%d\n", r1, r2, r3);
 		}
@@ -397,7 +415,7 @@ void core_step(Core* core) {
 			return;
 	}
 
-	else if (instr == 0x0e) { // add r r num
+	else if (instr == 0x0f) { // add r r num
 		if (interactive_mode) {
 			printf("add r%d r%d %016lx\n", r1, r2, num1);
 		}
@@ -408,7 +426,7 @@ void core_step(Core* core) {
 			return;
 	}
 
-	else if (instr == 0x0f) { // sub r r num
+	else if (instr == 0x10) { // sub r r num
 		if (interactive_mode) {
 			printf("sub r%d r%d %016lx\n", r1, r2, num1);
 		}
@@ -419,7 +437,7 @@ void core_step(Core* core) {
 			return;
 	}
 
-	else if (instr == 0x10) { // mul r r num
+	else if (instr == 0x11) { // mul r r num
 		if (interactive_mode) {
 			printf("mul r%d r%d %016lx\n", r1, r2, num1);
 		}
@@ -430,7 +448,7 @@ void core_step(Core* core) {
 			return;
 	}
 
-	else if (instr == 0x11) { // div r r num
+	else if (instr == 0x12) { // div r r num
 		if (interactive_mode) {
 			printf("div r%d r%d %016lx\n", r1, r2, num1);
 		}
@@ -441,7 +459,18 @@ void core_step(Core* core) {
 			return;
 	}
 
-	else if (instr == 0x12) { // smul r r num
+	else if (instr == 0x13) { // mod r r num
+		if (interactive_mode) {
+			printf("mod r%d r%d %016lx\n", r1, r2, num1);
+		}
+
+		core->registers[r1] = core_alu(core, core->registers[r2], num1, ALU_MOD);
+
+		if (r1 == REG_PC)
+			return;
+	}
+
+	else if (instr == 0x14) { // smul r r num
 		if (interactive_mode) {
 			printf("smul r%d r%d %016lx\n", r1, r2, num1);
 		}
@@ -452,7 +481,7 @@ void core_step(Core* core) {
 			return;
 	}
 
-	else if (instr == 0x13) { // sdiv r r num
+	else if (instr == 0x15) { // sdiv r r num
 		if (interactive_mode) {
 			printf("sidv r%d r%d %016lx\n", r1, r2, num1);
 		}
@@ -463,7 +492,7 @@ void core_step(Core* core) {
 			return;
 	}
 
-	else if (instr == 0x14) { // adde r r num64
+	else if (instr == 0x16) { // adde r r num64
 		if (interactive_mode) {
 			printf("adde r%d r%d %016lx\n", r1, r2, num1);
 		}
@@ -476,7 +505,7 @@ void core_step(Core* core) {
 		}
 	}
 
-	else if (instr == 0x15) { // addne r r num64
+	else if (instr == 0x17) { // addne r r num64
 		if (interactive_mode) {
 			printf("addne r%d r%d %016lx\n", r1, r2, num1);
 		}
@@ -489,7 +518,7 @@ void core_step(Core* core) {
 		}
 	}
 
-	else if (instr == 0x16) { // addl r r num64
+	else if (instr == 0x18) { // addl r r num64
 		if (interactive_mode) {
 			printf("addl r%d r%d %016lx\n", r1, r2, num1);
 		}
@@ -502,7 +531,7 @@ void core_step(Core* core) {
 		}
 	}
 
-	else if (instr == 0x17) { // addg r r num64
+	else if (instr == 0x19) { // addg r r num64
 		if (interactive_mode) {
 			printf("addg r%d r%d %016lx\n", r1, r2, num1);
 		}
@@ -516,7 +545,7 @@ void core_step(Core* core) {
 		}
 	}
 
-	else if (instr == 0x18) { // addsl r r num64
+	else if (instr == 0x1a) { // addsl r r num64
 		if (interactive_mode) {
 			printf("addsl r%d r%d %016lx\n", r1, r2, num1);
 		}
@@ -529,7 +558,7 @@ void core_step(Core* core) {
 		}
 	}
 
-	else if (instr == 0x19) { // addsg r r num64
+	else if (instr == 0x1b) { // addsg r r num64
 		if (interactive_mode) {
 			printf("addsg r%d r%d %016lx\n", r1, r2, num1);
 		}
@@ -543,7 +572,7 @@ void core_step(Core* core) {
 		}
 	}
 
-	else if (instr == 0x1a) { // pushl r
+	else if (instr == 0x1c) { // pushl r
 		if (interactive_mode) {
 			printf("pushl r%d\n", r1);
 		}
@@ -552,7 +581,7 @@ void core_step(Core* core) {
 		*(unsigned long*)(ram + core->registers[REG_SP]) = core->registers[r1];
 	}
 
-	else if (instr == 0x1b) { // pushi r
+	else if (instr == 0x1d) { // pushi r
 		if (interactive_mode) {
 			printf("pushi r%d\n", r1);
 		}
@@ -561,7 +590,7 @@ void core_step(Core* core) {
 		*(unsigned int*)(ram + core->registers[REG_SP]) = core->registers[r1];
 	}
 
-	else if (instr == 0x1c) { // pushs r
+	else if (instr == 0x1e) { // pushs r
 		if (interactive_mode) {
 			printf("pushs r%d\n", r1);
 		}
@@ -570,7 +599,7 @@ void core_step(Core* core) {
 		*(unsigned short*)(ram + core->registers[REG_SP]) = core->registers[r1];
 	}
 
-	else if (instr == 0x1d) { // pushb r
+	else if (instr == 0x1f) { // pushb r
 		if (interactive_mode) {
 			printf("pushb r%d\n", r1);
 		}
@@ -579,7 +608,7 @@ void core_step(Core* core) {
 		*(unsigned char*)(ram + core->registers[REG_SP]) = core->registers[r1];
 	}
 
-	else if (instr == 0x1e) { // popl r
+	else if (instr == 0x20) { // popl r
 		if (interactive_mode) {
 			printf("popl r%d\n", r1);
 		}
@@ -591,7 +620,7 @@ void core_step(Core* core) {
 			return;
 	}
 
-	else if (instr == 0x1f) { // popi r
+	else if (instr == 0x21) { // popi r
 		if (interactive_mode) {
 			printf("popi r%d\n", r1);
 		}
@@ -603,7 +632,7 @@ void core_step(Core* core) {
 			return;
 	}
 
-	else if (instr == 0x20) { // pops r
+	else if (instr == 0x22) { // pops r
 		if (interactive_mode) {
 			printf("pops r%d\n", r1);
 		}
@@ -615,7 +644,7 @@ void core_step(Core* core) {
 			return;
 	}
 
-	else if (instr == 0x21) { // popb r
+	else if (instr == 0x23) { // popb r
 		if (interactive_mode) {
 			printf("popb r%d\n", r1);
 		}
@@ -627,7 +656,7 @@ void core_step(Core* core) {
 			return;
 	}
 
-	else if (instr == 0x22) { // call r
+	else if (instr == 0x24) { // call r
 		if (interactive_mode) {
 			printf("call r%d\n", r1);
 		}
@@ -640,7 +669,7 @@ void core_step(Core* core) {
 		return;
 	}
 
-	else if (instr == 0x23) { // int num8
+	else if (instr == 0x25) { // int num8
 		if (interactive_mode) {
 			printf("int %lu\n", num3);
 		}
@@ -649,7 +678,7 @@ void core_step(Core* core) {
 		return;
 	}
 
-	else if (instr == 0x24) { // iret
+	else if (instr == 0x26) { // iret
 		if (interactive_mode) {
 			printf("iret\n");
 		}
@@ -657,7 +686,7 @@ void core_step(Core* core) {
 		core->is_interrupt = 0;
 	}
 
-	else if (instr == 0x25) { // and r r r
+	else if (instr == 0x27) { // and r r r
 		if (interactive_mode) {
 			printf("and r%d r%d r%d\n", r1, r2, r3);
 		}
@@ -668,7 +697,7 @@ void core_step(Core* core) {
 			return;
 	}
 
-	else if (instr == 0x26) { // or r r r
+	else if (instr == 0x28) { // or r r r
 		if (interactive_mode) {
 			printf("or r%d r%d r%d\n", r1, r2, r3);
 		}
@@ -679,7 +708,7 @@ void core_step(Core* core) {
 			return;
 	}
 
-	else if (instr == 0x27) { // xor r r r
+	else if (instr == 0x29) { // xor r r r
 		if (interactive_mode) {
 			printf("xor r%d r%d r%d\n", r1, r2, r3);
 		}
@@ -690,7 +719,7 @@ void core_step(Core* core) {
 			return;
 	}
 
-	else if (instr == 0x28) { // not r r
+	else if (instr == 0x2a) { // not r r
 		if (interactive_mode) {
 			printf("not r%d r%d\n", r1, r2);
 		}
@@ -701,7 +730,7 @@ void core_step(Core* core) {
 			return;
 	}
 
-	else if (instr == 0x29) { // shl r r r
+	else if (instr == 0x2b) { // shl r r r
 		if (interactive_mode) {
 			printf("shl r%d r%d r%d\n", r1, r2, r3);
 		}
@@ -712,7 +741,7 @@ void core_step(Core* core) {
 			return;
 	}
 
-	else if (instr == 0x2a) { // shr r r r
+	else if (instr == 0x2c) { // shr r r r
 		if (interactive_mode) {
 			printf("shr r%d r%d r%d\n", r1, r2, r3);
 		}
@@ -723,7 +752,7 @@ void core_step(Core* core) {
 			return;
 	}
 
-	else if (instr == 0x2b) { // and r r num64
+	else if (instr == 0x2d) { // and r r num64
 		if (interactive_mode) {
 			printf("and r%d r%d %016lx\n", r1, r2, num1);
 		}
@@ -734,7 +763,7 @@ void core_step(Core* core) {
 			return;
 	}
 
-	else if (instr == 0x2c) { // or r r num64
+	else if (instr == 0x2e) { // or r r num64
 		if (interactive_mode) {
 			printf("or r%d r%d %016lx\n", r1, r2, num1);
 		}
@@ -745,7 +774,7 @@ void core_step(Core* core) {
 			return;
 	}
 
-	else if (instr == 0x2d) { // xor r r num64
+	else if (instr == 0x2f) { // xor r r num64
 		if (interactive_mode) {
 			printf("xor r%d r%d %016lx\n", r1, r2, num1);
 		}
@@ -756,7 +785,7 @@ void core_step(Core* core) {
 			return;
 	}
 
-	else if (instr == 0x2e) { // shl r r num64
+	else if (instr == 0x30) { // shl r r num64
 		if (interactive_mode) {
 			printf("shl r%d r%d %016lx\n", r1, r2, num1);
 		}
@@ -767,7 +796,7 @@ void core_step(Core* core) {
 			return;
 	}
 
-	else if (instr == 0x2f) { // shr r r num64
+	else if (instr == 0x31) { // shr r r num64
 		if (interactive_mode) {
 			printf("shr r%d r%d %016lx\n", r1, r2, num1);
 		}
@@ -778,7 +807,7 @@ void core_step(Core* core) {
 			return;
 	}
 
-	else if (instr == 0x30) { // chst r
+	else if (instr == 0x32) { // chst r
 		if (interactive_mode) {
 			printf("chst r%d\n", r1);
 		}
@@ -790,7 +819,7 @@ void core_step(Core* core) {
 		}
 	}
 
-	else if (instr == 0x31) { // lost r
+	else if (instr == 0x33) { // lost r
 		if (interactive_mode) {
 			printf("lost r%d\n", r1);
 		}
@@ -802,7 +831,7 @@ void core_step(Core* core) {
 		}
 	}
 
-	else if (instr == 0x32) { // stolk r r num64
+	else if (instr == 0x34) { // stolk r r num64
 		if (interactive_mode) {
 			printf("stolk r%d r%d %016lx\n", r1, r2, num1);
 		}
@@ -816,7 +845,7 @@ void core_step(Core* core) {
 		}
 	}
 
-	else if (instr == 0x33) { // loalk r r num64
+	else if (instr == 0x35) { // loalk r r num64
 		if (interactive_mode) {
 			printf("loalk r%d r%d %016lx\n", r1, r2, num1);
 		}
@@ -831,7 +860,7 @@ void core_step(Core* core) {
 		}
 	}
 
-	else if (instr == 0x34) { // chtp r
+	else if (instr == 0x36) { // chtp r
 		if (interactive_mode) {
 			printf("chtp r%d\n", r1);
 		}
@@ -843,7 +872,7 @@ void core_step(Core* core) {
 		}
 	}
 
-	else if (instr == 0x35) { // lotp r
+	else if (instr == 0x37) { // lotp r
 		if (interactive_mode) {
 			printf("lotp r%d\n", r1);
 		}
@@ -855,7 +884,7 @@ void core_step(Core* core) {
 		}
 	}
 
-	else if (instr == 0x36) { // chflag r
+	else if (instr == 0x38) { // chflag r
 		if (interactive_mode) {
 			printf("chflag r%d\n", r1);
 		}
@@ -867,7 +896,7 @@ void core_step(Core* core) {
 		}
 	}
 
-	else if (instr == 0x37) { // loflag r
+	else if (instr == 0x39) { // loflag r
 		if (interactive_mode) {
 			printf("loflag r%d\n", r1);
 		}
@@ -879,7 +908,7 @@ void core_step(Core* core) {
 		}
 	}
 
-	else if (instr == 0x38) { // cint num8 num8
+	else if (instr == 0x3a) { // cint num8 num8
 		if (interactive_mode) {
 			printf("cint %lu %lu\n", num3, num4);
 		}

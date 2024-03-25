@@ -65,6 +65,7 @@ static enum Token_type get_type(char* value) {
 	    strcmp(value, "sub")    == 0 ||
 	    strcmp(value, "mul")    == 0 ||
 	    strcmp(value, "div")    == 0 ||
+	    strcmp(value, "mod")    == 0 ||
 	    strcmp(value, "smul")   == 0 ||
 	    strcmp(value, "sdiv")   == 0 ||
 	    strcmp(value, "cmp")    == 0 ||
