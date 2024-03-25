@@ -172,7 +172,7 @@ init_devices:
 	pushl r1
 	add r1, r0, 123456789
 	pushl r1
-	add r1, pc, itoa - $
+	add r1, pc, itoh - $
 	call r1
 	add sp, sp, 8 + 8
 
