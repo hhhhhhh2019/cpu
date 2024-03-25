@@ -9,11 +9,21 @@ add pc, pc, start - $
 msg_init_complete:
 	db "init complete\n", 0
 
+msg_delim:
+	db "\n--------------\n", 0
+
+msg_check_vvmhc:
+	db "check vvmhc:\n", 0
+
+msg_slots_count:
+	db "  slots count: ", 0
+
+
 devices_count:
 	ds 0
 
 
-; device id, disk id
+; device id, slot id
 disks:
 	times 16 ds 0 db 0
 
@@ -126,6 +136,7 @@ mount_devices:
 
 
 init_devices:
+	; r11 - devices count
 	; r12 - device id
 	; r3 - offset in devices
 	; r4 - device type
@@ -168,22 +179,68 @@ init_devices:
 	add sp, sp, 2 + 8
 
 
-	add r1, pc, buffer - $
-	pushl r1
-	add r1, r0, 123456789
-	pushl r1
-	add r1, pc, itoh - $
-	call r1
-	add sp, sp, 8 + 8
+find_disks:
+	; r11 - devices count
+	; r12 - device id
+	; r10 - device MMIO offset
+	; r9  - device type
+	; r8  - offset in devices
 
-	add r1, pc, buffer - $
-	pushl r1
-	add r1, r0, 3
-	pushs r1
-	add r1, pc, uart_puts - $
-	call r1
-	add sp, sp, 2 + 8
+	or r12, r0, r0
 
-	
+	.loop:
+		add r8, pc, devices - $
+		mul r2, r12, 1 + 2 + 4 + 4
+		add r8, r8, r2
+
+		loas r9, r8, 1
+
+		add r0, r9, VVMHC_TYPE
+		adde pc, pc, .vvmhc - $
+
+		add pc, pc, .loop_end - $
+
+		.vvmhc:
+			add r1, pc, msg_check_vvmhc - $
+			pushl r1
+			add r1, r0, 3
+			pushs r1
+			add r1, pc, uart_puts - $
+			call r1
+			add sp, sp, 2 + 8
+			
+			pushs r12 ; id
+			add r2, pc, vvmhc_get_disks_count - $
+			call r2
+			add sp, sp, 2
+
+			add r2, pc, buffer - $
+			pushl r2 ; s
+			pushl r1 ; number
+			add r2, pc, itoa - $
+			call r2
+			add sp, sp, 8 + 8
+
+			add r1, pc, msg_slots_count - $
+			pushl r1
+			add r1, r0, 3
+			pushs r1
+			add r1, pc, uart_puts - $
+			call r1
+			add sp, sp, 2 + 8
+
+			add r1, pc, buffer - $
+			pushl r1
+			add r1, r0, 3
+			pushs r1
+			add r1, pc, uart_puts - $
+			call r1
+			add sp, sp, 2 + 8
+		add pc, pc, .loop_end - $
+
+	.loop_end:
+	add r12, r12, 1
+	add r0, r11, r12
+	addne pc, pc, .loop - $
 end:
 chst r0

@@ -104,12 +104,51 @@ pushl r3
 	loal r2, r10, VVMHC_RESPONSE_OFFSET
 	add r3, r0, 16
 
+	or r1, r0, r0
+
 	.loop:
 		and r10, r2, 1
 		add r1, r1, r10
 		shr r2, r2, 1
 	sub r3, r3, 1
 	addne pc, pc, .loop - $
+popl r3
+popl r2
+popl r10
+popl pc
+
+
+; id: short, disk_id: char
+vvmhc_get_slot_by_id:
+pushl r10
+pushl r2
+pushl r3
+
+	add r10, pc, devices - $
+	loas r1, sp, 8 * 4
+	mul r1, r1, 1 + 2 + 4 + 4
+	add r10, r10, r1
+
+	loai r10, r10, 1 + 2 + 4 ; device MMIO offset
+
+	loab r3, sp, 8 * 5 + 2 ; disk_id
+
+	add r1, r0, VVMHC_COMMAND_GET_CONNECTED
+	stob r1, r10, VVMHC_COMMAND_OFFSET
+
+	loal r2, r10, VVMHC_RESPONSE_OFFSET
+
+	or r1, r0, r0
+
+	.loop:
+		and r10, r2, 1
+		shr r2, r2, 1
+		add r1, r1, r10
+		sub r3, r3, r10
+	add r0, r3, r0
+	addne pc, pc, .loop - $
+
+popl r4
 popl r3
 popl r2
 popl r10

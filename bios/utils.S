@@ -33,6 +33,8 @@ pushl r3
 	add r0, r1, r0
 	addne pc, pc, .loop - $
 
+	stob r0, r2, 0
+
 popl r3
 popl r2
 popl r1
@@ -82,6 +84,8 @@ pushl r3
 		add r2, r2, 1
 	add r0, r1, r0
 	addne pc, pc, .loop - $
+
+	stob r0, r2, 0
 
 popl r3
 popl r2
