@@ -145,10 +145,12 @@ pushl r3
 		shr r2, r2, 1
 		add r1, r1, r10
 		sub r3, r3, r10
+	add r0, r2, r0
+	adde pc, pc, .return - $
 	add r0, r3, r0
 	addne pc, pc, .loop - $
 
-popl r4
+	.return:
 popl r3
 popl r2
 popl r10

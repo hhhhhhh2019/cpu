@@ -1,3 +1,4 @@
+#include <emulator.h>
 #include <motherboard.h>
 #include <utils.h>
 
@@ -33,6 +34,9 @@ unsigned long timer = 1;
 unsigned long max_hz = 0;
 unsigned long tick = 0;
 
+Breakpoint* breakpoints;
+unsigned long breakpoints_count = 0;
+
 
 char print_regs = 0;
 char emulator_enable;
@@ -47,6 +51,8 @@ void step();
 int main(int argc, char** argv) {
 	motherboard.ram.ram_size = 128 * 1024 * 1024; // 128 MiB
 	motherboard.cpu.cores_count = 1;
+
+	breakpoints = malloc(0);
 
 	for (int i = 0; i < argc; i++) {
 		if (strcmp(argv[i], "--help") == 0 || strcmp(argv[i], "-h") == 0) {
@@ -379,5 +385,12 @@ void parse_command(char* s, unsigned int len) {
 		emulator_enable = 0;
 
 		return;
+	}
+
+
+	if (strcmp(cmd, "breakpoints list") == 0 || strcmp(cmd, "bl") == 0) {
+		for (int i = 0; i < breakpoints_count; i++) {
+			printf("%d ", i);
+		}
 	}
 }

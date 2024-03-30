@@ -9,7 +9,7 @@
 // Label is nonterminal name
 typedef struct {
 	char* name;
-	unsigned int offset;
+	unsigned long offset;
 } Label;
 
 

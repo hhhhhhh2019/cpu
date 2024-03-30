@@ -139,8 +139,6 @@ void vvmhc_step(VVMHC* vvmhc) {
 		for (int i = 0; i < 16; i++) {
 			*resp |= ((vvmhc->disks[i].fd != NULL) & 1) << i;
 		}
-
-		printf("%02lx\n", *resp);
 	}
 
 

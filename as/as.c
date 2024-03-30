@@ -1,5 +1,6 @@
 #include <as.h>
 #include <bin.h>
+#include <map.h>
 #include <error.h>
 #include <utils.h>
 
@@ -10,6 +11,7 @@
 
 char* input_filename = "../bios.S";
 char* output_filename = "a.out";
+char* map_output_filename = NULL;
 
 
 int main(int argc, char** argv) {
@@ -27,6 +29,10 @@ int main(int argc, char** argv) {
 			input_filename = argv[++i];
 		}
 
+		else if (strcmp(argv[i], "-m") == 0 || strcmp(argv[i], "--map") == 0) {
+			map_output_filename = argv[++i];
+		}
+
 		else {
 			input_filename = argv[i];
 		}
@@ -42,10 +48,11 @@ int main(int argc, char** argv) {
 
 	Compiler_state state = {
 		.output_filename = output_filename,
-		.macros_count = 0,
-		.macros = malloc(0),
+		.map_filename    = map_output_filename,
+		.macros_count  = 0,
+		.macros        = malloc(0),
 		.defines_count = 0,
-		.defines = malloc(0),
+		.defines       = malloc(0),
 	};
 
 	state.lexer_result = preprocess(&state, input_filename);
@@ -74,6 +81,9 @@ int main(int argc, char** argv) {
 	semant(&state);
 
 	print_errors();
+
+	if (map_output_filename != NULL)
+		map(&state);
 
 	// free_all_nodes();
 	// free_all_alloced_names();

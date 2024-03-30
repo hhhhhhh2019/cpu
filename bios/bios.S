@@ -18,6 +18,9 @@ msg_check_vvmhc:
 msg_slots_count:
 	db "  slots count: ", 0
 
+msg_slots_ids:
+	db "\n  slots ids: ", 0
+
 
 devices_count:
 	ds 0
@@ -209,16 +212,20 @@ find_disks:
 			call r1
 			add sp, sp, 2 + 8
 			
+
 			pushs r12 ; id
-			add r2, pc, vvmhc_get_disks_count - $
-			call r2
+			add r1, pc, vvmhc_get_disks_count - $
+			call r1
 			add sp, sp, 2
 
-			add r2, pc, buffer - $
-			pushl r2 ; s
-			pushl r1 ; number
-			add r2, pc, itoa - $
-			call r2
+			add r7, r0, r1 ; slots count
+
+
+			add r1, pc, buffer - $
+			pushl r1 ; s
+			pushl r7 ; number
+			add r1, pc, itoa - $
+			call r1
 			add sp, sp, 8 + 8
 
 			add r1, pc, msg_slots_count - $
@@ -236,11 +243,91 @@ find_disks:
 			add r1, pc, uart_puts - $
 			call r1
 			add sp, sp, 2 + 8
+
+
+			; r7 - slots count
+			; r6 - slot id
+			; r5 - offset in disks
+
+			or r6, r0, r0
+
+			add r1, pc, msg_slots_ids - $
+			pushl r1
+			add r1, r0, 3
+			pushs r1
+			add r1, pc, uart_puts - $
+			call r1
+			add sp, sp, 2 + 8
+
+			.vvmhc_loop:
+				pushb r6
+				pushl r12
+				add r1, pc, vvmhc_get_slot_by_id - $
+				call r1
+				add sp, sp, 8 + 1
+
+				add r5, pc, disks - $
+				mul r4, r6, 2 + 1
+				add r5, r5, r4
+
+				stos r4, r12, 0
+				stob r4, r1,  2
+
+
+				pushl r1
+				add r1, pc, buffer - $
+				pushl r1
+				add r1, pc, itoa - $
+				call r1
+				add sp, sp, 8 + 8
+
+				add r1, pc, buffer - $
+				pushl r1
+				add r1, r0, 3
+				pushs r1
+				add r1, pc, uart_puts - $
+				call r1
+				add sp, sp, 2 + 8
+
+				add r1, r0, ' '
+				pushb r1
+				add r1, r0, 3
+				pushs r1
+				add r1, pc, uart_putc - $
+				call r1
+				add sp, sp, 2 + 1
+			add r6, r6, 1
+			add r0, r6, r7
+			addne pc, pc, .vvmhc_loop - $
 		add pc, pc, .loop_end - $
 
 	.loop_end:
 	add r12, r12, 1
 	add r0, r11, r12
 	addne pc, pc, .loop - $
+
+
+find_gpt:
+	; r11 - disk id
+	; r10 - device MMIO
+	; r9 - offset in disks
+
+	or r11, r0, r0
+
+	.loop:
+		add r9, pc, disks - $
+		mul r8, r11, 2 + 1
+		add r9, r8, r9
+
+		loas r8, r9, 0 ; device id
+		add r10, pc, devices - $
+		add r10, r10, r8
+
+		
+	.loop_end:
+	add r11, r11, 1
+	add r0, r11, 16
+	addne pc, pc, .loop - $
+
 end:
 chst r0

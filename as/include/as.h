@@ -10,6 +10,7 @@
 
 typedef struct {
 	char* output_filename;
+	char* map_filename;
 
 	Lexer_result  lexer_result;
 	Synt_result   synt_result;
