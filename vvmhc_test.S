@@ -2,7 +2,7 @@ add pc, pc, start - $
 
 
 buffer:
-	times 512 db 1
+	times 512 db 0x12
 
 
 start:
@@ -31,7 +31,8 @@ start:
 
 	start_loop1:
 		loab r1, r10, 0
-	cmp r1, r0
+	; cmp r1, r0
+	add r0, r1, r0
 	adde pc, pc, start_loop1 - $
 
 
@@ -60,7 +61,8 @@ start:
 
 	start_loop2:
 		loab r1, r10, 0
-	cmp r1, r2
+	; cmp r1, r2
+	add r0, r1, r2
 	addne pc, pc, start_loop2 - $
 
 
@@ -83,7 +85,8 @@ start:
 
 	start_loop3:
 		loab r1, r10, 0
-	cmp r1, r2
+	; cmp r1, r2
+	add r0, r1, r2
 	addne pc, pc, start_loop3 - $
 
 

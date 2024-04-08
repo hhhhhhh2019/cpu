@@ -110,7 +110,8 @@ start:
 	sub r4, pc, $
 
 	start_loop1:
-		cmp r1, r2
+		; cmp r1, r2
+		add r0, r1, r2
 		adde pc, pc, start_loop1_end - $
 		
 		loal r5, r1, 0

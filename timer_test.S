@@ -21,7 +21,8 @@ start:
 	sub r5, pc, $
 
 	start_loop1:
-		cmp r1, r2
+		; cmp r1, r2
+		add r0, r1, r2
 		adde pc, pc, start_loop1_end - $
 
 		loal r4, r1, 0

@@ -27,19 +27,19 @@ table0_end:
 
 
 proccess:
-	add pc, pc, .start - $
+	add pc, r0, .start - proccess
 
 	.var:
 		dl 0
 
 	.start:
-		add r1, pc, .var - $
+		add r1, r0, .var - proccess
 	
 		.loop:
 			loal r2, r1, 0
 			add r2, r2, 1
 			stol r2, r1, 0
-		add pc, pc, .loop - $
+		add pc, r0, .loop - proccess
 
 
 

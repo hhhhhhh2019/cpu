@@ -19,3 +19,4 @@ clean:
 	make -C emulator clean
 	make -C cc clean
 	-rm bios.bin
+	-rm bios.map
