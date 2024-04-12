@@ -20,8 +20,7 @@ typedef struct {
 
 typedef struct {
 	enum Breakpoint_type type;
-	BrRegister registers[18];
-	unsigned int registers_count;
+	BrRegister reg;
 } Breakpoint;
 
 

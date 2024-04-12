@@ -334,8 +334,10 @@ char* readline(unsigned long* len) {
 
 
 void parse_command(char* s, unsigned int len) {
-	char* save_ptr;
-	strtok(s, " ");
+	for (int i = 0; i < len; i++) {
+		if (*(s + i) == ' ')
+			*(s + i) = 0;
+	}
 
 	char* cmd = s;
 
@@ -352,7 +354,7 @@ void parse_command(char* s, unsigned int len) {
 	}
 
 
-	if (strcmp(cmd, "registers") == 0 || strcmp(cmd, "r") == 0) {
+	else if (strcmp(cmd, "registers") == 0 || strcmp(cmd, "r") == 0) {
 		if (len == strlen(cmd)) {
 			printf(": %d\n", motherboard.cpu.cores_count);
 			for (int i = 0; i < motherboard.cpu.cores_count; i++)
@@ -368,7 +370,7 @@ void parse_command(char* s, unsigned int len) {
 	}
 
 
-	if (strcmp(cmd, "toggle") == 0 || strcmp(cmd, "t") == 0) {
+	else if (strcmp(cmd, "toggle") == 0 || strcmp(cmd, "t") == 0) {
 		if (len == strlen(cmd))
 			return;
 
@@ -381,16 +383,88 @@ void parse_command(char* s, unsigned int len) {
 	}
 
 
-	if (strcmp(cmd, "quit") == 0 || strcmp(cmd, "q") == 0) {
+	else if (strcmp(cmd, "quit") == 0 || strcmp(cmd, "q") == 0) {
 		emulator_enable = 0;
 
 		return;
 	}
 
 
-	if (strcmp(cmd, "breakpoints list") == 0 || strcmp(cmd, "bl") == 0) {
+	// else if ((strcmp(cmd, "breakpoints") == 0 && strcmp(cmd + strlen(cmd) + 1, "list") == 0) ||
+	//          strcmp(cmd, "bl") == 0) {
+	else if (strcmp(cmd, "bl") == 0) {
 		for (int i = 0; i < breakpoints_count; i++) {
 			printf("%d ", i);
 		}
+	}
+
+
+	else if (strcmp(cmd, "bn") == 0) {
+		char* reg = cmd + strlen(cmd) + 1;
+		char* op  = reg + strlen(reg) + 1;
+		char* val = op  + strlen(op)  + 1;
+
+
+		char* end = NULL;
+
+		Breakpoint br;
+		br.reg.value = strtoul(val, &end, 0);
+
+		if (strcmp(reg, "r0") == 0)
+			br.reg.id = 0;
+		if (strcmp(reg, "r1") == 0)
+			br.reg.id = 1;
+		if (strcmp(reg, "r2") == 0)
+			br.reg.id = 2;
+		if (strcmp(reg, "r3") == 0)
+			br.reg.id = 3;
+		if (strcmp(reg, "r4") == 0)
+			br.reg.id = 4;
+		if (strcmp(reg, "r5") == 0)
+			br.reg.id = 5;
+		if (strcmp(reg, "r6") == 0)
+			br.reg.id = 6;
+		if (strcmp(reg, "r7") == 0)
+			br.reg.id = 7;
+		if (strcmp(reg, "r8") == 0)
+			br.reg.id = 8;
+		if (strcmp(reg, "r9") == 0)
+			br.reg.id = 9;
+		if (strcmp(reg, "r10") == 0)
+			br.reg.id = 10;
+		if (strcmp(reg, "r11") == 0)
+			br.reg.id = 11;
+		if (strcmp(reg, "r12") == 0)
+			br.reg.id = 12;
+		if (strcmp(reg, "r13") == 0)
+			br.reg.id = 13;
+		if (strcmp(reg, "r14") == 0 || strcmp(reg, "sp") == 0)
+			br.reg.id = 14;
+		if (strcmp(reg, "r15") == 0 || strcmp(reg, "pc") == 0)
+			br.reg.id = 15;
+		if (strcmp(reg, "r16") == 0 || strcmp(reg, "tp") == 0)
+			br.reg.id = 16;
+		if (strcmp(reg, "r17") == 0 || strcmp(reg, "flag") == 0)
+			br.reg.id = 17;
+
+		if (strcmp(op, "==") == 0)
+			br.type = EQUALS;
+		if (strcmp(op, "!=") == 0)
+			br.type = NOT_EQUALS;
+		// if (strcmp(op, "&") == 0)
+		// 	br.type = AND_MASK_ZERO;
+		// if (strcmp(op, "&0") == 0)
+		// 	br.type = AND_MASK_NONZERO;
+		// if (strcmp(op, "|") == 0)
+		// 	br.type = OR_MASK_ZERO;
+		// if (strcmp(op, "|0") == 0)
+		// 	br.type = OR_MASK_NONZERO;
+		// if (strcmp(op, "^") == 0)
+		// 	br.type = XOR_MASK_ZERO;
+		// if (strcmp(op, "^0") == 0)
+		// 	br.type = XOR_MASK_NONZERO;
+		
+		breakpoints = realloc(breakpoints, sizeof(Breakpoint) * (++breakpoints_count));
+		breakpoints[breakpoints_count-1] = br;
 	}
 }

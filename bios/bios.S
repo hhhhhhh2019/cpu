@@ -2,7 +2,7 @@ add pc, pc, start - $
 
 #include "devices.S"
 
-#include "vvmhc.S"
+#include "disks.S"
 #include "uart.S"
 #include "utils.S"
 
@@ -323,6 +323,25 @@ find_gpt:
 		add r10, pc, devices - $
 		add r10, r10, r8
 
+		add r1, pc, buffer - $
+		pushl r1 ; dest_addr
+		add r1, r0, 0
+		pushl r1 ; lba
+		add r1, r0, 1
+		pushs r1 ; count
+		pushs r11 ; disk_id
+		pushs r8 ; id
+		add r1, pc, read_sectors - $
+		call r1
+		add sp, sp, 2 + 2 + 2 + 8 + 8
+
+		add r1, pc, buffer - $
+		pushl r1 ; s
+		add r1, r0, 3
+		pushs r1 ; id
+		add r1, pc, uart_puts - $
+		call r1
+		add sp, sp, 2 + 8
 		
 	.loop_end:
 	add r11, r11, 1

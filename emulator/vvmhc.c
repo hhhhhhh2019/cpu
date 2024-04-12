@@ -87,7 +87,7 @@ void vvmhc_step(VVMHC* vvmhc) {
 
 
 	if (vvmhc->state == 1) { // reading from disk
-		if (interactive_mode) {
+		if (interactive_mode || 1) {
 			printf("VVMHC: read:\n    id: %d\n    addr: %016lx\n    count: %u\n    start_addr: %016lx\n",
 			    id, addr, block_count, start_addr);
 		}
