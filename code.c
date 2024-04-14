@@ -10,7 +10,7 @@ unsigned int foo(unsigned int a, unsigned int b) {
 		c++;
 	}
 
-	bar(a,b,c);
+	bar(a,b,c + 2 * 3);
 
 	return c;
 }

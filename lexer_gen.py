@@ -25,11 +25,11 @@ while len(queue) > 0:
             2: ["_other"],
         }, "type": "UNDEFINED"}
 
-        if len(nnode["tokens"]) == 1 and len(nnode["tokens"][0][1]) == nnode["offset"]:
+        if len(nnode["tokens"][0][1]) == nnode["offset"]:
             # nnode["rules"][0][-1] = nnode["tokens"][0][0]
             nnode["type"] = nnode["tokens"][0][0]
 
-        if len(nnode["tokens"]) == 1 and nnode["tokens"][0][1][-1] in delims:
+        if nnode["tokens"][0][1][-1] in delims:
             nnode["rules"] = {
                 0: ["_other"] #, nnode["tokens"][0][0]]
             }
