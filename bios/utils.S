@@ -93,4 +93,31 @@ popl r1
 popl pc
 
 
+; s: char*
+atol:
+pushl r2
+pushl r3
+
+	or r1, r0,r0
+	loal r2, sp, 8 * 3
+
+	.loop:
+		loab r3, r2, 0
+
+		add r0, r3, r0
+		adde pc, pc, .end - $
+
+		mul r1, r1, 10
+		sub r3, r3, '0'
+		add r1, r1, r3
+
+		add r2, r2, 1
+	add pc, pc, .loop - $
+
+.end:
+popl r3
+popl r2
+popl pc
+
+
 #endif

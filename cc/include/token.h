@@ -1,0 +1,119 @@
+#ifndef TOKEN_H
+#define TOKEN_H
+
+
+enum Token_type {
+	NOT_SET,
+
+	UNDEFINED,
+	NEWLINE,
+	SPACE,
+	TAB,
+	
+	ALIGNAS,
+	ALIGNOF,
+	AUTO,
+	BREAK,
+	CASE,
+	CHAR,
+	CONST,
+	COUNTINUE,
+	DEFAULT,
+	DO,
+	// DOUBLE,
+	ELSE,
+	ENUM,
+	EXTERN,
+	FALSE,
+	FLOAT,
+	FOR,
+	GOTO,
+	IF,
+	INLINE,
+	INT,
+	LONG,
+	REGISTER, // ignore
+	RESTRICT, // ingore
+	RETURN,
+	SHORT,
+	SIGNED,
+	SIZEOF,
+	// STATIC,
+	// STATIC_ASSERT,
+	STRUCT,
+	SWITCH,
+	// THREAD_LOCAL,
+	// TRUE,
+	TYPEDEF,
+	// TYPEOF,
+	// TYPEOF_UNQUAL,
+	UNION,
+	UNSIGNED,
+	VOID,
+	VOLATILE, // ingore
+	WHILE,
+
+	DEC_NUMBER,
+	BIN_NUMBER,
+	HEX_NUMBER,
+
+	PLUS,
+	MINUS,
+	STAR,
+	SLASH,
+	PERCENT,
+	AMPERSAND,
+	PIPE,
+	CARET,
+	LSHIFT,
+	RSHIFT,
+	ARROW,
+	DOT,
+	COMMA,
+	SEMICOLON,
+
+	DOUBLE_PLUS,
+	DOUBLE_MINUS,
+	DOUBLE_AMPERSAND,
+	DOUBLE_PIPE,
+
+	ASSIGN,
+	ASSIGN_PLUS,
+	ASSIGN_MINUS,
+	ASSIGN_STAR,
+	ASSIGN_SLASH,
+	ASSIGN_PERCENT,
+	ASSIGN_AMPERSAND,
+	ASSIGN_PIPE,
+	ASSIGN_CARET,
+	ASSIGN_LSHIFT,
+	ASSIGN_RSHIFT,
+
+	EQUALS,
+	NOT_EQUALS,
+	LESS,
+	LESS_EQUALS,
+	MORE,
+	MORE_EQUALS,
+
+	LBR,
+	RBR,
+	LSBR,
+	RSBR,
+	LCBR,
+	RCBR,
+
+	TOKENS_COUNT,
+};
+
+
+typedef struct {
+	char* value;
+	enum Token_type type;
+	char* filename;
+	unsigned long line;
+	unsigned long column;
+} Token;
+
+
+#endif
