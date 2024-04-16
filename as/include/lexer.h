@@ -6,6 +6,8 @@ enum Token_type {
 	NOT_SET,
 	UNDEFINED,
 	NEWLINE,
+	SPACE,
+	TAB,
 	INSTRUCTION,
 	TIMES,
 	DATA_ALLOC,

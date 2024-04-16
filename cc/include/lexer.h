@@ -14,7 +14,7 @@ typedef struct {
 extern char* token_type_names[];
 
 
-Lexer_result lexer(char* data);
+Lexer_result lexer(char* data, char* filename);
 
 
 #endif

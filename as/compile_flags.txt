@@ -1,2 +1,4 @@
 -I
 ./include
+-D
+DEBUG

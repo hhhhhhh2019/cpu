@@ -32,13 +32,13 @@ enum Token_type {
 	INLINE,
 	INT,
 	LONG,
-	REGISTER, // ignore
-	RESTRICT, // ingore
+	// REGISTER,
+	// RESTRICT,
 	RETURN,
 	SHORT,
 	SIGNED,
 	SIZEOF,
-	// STATIC,
+	STATIC,
 	// STATIC_ASSERT,
 	STRUCT,
 	SWITCH,
@@ -50,7 +50,7 @@ enum Token_type {
 	UNION,
 	UNSIGNED,
 	VOID,
-	VOLATILE, // ingore
+	// VOLATILE,
 	WHILE,
 
 	DEC_NUMBER,

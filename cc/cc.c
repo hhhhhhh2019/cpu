@@ -60,7 +60,7 @@ int main(int argc, char** argv) {
 
 	fclose(f);
 
-	state.lexer_result = lexer(file_data);
+	state.lexer_result = lexer(file_data, input_filename);
 
 	LOG("\n");
 	LOG("lexer result:\n");

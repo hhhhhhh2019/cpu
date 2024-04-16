@@ -5,9 +5,9 @@ import argparse
 
 import sys
 
+
 def eprint(*args, **kwargs):
     print(*args, file=sys.stderr, **kwargs)
-
 
 
 aparser = argparse.ArgumentParser(
@@ -243,11 +243,11 @@ if args.type == "python":
     id = 1
 
     for i in terminals:
-        output_data += f"{i} = {id}\n"
+        output_data += f"\n{i} = {id}\n"
         id += 1
 
     for i in nonterminals:
-        output_data += f"{i} = {id}\n"
+        output_data += f"\n{i} = {id}\n"
         id += 1
 
 
