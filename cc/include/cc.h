@@ -3,6 +3,7 @@
 
 
 #include "lexer.h"
+#include "cc.h"
 
 
 typedef struct {
@@ -21,6 +22,8 @@ typedef struct {
 
 
 void print_help();
+
+void synt(Compiler_state* state);
 
 
 #endif

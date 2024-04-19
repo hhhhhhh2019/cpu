@@ -1,4 +1,5 @@
-from lexer_gen import rules
+from lexer_gen2 import rules
+from synt_gen import srules
 
 
 class Token:
@@ -17,7 +18,7 @@ class Token:
 
 
 string = """
-1 + 2 * (3 + 4 * 5)
+2 * (1 + 3 * 4)
 """
 
 i = 0
@@ -59,43 +60,7 @@ tokens = [i for i in tokens if i.type not in ["SPACE", "NEWLINE", "TAB"]] + \
         [Token("$", "EOI")]
 
 
-srules = {
-    "S": {
-        "DEC_NUMBER": ["S1", "M"],
-        "LBR": ["S1", "M"],
-    },
-
-    "S1": {
-        "PLUS": ["S1", "M", "PLUS"],
-        "EOI": [],
-        "RBR": [],
-    },
-
-    "M": {
-        "DEC_NUMBER": ["M1", "B"],
-        "LBR": ["M1", "B"],
-    },
-
-    "M1": {
-        "STAR": ["M1", "B", "STAR"],
-        "EOI": [],
-        "PLUS": [],
-        "RBR": [],
-    },
-
-    "B": {
-        "LBR": ["RBR", "S", "LBR"],
-        "DEC_NUMBER": ["DEC_NUMBER"],
-    }
-}
-
-
-can_remove = [
-    "LBR", "RBR",
-]
-
-
-stack = ["S"]
+stack = ["Start"]
 
 # на Си это делать проще(там есть нормальные указатели)
 

@@ -74,6 +74,8 @@ int main(int argc, char** argv) {
 		else
 			LOG("NEWLINE\n");
 	}
+
+	synt(&state);
 }
 
 
