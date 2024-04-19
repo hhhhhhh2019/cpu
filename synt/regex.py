@@ -1,5 +1,4 @@
-from pprint import pprint
-
+# from pprint import pprint
 
 # input = [
 #     {"chars": list("0123456789"),
@@ -19,7 +18,7 @@ def get_nfa(rules):
         }
     }
 
-    for id, rule in enumerate(rules):
+    for rule in rules:
         count = 0
 
         if rule["count"][1] == -1:
@@ -80,9 +79,16 @@ def compile_regex(string):
             elif c == '*':
                 result[-1]["count"][0] = 0
                 result[-1]["count"][1] = -1
+            elif c == '?':
+                result[-1]["count"][0] = 0
+                result[-1]["count"][1] = 1
             elif c in list("]"):
                 print("Error parsing", string, f"unexpected '{c}'")
                 return None
+            elif c == '\\':
+                id += 1
+                c = string[id]
+                result.append({"chars": [c], "count": [1, 1]})
             else:
                 result.append({"chars": [c], "count": [1, 1]})
         else:
@@ -90,7 +96,7 @@ def compile_regex(string):
                 result.append({"chars": chars, "count": [1, 1]})
                 chars = []
                 mode = 0
-            elif c in list("+*["):
+            elif c in list("+*[?"):
                 print("Error parsing", string, f"unexpected '{c}'")
                 return None
             else:
@@ -101,4 +107,4 @@ def compile_regex(string):
     return get_nfa(result)
 
 
-pprint(compile_regex(r"[0123456789]*abc"))
+# pprint(compile_regex(r"[-]?[0123456789]+"))

@@ -1,4 +1,5 @@
-from lexer_gen import rules
+from lexer_gen2 import rules
+from pprint import pprint
 
 
 class Token:
@@ -17,7 +18,7 @@ class Token:
 
 
 string = """
-1 + 2 * 3 + 4
+aaaaa
 """
 
 i = 0
@@ -32,6 +33,8 @@ while i < len(string):
 
     nstate = -1
     otherid = -1
+
+    print(rules[state][0])
 
     for j in rules[state][0]:
         if "_other" in rules[state][0][j]:
@@ -58,38 +61,40 @@ while i < len(string):
 tokens = [i for i in tokens if i.type not in ["SPACE", "NEWLINE", "TAB"]] + \
         ["EOF"]
 
-
-srules = {
-    "S": {
-        "DEC_NUMBER": ["S1", "M"],
-    },
-
-    "S1": {
-        "PLUS": ["S1", "M", "PLUS"],
-        "EOF": [],
-    },
-
-    "M": {
-        "DEC_NUMBER": ["M1", "DEC_NUMBER"],
-    },
-
-    "M1": {
-        "STAR": ["M1", "DEC_NUMBER", "STAR"],
-        "EOF": [],
-        "PLUS": [],
-    },
-}
+pprint(tokens)
 
 
-stack = ["S"]
-
-while len(stack) > 0:
-    state = stack.pop(-1)
-    token = tokens[0]
-
-    if token.type not in srules[state]:
-        print("error")
-        break
-
-    stack += srules[state]
-    tokens.pop(0)
+# srules = {
+#     "S": {
+#         "DEC_NUMBER": ["S1", "M"],
+#     },
+#
+#     "S1": {
+#         "PLUS": ["S1", "M", "PLUS"],
+#         "EOF": [],
+#     },
+#
+#     "M": {
+#         "DEC_NUMBER": ["M1", "DEC_NUMBER"],
+#     },
+#
+#     "M1": {
+#         "STAR": ["M1", "DEC_NUMBER", "STAR"],
+#         "EOF": [],
+#         "PLUS": [],
+#     },
+# }
+#
+#
+# stack = ["S"]
+#
+# while len(stack) > 0:
+#     state = stack.pop(-1)
+#     token = tokens[0]
+#
+#     if token.type not in srules[state]:
+#         print("error")
+#         break
+#
+#     stack += srules[state]
+#     tokens.pop(0)

@@ -65,6 +65,7 @@ enum Token_type {
 	AMPERSAND,
 	PIPE,
 	CARET,
+	TILDA,
 	LSHIFT,
 	RSHIFT,
 	ARROW,

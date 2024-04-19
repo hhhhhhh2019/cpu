@@ -1,5 +1,5 @@
 unsigned int foo(unsigned int a, unsigned int b) {
-	unsigned int c = 0;
+	unsigned int voidc = 0;
 
 	while (a != b) {
 		if (a > b)
@@ -7,10 +7,10 @@ unsigned int foo(unsigned int a, unsigned int b) {
 		else
 			b -= a;
 
-		c++;
+		voidc++;
 	}
 
-	bar(a,b,c + 2 * 3);
+	bar(a,b,voidc + 2 * 3);
 
-	return c;
+	return voidc;
 }

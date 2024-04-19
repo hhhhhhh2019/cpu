@@ -1,4 +1,5 @@
 # "(?:(?=(\\?))(\\?).)*?"
+from pprint import pprint
 
 from lexer_gen_c import queue, nodes, delims, id
 
@@ -49,33 +50,36 @@ for i in nodes:
     rules[i["id"]] = [i["rules"], i["type"]]
 
 
-if __name__ == "__main__":
-    def get_id(ch, r) -> int:
-        if ch == 256:
-            ch = "_other"
-        else:
-            ch = chr(ch)
+pprint(rules)
 
-        for i in r:
-            if ch in r[i]:
-                return i
 
-        return -1
-
-    print(f"int rules[{len(rules)}][258] = " + "{")
-
-    for i in sorted(rules):
-        # print(f"{','.join(
-        #     [str(get_id(j, rules[i])) for j in range(256)]
-        # )},")
-
-        print("\t{", end='')
-
-        for j in range(257):
-            print(get_id(j, rules[i][0]), end=',')
-        print(rules[i][1], end='},\n')
-
-    print("};")
+# if __name__ == "__main__":
+#     def get_id(ch, r) -> int:
+#         if ch == 256:
+#             ch = "_other"
+#         else:
+#             ch = chr(ch)
+#
+#         for i in r:
+#             if ch in r[i]:
+#                 return i
+#
+#         return -1
+#
+#     print(f"int rules[{len(rules)}][258] = " + "{")
+#
+#     for i in sorted(rules):
+#         # print(f"{','.join(
+#         #     [str(get_id(j, rules[i])) for j in range(256)]
+#         # )},")
+#
+#         print("\t{", end='')
+#
+#         for j in range(257):
+#             print(get_id(j, rules[i][0]), end=',')
+#         print(rules[i][1], end='},\n')
+#
+#     print("};")
 
 
 # string = """
