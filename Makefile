@@ -20,4 +20,3 @@ clean:
 	make -C cc clean
 	-rm bios.bin
 	-rm bios.map
-	-rm -r __pycache__
