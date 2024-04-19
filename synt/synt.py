@@ -1,4 +1,4 @@
-from lexer_gen2 import rules
+from lexer_gen import rules
 from synt_gen import srules
 
 

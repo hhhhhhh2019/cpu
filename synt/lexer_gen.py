@@ -1,144 +1,294 @@
-# "(?:(?=(\\?))(\\?).)*?"
+from regex import compile_regex
 from pprint import pprint
+from string import ascii_letters, digits, punctuation
 
-from lexer_gen_c import queue, nodes, delims, id
 
-while len(queue) > 0:
-    node = queue.pop(0)
+# cother = list(" \t\n,.-+*/\\&^%;|~()[]{}=\0")
+cother = list(punctuation + " \t\n")
+cletters = list(ascii_letters)
+cdigits = list(digits)
 
-    letters = {}
+# символы, с которых можно перейти в UNDEFINED
+def_undef = set(ascii_letters + "_" + digits)
 
-    for i in node["tokens"]:
-        if len(i[1]) == node["offset"]:
+tokens = [
+    ["NEWLINE",          "\n",                           set()],
+    ["SPACE",            r" ",                           set()],
+    ["TAB",              "\t",                           set()],
+    ["ALIGNAS",          r"alignas",                     def_undef.copy()],
+    ["ALIGNOF",          r"alignof",                     def_undef.copy()],
+    ["AUTO",             r"auto",                        def_undef.copy()],
+    ["BREAK",            r"break",                       def_undef.copy()],
+    ["CASE",             r"case",                        def_undef.copy()],
+    ["CHAR",             r"char",                        def_undef.copy()],
+    ["CONST",            r"const",                       def_undef.copy()],
+    ["COUNTINUE",        r"countinue",                   def_undef.copy()],
+    ["DEFAULT",          r"default",                     def_undef.copy()],
+    ["DO",               r"do",                          def_undef.copy()],
+    ["ELSE",             r"else",                        def_undef.copy()],
+    ["ENUM",             r"enum",                        def_undef.copy()],
+    ["EXTERN",           r"extern",                      def_undef.copy()],
+    ["FALSE",            r"false",                       def_undef.copy()],
+    ["FLOAT",            r"float",                       def_undef.copy()],
+    ["FOR",              r"for",                         def_undef.copy()],
+    ["GOTO",             r"goto",                        def_undef.copy()],
+    ["IF",               r"if",                          def_undef.copy()],
+    ["INLINE",           r"inline",                      def_undef.copy()],
+    ["INT",              r"int",                         def_undef.copy()],
+    ["LONG",             r"long",                        def_undef.copy()],
+    ["RETURN",           r"return",                      def_undef.copy()],
+    ["SHORT",            r"short",                       def_undef.copy()],
+    ["SIGNED",           r"signed",                      def_undef.copy()],
+    ["SIZEOF",           r"sizeof",                      def_undef.copy()],
+    ["STRUCT",           r"struct",                      def_undef.copy()],
+    ["SWITCH",           r"switch",                      def_undef.copy()],
+    ["TYPEDEF",          r"typedef",                     def_undef.copy()],
+    ["UNION",            r"union",                       def_undef.copy()],
+    ["UNSIGNED",         r"unsigned",                    def_undef.copy()],
+    ["VOID",             r"void",                        def_undef.copy()],
+    ["WHILE",            r"while",                       def_undef.copy()],
+    ["PLUS",             r"\+",                          set()],
+    ["MINUS",            r"-",                           set()],
+    ["STAR",             r"\*",                          set()],
+    ["SLASH",            r"/",                           set()],
+    ["PERCENT",          r"%",                           set()],
+    ["AMPERSAND",        r"&",                           set()],
+    ["TILDA",            r"~",                           set()],
+    ["PIPE",             r"|",                           set()],
+    ["CARET",            r"^",                           set()],
+    ["LSHIFT",           r"<<",                          set()],
+    ["RSHIFT",           r">>",                          set()],
+    ["ARROW",            r"->",                          set()],
+    ["DOT",              r".",                           set()],
+    ["COMMA",            r",",                           set()],
+    ["SEMICOLON",        r";",                           set()],
+    ["DOUBLE_PLUS",      r"\+\+",                        set()],
+    ["DOUBLE_MINUS",     r"--",                          set()],
+    ["DOUBLE_AMPERSAND", r"&&",                          set()],
+    ["DOUBLE_PIPE",      r"||",                          set()],
+    ["ASSIGN",           r"=",                           set()],
+    ["ASSIGN_PLUS",      r"\+=",                         set()],
+    ["ASSIGN_MINUS",     r"-=",                          set()],
+    ["ASSIGN_STAR",      r"\*=",                         set()],
+    ["ASSIGN_SLASH",     r"/=",                          set()],
+    ["ASSIGN_PERCENT",   r"%=",                          set()],
+    ["ASSIGN_AMPERSAND", r"&=",                          set()],
+    ["ASSIGN_PIPE",      r"|=",                          set()],
+    ["ASSIGN_CARET",     r"^=",                          set()],
+    ["ASSIGN_LSHIFT",    r"<<=",                         set()],
+    ["ASSIGN_RSHIFT",    r">>=",                         set()],
+    ["EQUALS",           r"==",                          set()],
+    ["NOT_EQUALS",       r"!=",                          set()],
+    ["LESS",             r"<",                           set()],
+    ["LESS_EQUALS",      r"<=",                          set()],
+    ["MORE",             r">",                           set()],
+    ["MORE_EQUALS",      r">=",                          set()],
+    ["LBR",              r"(",                           set()],
+    ["RBR",              r")",                           set()],
+    ["LSBR",             r"\[",                          set()],
+    ["RSBR",             r"\]",                          set()],
+    ["LCBR",             r"{",                           set()],
+    ["RCBR",             r"}",                           set()],
+    ["DEC_NUMBER",       r"[0123456789]+",               set()],
+    ["HEX_NUMBER",       r"0x[0123456789abcdefABCDEF]+", set()],
+    ["BIN_NUMBER",       r"0b[01]+",                     set()],
+]
+
+
+nfa = {
+    1: {
+        "rules": {
+            2: list(ascii_letters + "_"),
+            -1: ["_other"]
+        },
+        "type": -1,
+        "using": True,
+    },
+
+    2: {
+        "rules": {
+            2: def_undef.copy(),
+            0: ["_other"],
+        }, "type": "UNDEFINED",
+        "using": False
+    },
+}
+id = 3
+
+
+for token in tokens:
+    fa = compile_regex(token[1])
+
+    chars = {}
+
+    for i in fa[1]:
+        if i == "can_skip":
             continue
 
-        c = i[1][node["offset"]]
+        for j in fa[1][i]:
+            if j == "_other":
+                continue
+            if j not in chars:
+                chars[j] = []
+            chars[j].append(i)
 
-        if c not in letters:
-            letters[c] = []
+    for i in chars:
+        for j in chars[i]:
+            if j - 2 + id not in nfa[1]["rules"]:
+                nfa[1]["rules"][j - 2 + id] = []
+            nfa[1]["rules"][j - 2 + id].append(i)
 
-        letters[c].append(i)
+    for i in fa:
+        if i == 1:
+            continue
 
-    for i in letters:
-        nnode = {"id": id, "offset": node["offset"] + 1, "tokens": letters[i], "rules": {
-            0: delims,
-            2: ["_other"],
-        }, "type": "UNDEFINED"}
+        nfa[i - 2 + id] = {
+            "rules": {0: ["_other"]}, "type": "UNDEFINED", "using": False
+        }
 
-        if len(nnode["tokens"][0][1]) == nnode["offset"]:
-            # nnode["rules"][0][-1] = nnode["tokens"][0][0]
-            nnode["type"] = nnode["tokens"][0][0]
+        for j in fa[i]:
+            if j == "can_skip":
+                continue
 
-        if nnode["tokens"][0][1][-1] in delims:
-            nnode["rules"] = {
-                0: ["_other"]
-            }
-            nnode["type"] = nnode["tokens"][0][0]
+            if j == -1:
+                nfa[i - 2 + id]["rules"][2] = token[2].copy()
+            elif j == 0:
+                nfa[i - 2 + id]["type"] = token[0]
+                nfa[i - 2 + id]["rules"][2] = token[2].copy()
+                # nfa[i - 2 + id]["rules"].pop(0)
+            else:
+                nfa[i - 2 + id]["rules"][j - 2 + id] = fa[i][j]
 
-        queue.append(nnode)
+    id += max(fa) - 1
 
-        node["rules"][id] = [i]
 
-        id += 1
+def collapse(nfa, id):
+    chars = {}
 
-    nodes.append(node)
+    for i in nfa[id]["rules"]:
+        for j in nfa[id]["rules"][i]:
+            if j not in chars:
+                chars[j] = []
+            chars[j].append(i)
+
+    found = False
+
+    for i in chars:
+        if len(chars[i]) < 2:
+            continue
+
+        found = True
+
+        nfa[max(nfa) + 1] = {
+            "rules": {},
+            "type": -1,
+            "using": False,
+        }
+
+        for j in nfa[id]["rules"]:
+            if i not in nfa[id]["rules"][j]:
+                continue
+            nfa[id]["rules"][j].remove(i)
+
+        nfa[id]["rules"][max(nfa)] = [i]
+
+        for j in chars[i]:
+            if nfa[j]["type"] == -1:
+                continue
+
+            if nfa[max(nfa)]["type"] in ["UNDEFINED", -1]:
+                nfa[max(nfa)]["type"] = nfa[j]["type"]
+            elif nfa[j]["type"] != "UNDEFINED":
+                # Error
+                pass
+
+        for j in chars[i]:
+            for k in nfa[j]["rules"]:
+                nfa[max(nfa)]["rules"][k] = nfa[j]["rules"][k]
+
+    if found:
+        return True
+
+    for i in nfa[id]["rules"]:
+        if i in [-1, 0, 2, id]:
+            continue
+
+        if len(nfa[id]["rules"][i]) == 0:
+            continue
+
+        if collapse(nfa, i):
+            return True
+
+    return False
+
+
+while collapse(nfa, 1):
+    pass
+
+
+for i in nfa:
+    for j in nfa[i]["rules"]:
+        if j == -1 or j == 0:
+            continue
+        nfa[j]["using"] = True
+
+
+offset = 0
+
+for i in nfa:
+    nfa[i]["offset"] = offset
+
+    if not nfa[i]["using"]:
+        offset -= 1
+
+
+dfa = {}
+
+for i in nfa:
+    dfa[i + nfa[i]["offset"]] = {
+        "rules": {},
+        "type": nfa[i]["type"]
+    }
+
+    for j in nfa[i]["rules"]:
+        k = j
+        if j not in [-1, 0, 1]:
+            k += nfa[j]["offset"]
+        dfa[i + nfa[i]["offset"]]["rules"][k] = nfa[i]["rules"][j]
 
 
 rules = {}
 
-for i in nodes:
-    rules[i["id"]] = [i["rules"], i["type"]]
+for i in dfa:
+    rules[i] = [dfa[i]["rules"], dfa[i]["type"]]
 
 
-pprint(rules)
+# pprint(rules)
 
+if __name__ == "__main__":
+    def get_id(ch, r) -> int:
+        if ch == 256:
+            ch = "_other"
+        else:
+            ch = chr(ch)
 
-# if __name__ == "__main__":
-#     def get_id(ch, r) -> int:
-#         if ch == 256:
-#             ch = "_other"
-#         else:
-#             ch = chr(ch)
-#
-#         for i in r:
-#             if ch in r[i]:
-#                 return i
-#
-#         return -1
-#
-#     print(f"int rules[{len(rules)}][258] = " + "{")
-#
-#     for i in sorted(rules):
-#         # print(f"{','.join(
-#         #     [str(get_id(j, rules[i])) for j in range(256)]
-#         # )},")
-#
-#         print("\t{", end='')
-#
-#         for j in range(257):
-#             print(get_id(j, rules[i][0]), end=',')
-#         print(rules[i][1], end='},\n')
-#
-#     print("};")
+        for i in r:
+            if ch in r[i]:
+                return i
 
+        return -1
 
-# string = """
-# 1234
-# 0x123
-# 0b01
-# """
-# string = """
-# unsigned int foo(unsigned int a, unsigned int b) {
-# 	unsigned int voidc = 0;
-#
-# 	while (a != b) {
-# 		if (a > b)
-# 			a -= b;
-# 		else
-# 			b -= a;
-#
-# 		voidc++;
-# 	}
-#
-# 	bar(a,b,voidc);
-#
-# 	return voidc;
-# }
-# """
-# i = 0
-#
-# token = ""
-# result = []
-#
-# state = 1
-#
-# while i < len(string):
-#     c = string[i]
-#
-#     nstate = -1
-#     otherid = -1
-#
-#     for j in rules[state]:
-#         if "_other" in rules[state][j]:
-#             otherid = j
-#
-#         if c in rules[state][j]:
-#             nstate = j
-#
-#     nstate = nstate if nstate != -1 else otherid
-#
-#     if nstate == -1:
-#         print("rules error")
-#         break
-#     elif nstate == 0:
-#         result.append([token, rules[state][nstate][-1]])
-#         token = ""
-#         state = 1
-#     else:
-#         token += c
-#         i += 1
-#         state = nstate
-#
-#
-# for i in result:
-#     print(i)
+    print(f"int rules[{len(rules)}][258] = " + "{")
+
+    for i in sorted(rules):
+        # print(f"{','.join(
+        #     [str(get_id(j, rules[i])) for j in range(256)]
+        # )},")
+
+        print("\t{", end='')
+
+        for j in range(257):
+            print(get_id(j, rules[i][0]), end=',')
+        print(rules[i][1], end='},\n')
+
+    print("};")
