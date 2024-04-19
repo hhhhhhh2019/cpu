@@ -18,7 +18,9 @@ class Token:
 
 
 string = """
-2 * (1 + 3 * 4)
+
+    1 + 2 * 3 * (4 + 6)
+
 """
 
 i = 0
@@ -60,6 +62,37 @@ tokens = [i for i in tokens if i.type not in ["SPACE", "NEWLINE", "TAB"]] + \
         [Token("$", "EOI")]
 
 
+srules = {
+    "Start": {
+        "DEC_NUMBER": ["S1", "M"],
+        "LBR": ["S1", "M"],
+    },
+
+    "S1": {
+        "PLUS": ["S1", "M", "PLUS"],
+        "EOI": [],
+        "RBR": [],
+    },
+
+    "M": {
+        "DEC_NUMBER": ["M1", "B"],
+        "LBR": ["M1", "B"],
+    },
+
+    "M1": {
+        "STAR": ["M1", "B", "STAR"],
+        "EOI": [],
+        "PLUS": [],
+        "RBR": [],
+    },
+
+    "B": {
+        "LBR": ["RBR", "Start", "LBR"],
+        "DEC_NUMBER": ["DEC_NUMBER"],
+    }
+}
+
+
 stack = ["Start"]
 
 # на Си это делать проще(там есть нормальные указатели)
@@ -93,6 +126,12 @@ while len(stack) > 0:
     stack += todo
 
     if len(todo) == 0:
+        if len(node["childs"]) == 0:
+            if node["parent"] is not None:
+                node["parent"]["childs"].remove(node)
+
+            continue
+
         node["token"] = node["childs"][-1]["token"]
         for i in node["childs"][-1]["childs"]:
             i["parent"] = node
