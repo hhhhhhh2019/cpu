@@ -1,5 +1,7 @@
 from lexer_gen import rules
-from synt_gen import srules
+# from synt_gen import srules
+
+from pprint import pprint
 
 
 class Token:
@@ -18,9 +20,7 @@ class Token:
 
 
 string = """
-
-    1 + 2 * 3 * (4 + 6)
-
+3 * (1 + 2) + 4 * 5
 """
 
 i = 0
@@ -62,33 +62,59 @@ tokens = [i for i in tokens if i.type not in ["SPACE", "NEWLINE", "TAB"]] + \
         [Token("$", "EOI")]
 
 
+# 0 - текущий узел
+# 1..n - узлы, в том порядке, в котором они в массиве
+# значение при 0 заменяет текущий узел
+
 srules = {
     "Start": {
-        "DEC_NUMBER": ["S1", "M"],
-        "LBR": ["S1", "M"],
+        "DEC_NUMBER": [["S1", "M"], {
+            0: 1,
+            1: [2],
+        }],
+        "LBR": [["S1", "M"], {
+            0: 1,
+            1: [2],
+        }],
     },
 
     "S1": {
-        "PLUS": ["S1", "M", "PLUS"],
-        "EOI": [],
-        "RBR": [],
+        "PLUS": [["S1", "M", "PLUS"], {
+            0: 3,
+            3: [1, 2]
+        }],
+        "EOI": [[]],
+        "RBR": [[]],
     },
 
     "M": {
-        "DEC_NUMBER": ["M1", "B"],
-        "LBR": ["M1", "B"],
+        "DEC_NUMBER": [["M1", "B"], {
+            0: 1,
+            1: [2],
+        }],
+        "LBR": [["M1", "B"], {
+            0: 1,
+            1: [2],
+        }],
     },
 
     "M1": {
-        "STAR": ["M1", "B", "STAR"],
-        "EOI": [],
-        "PLUS": [],
-        "RBR": [],
+        "STAR": [["M1", "B", "STAR"], {
+            0: 3,
+            3: [1, 2]
+        }],
+        "EOI": [[]],
+        "PLUS": [[]],
+        "RBR": [[]],
     },
 
     "B": {
-        "LBR": ["RBR", "Start", "LBR"],
-        "DEC_NUMBER": ["DEC_NUMBER"],
+        "LBR": [["RBR", "Start", "LBR"], {
+            0: 2,
+        }],
+        "DEC_NUMBER": [["DEC_NUMBER"], {
+            0: 1,
+        }],
     }
 }
 
@@ -97,13 +123,28 @@ stack = ["Start"]
 
 # на Си это делать проще(там есть нормальные указатели)
 
-nstack = [{
-    "token": Token("", "S"),
+root = {
+    "token": Token("", "root"),
     "childs": [],
     "parent": None
-}]
+}
+
+root["childs"].append({
+    "token": Token("", "S"),
+    "childs": [],
+    "parent": root
+})
+
+nstack = [root["childs"][0]]
 
 c = 0
+
+
+def print_node(node, level=0):
+    print("\t" * level, node["token"], sep='')
+
+    for i in node["childs"]:
+        print_node(i, level + 1)
 
 
 while len(stack) > 0:
@@ -121,58 +162,54 @@ while len(stack) > 0:
         print("error")
         break
 
-    todo = srules[state][token.type]
+    todo = srules[state][token.type][0]
 
     stack += todo
 
     if len(todo) == 0:
-        if len(node["childs"]) == 0:
-            if node["parent"] is not None:
-                node["parent"]["childs"].remove(node)
+        for i in node["childs"]:
+            i["parent"] = node["parent"]
 
+        if node["parent"] is None:
             continue
 
-        node["token"] = node["childs"][-1]["token"]
-        for i in node["childs"][-1]["childs"]:
-            i["parent"] = node
-        node["childs"] = node["childs"][:-1] + node["childs"][-1]["childs"]
+        node["parent"]["childs"].remove(node)
+
+        for i in node["childs"]:
+            node["parent"]["childs"].append(i)
+
         continue
 
     if len(todo) == 1:
         node["token"].type = todo[0]
         nstack += [node]
     else:
-        node["token"].type = todo[-1]
+        nrule = srules[state][token.type][1]
 
-        nparent = {"token": Token("", todo[0]),
-                   "childs": [node], "parent": node["parent"]}
+        nnodes = [{"token": Token("", i), "childs": [], "parent": None}
+                  for i in todo]
 
         if node["parent"] is not None:
             node["parent"]["childs"][
                 node["parent"]["childs"].index(node)
-            ] = nparent
+            ] = nnodes[nrule[0] - 1]
 
-        node["parent"] = nparent
+        nnodes[nrule[0] - 1]["parent"] = node["parent"]
+        nnodes[nrule[0] - 1]["childs"] = node["childs"]
 
-        nnodes = [{"token": Token("", i), "childs": [], "parent": node}
-                  for i in todo[1:-1]]
+        for i in nrule:
+            if i == 0:
+                continue
 
-        node["childs"] += nnodes
+            nnodes[i - 1]["childs"] += [nnodes[j - 1] for j in nrule[i]]
 
-        nstack += [node["parent"]] + nnodes + [node]
+            for j in nrule[i]:
+                nnodes[j - 1]["parent"] = nnodes[i - 1]
 
+        nstack += nnodes
 
-root = node
 
 while node["parent"] is not None:
     node = node["parent"]
 
-
-def print_node(node, level=0):
-    print("\t" * level, node["token"], sep='')
-
-    for i in node["childs"]:
-        print_node(i, level + 1)
-
-
-print_node(root)
+print_node(node)
