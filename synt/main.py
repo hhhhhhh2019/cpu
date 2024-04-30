@@ -33,7 +33,7 @@ class Token:
 # \n"""
 # string = "[a/b './a/b' '/a/b']\n"
 # string = "123\n"
-string = "[1 + 2, 2, 3]\n"
+string = "[1+2,2,3,4]\n"
 
 type = 0
 
@@ -116,23 +116,20 @@ class Node:
             i.to_dot()
 
 
-# nodes = [Node(i, [], None) for i in tokens]
-
 srules = {
         "Array": [
-            # ["LSBR", "E", "RSBR"],
             ["LSBR", "Aargs", "RSBR"],
+            ["LSBR", "E", "RSBR"],
         ],
 
         "Aargs": [
+            ["E", "COMMA", "E"],
             ["Aargs", "COMMA", "E"],
-            ["E"],
         ],
 
         "E": [
             ["E", "PLUS", "E"],
             ["E1"],
-            # ["DEC_NUMBER"],
         ],
 
         "E1": [
@@ -142,6 +139,7 @@ srules = {
 
         "E2": [
             ["DEC_NUMBER"],
+            ["LBR", "E", "RBR"]
         ],
 }
 
@@ -152,16 +150,15 @@ stack.append(Node(tokens.pop(0), [], None))
 
 while len(tokens) > 0:
     start_with = []
-    stuiable = []
+    suitable = []
 
     # input()
-
     # print(stack)
 
     for type in srules:
         for rule in srules[type]:
             if rule == [i.token.type for i in stack[-len(rule):]]:
-                stuiable.append((type, len(rule)))
+                suitable.append((type, len(rule)))
                 continue
 
             ok = False
@@ -177,16 +174,18 @@ while len(tokens) > 0:
                 start_with.append((type, max_len, rule))
 
     # print(start_with)
-    # print(stuiable)
+    # print(suitable)
 
-    if len(stuiable) == 0:
+    if len(suitable) == 0:
         stack.append(Node(tokens.pop(0), [], None))
         continue
 
     sw_new = []
 
+    min_len = min([i[1] for i in suitable])
+
     for i in start_with:
-        if i[2][i[1]] == tokens[0].type:
+        if i[2][i[1]] == tokens[0].type and len(i[2]) > min_len:
             sw_new.append(i)
 
     # print("sw_new:", sw_new)
@@ -195,74 +194,13 @@ while len(tokens) > 0:
         stack.append(Node(tokens.pop(0), [], None))
         continue
 
-    s = sorted(stuiable, key=lambda x: x[1])[-1]
+    s = sorted(suitable, key=lambda x: x[1])[-1]
 
     node = Node(Token("", s[0]), [], None)
     for i in range(s[1]):
         node.childs.append(stack.pop())
+    node.childs.reverse()
     stack.append(node)
-
-
-# while len(tokens) > 0:
-#     suitable = []
-#     input()
-#
-#     print(stack)
-#
-#     for type in srules:
-#         for rule in srules[type]:
-#             ok = False
-#             max_len = 0
-#
-#             ln = min(len(rule), len(stack))
-#
-#             for i in range(ln):
-#                 if rule[i] != stack[len(stack)-ln+i].token.type:
-#                     break
-#                 ok = True
-#                 max_len = i + 1
-#
-#             if ok:
-#                 suitable.append((type, max_len, rule))
-#
-#     print(suitable)
-#
-#     if len(suitable) == 1:
-#         if suitable[0][1] == len(suitable[0][2]):
-#             node = Node(Token("", suitable[0][0]), [], None)
-#             for i in range(len(suitable[0][2])):
-#                 node.childs.append(stack.pop())
-#             stack.append(node)
-#             continue
-#     elif len(suitable) > 1:
-#         snew = []
-#         all_ok = True
-#
-#         for i in suitable:
-#             if i[1] == len(i[2]):
-#                 snew.append(i)
-#                 continue
-#
-#             if i[2][i[1]] == tokens[0].type:
-#                 snew.append(i)
-#                 all_ok = False
-#                 continue
-#
-#         print("snew:", snew, all_ok)
-#
-#         if all_ok and len(snew) != 0:
-#             s = sorted(snew, key=lambda x: x[2])[-1]
-#
-#             node = Node(Token("", s[0]), [], None)
-#             for i in range(len(s[2])):
-#                 node.childs.append(stack.pop())
-#             stack.append(node)
-#             continue
-#
-#     stack.append(Node(tokens.pop(0), [], None))
-
-
-# pprint(stack)
 
 # for i in stack:
 #     i.print()
