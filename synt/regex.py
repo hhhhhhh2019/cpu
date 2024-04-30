@@ -1,4 +1,5 @@
 # from pprint import pprint
+from string import digits, ascii_letters
 
 # input = [
 #     {"chars": list("0123456789"),

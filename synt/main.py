@@ -13,35 +13,47 @@ class Token:
         self.type = type
 
     def __str__(self):
-        return str(self.type) + ' ' + self.value
+        a = self.value.replace("\n", "").replace("\t", "")
+        return str(self.type)# + ' ' + a
 
     def __repr__(self) -> str:
         return str(self)
 
 
-string = """
-3 * (1 + 2) + 4 * 5
-"""
+# string = r"""
+# a = {
+#     b.c = "qwerty";
+#     arr = [
+#         123.123
+#         321321
+#         '/folder/space path/file'
+#         "string"
+#     ];
+# }
+# \n"""
+# string = "[a/b './a/b' '/a/b']\n"
+# string = "123\n"
+string = "[1 + 2, 2, 3]\n"
 
-i = 0
+type = 0
 
 token = ""
 tokens = []
 
 state = 1
 
-while i < len(string):
-    c = string[i]
+while type < len(string):
+    c = string[type]
 
     nstate = -1
     otherid = -1
 
-    for j in rules[state][0]:
-        if "_other" in rules[state][0][j]:
-            otherid = j
+    for rule in rules[state][0]:
+        if "_other" in rules[state][0][rule]:
+            otherid = rule
 
-        if c in rules[state][0][j]:
-            nstate = j
+        if c in rules[state][0][rule]:
+            nstate = rule
 
     nstate = nstate if nstate != -1 else otherid
 
@@ -54,162 +66,213 @@ while i < len(string):
         state = 1
     else:
         token += c
-        i += 1
+        type += 1
         state = nstate
 
 
-tokens = [i for i in tokens if i.type not in ["SPACE", "NEWLINE", "TAB"]] + \
-        [Token("$", "EOI")]
+tokens = [i for i in tokens if not i.type == "SPACE"] + \
+    [Token("EOI", "$")]
 
 
-# 0 - текущий узел
-# 1..n - узлы, в том порядке, в котором они в массиве
-# значение при 0 заменяет текущий узел
+class Node:
+    token: Token
+    childs: list
+    parent: object
+    id: int
+
+    def __init__(self, token: token, childs: list, parent):
+        self.token = token
+        self.childs = childs
+        self.parent = parent
+        self.id = 0
+
+    def __str__(self):
+        return str(self.token)
+
+    def __repr__(self) -> str:
+        return str(self)
+
+    def print(self, offset=0):
+        print("  " * offset + str(self.token))
+        for i in self.childs:
+            i.print(offset+1)
+
+    def index(self, id: int = 0) -> int:
+        self.id = id
+
+        for i in self.childs:
+            id = i.index(id + 1)
+
+        return id
+
+    def to_dot(self):
+        print(f"{self.id} [label=\"{str(self.token.type)}\"]")
+        print(f"{self.id} -> " + "{", end='')
+        for i in self.childs:
+            print(i.id, end=' ')
+        print("}")
+
+        for i in self.childs:
+            i.to_dot()
+
+
+# nodes = [Node(i, [], None) for i in tokens]
 
 srules = {
-    "Start": {
-        "DEC_NUMBER": [["S1", "M"], {
-            0: 1,
-            1: [2],
-        }],
-        "LBR": [["S1", "M"], {
-            0: 1,
-            1: [2],
-        }],
-    },
+        "Array": [
+            # ["LSBR", "E", "RSBR"],
+            ["LSBR", "Aargs", "RSBR"],
+        ],
 
-    "S1": {
-        "PLUS": [["S1", "M", "PLUS"], {
-            0: 3,
-            3: [1, 2]
-        }],
-        "EOI": [[]],
-        "RBR": [[]],
-    },
+        "Aargs": [
+            ["Aargs", "COMMA", "E"],
+            ["E"],
+        ],
 
-    "M": {
-        "DEC_NUMBER": [["M1", "B"], {
-            0: 1,
-            1: [2],
-        }],
-        "LBR": [["M1", "B"], {
-            0: 1,
-            1: [2],
-        }],
-    },
+        "E": [
+            ["E", "PLUS", "E"],
+            ["E1"],
+            # ["DEC_NUMBER"],
+        ],
 
-    "M1": {
-        "STAR": [["M1", "B", "STAR"], {
-            0: 3,
-            3: [1, 2]
-        }],
-        "EOI": [[]],
-        "PLUS": [[]],
-        "RBR": [[]],
-    },
+        "E1": [
+            ["E1", "STAR", "E1"],
+            ["E2"],
+        ],
 
-    "B": {
-        "LBR": [["RBR", "Start", "LBR"], {
-            0: 2,
-        }],
-        "DEC_NUMBER": [["DEC_NUMBER"], {
-            0: 1,
-        }],
-    }
+        "E2": [
+            ["DEC_NUMBER"],
+        ],
 }
 
 
-stack = ["Start"]
+stack = []
 
-# на Си это делать проще(там есть нормальные указатели)
+stack.append(Node(tokens.pop(0), [], None))
 
-root = {
-    "token": Token("", "root"),
-    "childs": [],
-    "parent": None
-}
+while len(tokens) > 0:
+    start_with = []
+    stuiable = []
 
-root["childs"].append({
-    "token": Token("", "S"),
-    "childs": [],
-    "parent": root
-})
+    # input()
 
-nstack = [root["childs"][0]]
+    # print(stack)
 
-c = 0
-
-
-def print_node(node, level=0):
-    print("\t" * level, node["token"], sep='')
-
-    for i in node["childs"]:
-        print_node(i, level + 1)
-
-
-while len(stack) > 0:
-    state = stack.pop(-1)
-    node = nstack.pop(-1)
-    token = tokens[0]
-
-    if token.type == state:
-        node["token"] = token
-        tokens.pop(0)
-
-        continue
-
-    if token.type not in srules[state]:
-        print("error")
-        break
-
-    todo = srules[state][token.type][0]
-
-    stack += todo
-
-    if len(todo) == 0:
-        for i in node["childs"]:
-            i["parent"] = node["parent"]
-
-        if node["parent"] is None:
-            continue
-
-        node["parent"]["childs"].remove(node)
-
-        for i in node["childs"]:
-            node["parent"]["childs"].append(i)
-
-        continue
-
-    if len(todo) == 1:
-        node["token"].type = todo[0]
-        nstack += [node]
-    else:
-        nrule = srules[state][token.type][1]
-
-        nnodes = [{"token": Token("", i), "childs": [], "parent": None}
-                  for i in todo]
-
-        if node["parent"] is not None:
-            node["parent"]["childs"][
-                node["parent"]["childs"].index(node)
-            ] = nnodes[nrule[0] - 1]
-
-        nnodes[nrule[0] - 1]["parent"] = node["parent"]
-        nnodes[nrule[0] - 1]["childs"] = node["childs"]
-
-        for i in nrule:
-            if i == 0:
+    for type in srules:
+        for rule in srules[type]:
+            if rule == [i.token.type for i in stack[-len(rule):]]:
+                stuiable.append((type, len(rule)))
                 continue
 
-            nnodes[i - 1]["childs"] += [nnodes[j - 1] for j in nrule[i]]
+            ok = False
+            max_len = 0
 
-            for j in nrule[i]:
-                nnodes[j - 1]["parent"] = nnodes[i - 1]
+            for i in range(len(rule)):
+                if rule[:i+1] == [j.token.type for j in stack[-i-1:]]:
+                    ok = True
+                    max_len = i+1
+                    break
 
-        nstack += nnodes
+            if ok:
+                start_with.append((type, max_len, rule))
+
+    # print(start_with)
+    # print(stuiable)
+
+    if len(stuiable) == 0:
+        stack.append(Node(tokens.pop(0), [], None))
+        continue
+
+    sw_new = []
+
+    for i in start_with:
+        if i[2][i[1]] == tokens[0].type:
+            sw_new.append(i)
+
+    # print("sw_new:", sw_new)
+
+    if len(sw_new) != 0:
+        stack.append(Node(tokens.pop(0), [], None))
+        continue
+
+    s = sorted(stuiable, key=lambda x: x[1])[-1]
+
+    node = Node(Token("", s[0]), [], None)
+    for i in range(s[1]):
+        node.childs.append(stack.pop())
+    stack.append(node)
 
 
-while node["parent"] is not None:
-    node = node["parent"]
+# while len(tokens) > 0:
+#     suitable = []
+#     input()
+#
+#     print(stack)
+#
+#     for type in srules:
+#         for rule in srules[type]:
+#             ok = False
+#             max_len = 0
+#
+#             ln = min(len(rule), len(stack))
+#
+#             for i in range(ln):
+#                 if rule[i] != stack[len(stack)-ln+i].token.type:
+#                     break
+#                 ok = True
+#                 max_len = i + 1
+#
+#             if ok:
+#                 suitable.append((type, max_len, rule))
+#
+#     print(suitable)
+#
+#     if len(suitable) == 1:
+#         if suitable[0][1] == len(suitable[0][2]):
+#             node = Node(Token("", suitable[0][0]), [], None)
+#             for i in range(len(suitable[0][2])):
+#                 node.childs.append(stack.pop())
+#             stack.append(node)
+#             continue
+#     elif len(suitable) > 1:
+#         snew = []
+#         all_ok = True
+#
+#         for i in suitable:
+#             if i[1] == len(i[2]):
+#                 snew.append(i)
+#                 continue
+#
+#             if i[2][i[1]] == tokens[0].type:
+#                 snew.append(i)
+#                 all_ok = False
+#                 continue
+#
+#         print("snew:", snew, all_ok)
+#
+#         if all_ok and len(snew) != 0:
+#             s = sorted(snew, key=lambda x: x[2])[-1]
+#
+#             node = Node(Token("", s[0]), [], None)
+#             for i in range(len(s[2])):
+#                 node.childs.append(stack.pop())
+#             stack.append(node)
+#             continue
+#
+#     stack.append(Node(tokens.pop(0), [], None))
 
-print_node(node)
+
+# pprint(stack)
+
+# for i in stack:
+#     i.print()
+
+for i in stack:
+    i.index()
+
+did = 1
+for i in stack:
+    print(f"digraph {did} " + "{")
+    i.to_dot()
+    print("}")
+    did += 1

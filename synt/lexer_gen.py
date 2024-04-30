@@ -1,6 +1,6 @@
 from regex import compile_regex
 from pprint import pprint
-from string import ascii_letters, digits, punctuation
+from string import ascii_letters, digits, punctuation, whitespace
 
 
 # cother = list(" \t\n,.-+*/\\&^%;|~()[]{}=\0")
@@ -8,112 +8,140 @@ cother = list(punctuation + " \t\n")
 cletters = list(ascii_letters)
 cdigits = list(digits)
 
+cpath = list(ascii_letters + digits + r"_.:;!@#$%^&(){}[]<>\/&")
+
 # символы, с которых можно перейти в UNDEFINED
 def_undef = set(ascii_letters + "_" + digits)
 
 tokens = [
-    ["NEWLINE",          "\n",                           set()],
-    ["SPACE",            r" ",                           set()],
-    ["TAB",              "\t",                           set()],
-    ["ALIGNAS",          r"alignas",                     def_undef.copy()],
-    ["ALIGNOF",          r"alignof",                     def_undef.copy()],
-    ["AUTO",             r"auto",                        def_undef.copy()],
-    ["BREAK",            r"break",                       def_undef.copy()],
-    ["CASE",             r"case",                        def_undef.copy()],
-    ["CHAR",             r"char",                        def_undef.copy()],
-    ["CONST",            r"const",                       def_undef.copy()],
-    ["COUNTINUE",        r"countinue",                   def_undef.copy()],
-    ["DEFAULT",          r"default",                     def_undef.copy()],
-    ["DO",               r"do",                          def_undef.copy()],
-    ["ELSE",             r"else",                        def_undef.copy()],
-    ["ENUM",             r"enum",                        def_undef.copy()],
-    ["EXTERN",           r"extern",                      def_undef.copy()],
-    ["FALSE",            r"false",                       def_undef.copy()],
-    ["FLOAT",            r"float",                       def_undef.copy()],
-    ["FOR",              r"for",                         def_undef.copy()],
-    ["GOTO",             r"goto",                        def_undef.copy()],
-    ["IF",               r"if",                          def_undef.copy()],
-    ["INLINE",           r"inline",                      def_undef.copy()],
-    ["INT",              r"int",                         def_undef.copy()],
-    ["LONG",             r"long",                        def_undef.copy()],
-    ["RETURN",           r"return",                      def_undef.copy()],
-    ["SHORT",            r"short",                       def_undef.copy()],
-    ["SIGNED",           r"signed",                      def_undef.copy()],
-    ["SIZEOF",           r"sizeof",                      def_undef.copy()],
-    ["STRUCT",           r"struct",                      def_undef.copy()],
-    ["SWITCH",           r"switch",                      def_undef.copy()],
-    ["TYPEDEF",          r"typedef",                     def_undef.copy()],
-    ["UNION",            r"union",                       def_undef.copy()],
-    ["UNSIGNED",         r"unsigned",                    def_undef.copy()],
-    ["VOID",             r"void",                        def_undef.copy()],
-    ["WHILE",            r"while",                       def_undef.copy()],
-    ["PLUS",             r"\+",                          set()],
-    ["MINUS",            r"-",                           set()],
-    ["STAR",             r"\*",                          set()],
-    ["SLASH",            r"/",                           set()],
-    ["PERCENT",          r"%",                           set()],
-    ["AMPERSAND",        r"&",                           set()],
-    ["TILDA",            r"~",                           set()],
-    ["PIPE",             r"|",                           set()],
-    ["CARET",            r"^",                           set()],
-    ["LSHIFT",           r"<<",                          set()],
-    ["RSHIFT",           r">>",                          set()],
-    ["ARROW",            r"->",                          set()],
-    ["DOT",              r".",                           set()],
-    ["COMMA",            r",",                           set()],
-    ["SEMICOLON",        r";",                           set()],
-    ["DOUBLE_PLUS",      r"\+\+",                        set()],
-    ["DOUBLE_MINUS",     r"--",                          set()],
-    ["DOUBLE_AMPERSAND", r"&&",                          set()],
-    ["DOUBLE_PIPE",      r"||",                          set()],
-    ["ASSIGN",           r"=",                           set()],
-    ["ASSIGN_PLUS",      r"\+=",                         set()],
-    ["ASSIGN_MINUS",     r"-=",                          set()],
-    ["ASSIGN_STAR",      r"\*=",                         set()],
-    ["ASSIGN_SLASH",     r"/=",                          set()],
-    ["ASSIGN_PERCENT",   r"%=",                          set()],
-    ["ASSIGN_AMPERSAND", r"&=",                          set()],
-    ["ASSIGN_PIPE",      r"|=",                          set()],
-    ["ASSIGN_CARET",     r"^=",                          set()],
-    ["ASSIGN_LSHIFT",    r"<<=",                         set()],
-    ["ASSIGN_RSHIFT",    r">>=",                         set()],
-    ["EQUALS",           r"==",                          set()],
-    ["NOT_EQUALS",       r"!=",                          set()],
-    ["LESS",             r"<",                           set()],
-    ["LESS_EQUALS",      r"<=",                          set()],
-    ["MORE",             r">",                           set()],
-    ["MORE_EQUALS",      r">=",                          set()],
-    ["LBR",              r"(",                           set()],
-    ["RBR",              r")",                           set()],
-    ["LSBR",             r"\[",                          set()],
-    ["RSBR",             r"\]",                          set()],
-    ["LCBR",             r"{",                           set()],
-    ["RCBR",             r"}",                           set()],
-    ["DEC_NUMBER",       r"[0123456789]+",               set()],
-    ["HEX_NUMBER",       r"0x[0123456789abcdefABCDEF]+", set()],
-    ["BIN_NUMBER",       r"0b[01]+",                     set()],
+    ["SPACE",        "[\n \t]+", set()],
+    # ["DEC_NUMBER",   r"[0123456789]+",               set()],
+    # ["FLOAT_NUMBER", r"[0123456789]+.[0123456789]+", set()],
+    ["LET",          r"let",                         def_undef.copy()],
+    ["IN",           r"in",                          def_undef.copy()],
+    ["REC",          r"rec",                         def_undef.copy()],
+    ["WITH",         r"with",                        def_undef.copy()],
+    ["INHERIT",      r"inherit",                     def_undef.copy()],
+    ["SEMICOLON",    r";",                           set()],
+    ["DOLLAR",       r"$",                           set()],
+    ["PLUS",         r"\+",                          set()],
+    ["MINUS",        r"-",                           set()],
+    ["SLASH",        r"/",                           set()],
+    ["STAR",         r"\*",                          set()],
+    ["DOT",          r"\.",                          set()],
+    ["COMMA",        r",",                           set()],
+    ["EPSILON",      r"\.\.\.",                      set()],
+    ["LBR",          r"(",                           set()],
+    ["RRB",          r")",                           set()],
+    ["LCBR",         r"{",                           set()],
+    ["RCBR",         r"}",                           set()],
+    ["LSBR",         r"\[",                          set()],
+    ["RSBR",         r"\]",                          set()],
+    ["ASSIGN",       r"=",                           set()],
+    ["EQUALS",       r"==",                          set()],
+    ["NOT_EQUALS",   r"!=",                          set()],
+    ["LESS_EQUALS",  r"<=",                          set()],
+    ["MORE_EQUALS",  r">=",                          set()],
+    ["TRUE",         r"true",                        def_undef.copy()],
+    ["FALSE",        r"false",                       def_undef.copy()],
 ]
-
 
 nfa = {
     1: {
         "rules": {
             2: list(ascii_letters + "_"),
+            3: ['"'],
+            6: ["'"],
+            8: list("0123456789"),
             -1: ["_other"]
         },
         "type": -1,
-        "using": True,
+        "using": False
     },
 
     2: {
         "rules": {
             2: def_undef.copy(),
             0: ["_other"],
-        }, "type": "UNDEFINED",
+        },
+        "type": "UNDEFINED",
+        "using": False
+    },
+
+    3: {
+        "rules": {
+            -1: ["\n"],
+            5: ['"'],
+            3: ["_other"],
+            4: ["\\"],
+        },
+        "type": 0,
+        "using": False,
+    },
+
+    4: {
+        "rules": {
+            -1: ["\n"],
+            3: ["_other"],
+        },
+        "type": 0,
+        "using": False
+    },
+
+    5: {
+        "rules": {
+            0: ["_other"],
+        },
+        "type": "STRING",
+        "using": False
+    },
+
+    6: {
+        "rules": {
+            6: ["_other"],
+            7: ["'"],
+        },
+        "type": 0,
+        "using": False
+    },
+
+    7: {
+        "rules": {
+            0: ["_other"],
+        },
+        "type": "PATH",
+        "using": False
+    },
+
+    8: {
+        "rules": {
+            8: list("0123456789"),
+            9: ["."],
+            0: ["_other"],
+        },
+        "type": "DEC_NUMBER",
+        "using": False
+    },
+
+    9: {
+        "rules": {
+            10: list("0123456789"),
+            -1: ["_other"],
+        },
+        "type": 0,
+        "using": False
+    },
+
+    10: {
+        "rules": {
+            10: list("0123456789"),
+            0: ["_other"],
+        },
+        "type": "FLOAT_NUMBER",
         "using": False
     },
 }
-id = 3
+id = max(nfa) + 1
 
 
 for token in tokens:
@@ -163,6 +191,11 @@ for token in tokens:
 
 
 def collapse(nfa, id):
+    if nfa[id]["using"] is True:
+        return False
+
+    nfa[id]["using"] = True
+
     chars = {}
 
     for i in nfa[id]["rules"]:
@@ -223,8 +256,14 @@ def collapse(nfa, id):
 
 
 while collapse(nfa, 1):
-    pass
+    for i in nfa:
+        nfa[i]["using"] = False
 
+for i in nfa:
+    nfa[i]["using"] = False
+
+
+nfa[1]["using"] = True
 
 for i in nfa:
     for j in nfa[i]["rules"]:
@@ -265,7 +304,7 @@ for i in dfa:
 
 # pprint(rules)
 
-if __name__ == "__main__":
+if __name__ == "__main__" and False:
     def get_id(ch, r) -> int:
         if ch == 256:
             ch = "_other"

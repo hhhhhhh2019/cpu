@@ -1,4 +1,6 @@
 #include "cc.h"
+#include "lexer.h"
+#include "token.h"
 #include "utils.h"
 #include "synt.h"
 
@@ -6,10 +8,37 @@
 #include <stdlib.h>
 
 
-static char state_start(Node* node, unsigned int* offset, Compiler_state* state);
-static char state_expr(Node* node, unsigned int* offset, Compiler_state* state);
-static char state_expr_1(Node* node, unsigned int* offset, Compiler_state* state);
-static char state_expr_2(Node* node, unsigned int* offset, Compiler_state* state);
+static char state_start    (Node*, unsigned int*, Compiler_state*);
+static char state_var_decl (Node*, unsigned int*, Compiler_state*);
+static char state_func_decl(Node*, unsigned int*, Compiler_state*);
+static char state_type_decl(Node*, unsigned int*, Compiler_state*);
+static char state_expr     (Node*, unsigned int*, Compiler_state*);
+
+
+char match(unsigned int* offset, Compiler_state* state, unsigned int count, enum Token_type types[]) {
+	for (int i = 0; i < count; i++) {
+		if (state->lexer_result.tokens[*offset].type == types[i])
+			return 1;
+	}
+
+	return 0;
+};
+
+
+char require(unsigned int* offset, Compiler_state* state, unsigned int count, enum Token_type types[], Token* result) {
+	if (!match(offset, state, count, types)) {
+		printf("%s %lu:%lu Expected: ",
+				state->lexer_result.tokens[*offset].filename,
+				state->lexer_result.tokens[*offset].line,
+				state->lexer_result.tokens[*offset].column);
+		for (int i = 0; i < count; i++)
+			printf("%s ", token_type_names[types[i]]);
+		printf("but found %s!\n", token_type_names[state->lexer_result.tokens[*offset].type]);
+		return 0;
+	}
+	*result = state->lexer_result.tokens[(*offset)++];
+	return 1;
+}
 
 
 static char state_start(Node* node, unsigned int* offset, Compiler_state* state) {
@@ -17,107 +46,31 @@ static char state_start(Node* node, unsigned int* offset, Compiler_state* state)
 }
 
 
-static char state_expr_2(Node* node, unsigned int* offset, Compiler_state* state) {
-	Node a = {
-		.childs_count = 0,
-		.childs = malloc(0),
-	};
-
+static char state_type(Node* node, unsigned int* offset, Compiler_state* state) {
 	
-	if (state->lexer_result.tokens[*offset].type == LBR) {
-		(*offset)++;
-		state_expr(&a, offset, state);
-		(*offset)++;
-		*node = a;
-		return 1;
-	}
-
-	a.value = state->lexer_result.tokens[(*offset)++];
-	*node = a;
-
-	return 1;
 }
 
 
-static char state_expr_1(Node* node, unsigned int* offset, Compiler_state* state) {
-	Node a = {
-		.childs_count = 0,
-		.childs = malloc(0),
-	};
+static char state_var_decl(Node* node, unsigned int* offset, Compiler_state* state) {
+	Node type;
+	unsigned int offset_save = *offset;
 
-	if (!state_expr_2(&a, offset, state)) {
-		free(a.childs);
+	if (!state_type_decl(&type, offset, state)) {
+		*offset = offset_save;
 		return 0;
 	}
 
-	if (state->lexer_result.tokens[*offset].type != STAR) {
-		*node = a;
-		return 1;
-	}
-
-	Node op = {
-		.childs_count = 2,
-		.childs = malloc(sizeof(Node) * 2),
-		.value = state->lexer_result.tokens[(*offset)++]
-	};
 	
-	Node b = {
-		.childs_count = 0,
-		.childs = malloc(0),
-	};
+}
 
-	if (!state_expr_1(&b, offset, state)) {
-		printf("Error\n");
-		exit(1);
-	}
 
-	op.childs[0] = a;
-	op.childs[1] = b;
+static char state_func_decl(Node* node, unsigned int* offset, Compiler_state* state) {
 
-	*node = op;
-
-	return 1;
 }
 
 
 static char state_expr(Node* node, unsigned int* offset, Compiler_state* state) {
-	Node a = {
-		.childs_count = 0,
-		.childs = malloc(0),
-	};
-
-	if (!state_expr_1(&a, offset, state)) {
-		free(a.childs);
-		return 0;
-	}
-
-	if (state->lexer_result.tokens[*offset].type != PLUS) {
-		*node = a;
-		return 1;
-	}
-
-	Node op = {
-		.childs_count = 2,
-		.childs = malloc(sizeof(Node) * 2),
-		.value = state->lexer_result.tokens[(*offset)++]
-	};
-	
-	Node b = {
-		.childs_count = 0,
-		.childs = malloc(0),
-	};
-
-	if (!state_expr(&b, offset, state)) {
-		printf("Error\n");
-		exit(1);
-	}
-
-	op.childs[0] = a;
-	op.childs[1] = b;
-
-	*node = op;
-
-	return 1;
+	return 0;
 }
 
 

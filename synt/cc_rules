@@ -85,8 +85,8 @@ RCBR
 
 #nonterminals
 
-Start Start1 Start |
-Start1 Func_decl | Var_decl | Expr
+Start Start1 Start, {0: 1, 1: [2]} |
+Start1 Func_decl, {0: 1} | Var_decl, {0: 1} | Expr, {0: 1}
 
 Var_decl Type UNDEFINED Var_decl1 SEMICOLON
 Var_decl1 ASSIGN Expr |
